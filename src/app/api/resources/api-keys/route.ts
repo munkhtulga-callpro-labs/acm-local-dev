@@ -16,7 +16,9 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({ data: apiKeys })
+    const rest = apiKeys.map(({apiKeyToken, ...rest}) => rest);
+
+    return NextResponse.json({ data: rest })
   } catch (error) {
     console.error('Error fetching API keys:', error)
     return NextResponse.json(
