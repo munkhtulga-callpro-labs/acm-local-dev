@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { z } from 'zod'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,16 +11,36 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Key, Shield, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
+const apiKeySchema = z.object({
+  serviceName: z.string().min(1, 'Service name is required'),
+  apiKeyToken: z.string().min(1, 'API key token is required'),
+  keyType: z.enum(['Production', 'Sandbox', 'Development'], { error: 'Key type is required' }),
+  scopePermissions: z.string().min(1, 'Scope / permissions is required'),
+  rateLimit: z.string().optional(),
+  expiryDate: z.string().optional(),
+  assignedTo: z.email().optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE', 'REVOKED']),
+  notes: z.string().optional(),
+  ipRestrictions: z.ipv4().optional(),
+  webhookUrls: z.string().optional(),
+})
+
+const apiKeyEditSchema = apiKeySchema.extend({
+  apiKeyToken: z.string().optional(),
+})
+
+type APIKeyFormData = z.infer<typeof apiKeySchema>
+
 interface APIKeyResource {
   id?: string
-  serviceName: string
+  serviceName?: string
   apiKeyToken?: string | null
-  keyType: string
-  scopePermissions: string
+  keyType?: string
+  scopePermissions?: string
   rateLimit?: string | null
   expiryDate?: string | null
   assignedTo?: string | null
-  status: string
+  status?: string
   notes?: string | null
   ipRestrictions?: string | null
   webhookUrls?: string | null
@@ -33,7 +54,7 @@ interface APIKeyModalProps {
   onSave: (apiKey: Partial<APIKeyResource>) => Promise<void>
 }
 
-const defaultForm: Partial<APIKeyResource> = {
+const defaultForm: Partial<APIKeyFormData> = {
   serviceName: '',
   apiKeyToken: '',
   keyType: 'Production',
@@ -48,17 +69,26 @@ const defaultForm: Partial<APIKeyResource> = {
 }
 
 export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyModalProps) {
-  const [formData, setFormData] = useState<Partial<APIKeyResource>>(defaultForm)
+  const [formData, setFormData] = useState<Partial<APIKeyFormData>>(defaultForm)
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
     if (apiKey && mode !== 'create') {
       setFormData({
-        ...apiKey,
+        serviceName: apiKey.serviceName ?? '',
+        apiKeyToken: apiKey.apiKeyToken ?? '',
+        keyType: (apiKey.keyType as APIKeyFormData['keyType']) ?? 'Production',
+        scopePermissions: apiKey.scopePermissions ?? '',
+        rateLimit: apiKey.rateLimit ?? '',
         expiryDate: apiKey.expiryDate
           ? new Date(apiKey.expiryDate).toISOString().split('T')[0]
           : '',
+        assignedTo: apiKey.assignedTo ?? '',
+        status: (apiKey.status as APIKeyFormData['status']) ?? 'ACTIVE',
+        notes: apiKey.notes ?? '',
+        ipRestrictions: apiKey.ipRestrictions ?? '',
+        webhookUrls: apiKey.webhookUrls ?? '',
       })
     } else if (mode === 'create') {
       setFormData(defaultForm)
@@ -67,13 +97,19 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
   }, [apiKey, mode, isOpen])
 
   const validate = () => {
-    const e: Record<string, string> = {}
-    if (!formData.serviceName?.trim()) e.serviceName = 'Service name is required'
-    if (!formData.apiKeyToken?.trim()) e.apiKeyToken = 'API key token is required'
-    if (!formData.keyType) e.keyType = 'Key type is required'
-    if (!formData.scopePermissions?.trim()) e.scopePermissions = 'Scope / permissions is required'
-    setErrors(e)
-    return Object.keys(e).length === 0
+    const schema = mode === 'edit' ? apiKeyEditSchema : apiKeySchema
+    const result = schema.safeParse(formData)
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const field = issue.path[0] as string
+        if (!fieldErrors[field]) fieldErrors[field] = issue.message
+      }
+      setErrors(fieldErrors)
+      return false
+    }
+    setErrors({})
+    return true
   }
 
   const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
@@ -141,7 +177,7 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
                 </Label>
                 <Select
                   value={formData.keyType}
-                  onValueChange={(v) => setFormData((prev) => ({ ...prev, keyType: v }))}
+                  onValueChange={(v) => setFormData({ ...formData, keyType: v as APIKeyFormData['keyType'] })}
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn('h-10', errors.keyType && 'border-destructive')}>
@@ -232,7 +268,7 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
                 <Label htmlFor="status" className="text-sm font-medium">Status</Label>
                 <Select
                   value={formData.status}
-                  onValueChange={(v) => setFormData((prev) => ({ ...prev, status: v }))}
+                  onValueChange={(v) => setFormData({ ...formData, status: v as APIKeyFormData['status'] })}
                   disabled={isViewMode}
                 >
                   <SelectTrigger className="h-10">
