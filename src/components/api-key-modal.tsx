@@ -10,8 +10,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Key, Shield, Loader2 } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Calendar } from '@/components/ui/calendar'
+import { Key, Shield, Loader2, CalendarIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { format, parseISO } from 'date-fns'
 
 const apiKeySchema = z.object({
   serviceName: z.string().min(1, 'Service name is required'),
@@ -245,13 +248,38 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="expiryDate" className="text-sm font-medium">Expiry Date</Label>
-                <Input
-                  id="expiryDate"
-                  type="date"
-                  {...register('expiryDate')}
-                  disabled={isViewMode}
-                  className={cn(errors.expiryDate && 'border-destructive')}
+                <Label className="text-sm font-medium">Expiry Date</Label>
+                <Controller
+                  name="expiryDate"
+                  control={control}
+                  render={({ field }) => (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={isViewMode}
+                          className={cn(
+                            'w-full justify-start text-left font-normal h-10',
+                            !field.value && 'text-muted-foreground',
+                            errors.expiryDate && 'border-destructive'
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+                          {field.value ? format(parseISO(field.value), 'PPP') : 'Pick a date'}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value ? parseISO(field.value) : undefined}
+                          onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
+                          disabled={{ before: new Date() }}
+                          autoFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  )}
                 />
                 {errors.expiryDate && <p className="text-xs text-destructive">{errors.expiryDate.message}</p>}
               </div>
