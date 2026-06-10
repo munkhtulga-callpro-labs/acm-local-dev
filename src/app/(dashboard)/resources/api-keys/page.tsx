@@ -41,19 +41,23 @@ export default function APIKeysPage() {
   }
 
   const handleSave = async (apiKeyData: any) => {
-    const isEdit = modalState.mode === 'edit' && modalState.apiKey
+    const { mode, apiKey } = modalState
 
-    const response = await fetch(
-      isEdit ? API.resources.apiKeys.detail(modalState.apiKey!.id) : API.resources.apiKeys.list,
-      {
-        method: isEdit ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(apiKeyData),
-      }
-    )
+    let url: string
+    if (mode === 'edit' && apiKey) {
+      url = API.resources.apiKeys.detail(apiKey.id)
+    } else {
+      url = API.resources.apiKeys.list
+    }
+
+    const response = await fetch(url, {
+      method: mode === 'edit' ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(apiKeyData),
+    })
 
     if (response.ok) {
-      setSuccess(isEdit ? 'API key updated successfully' : 'API key added successfully')
+      setSuccess(mode === 'edit' ? 'API key updated successfully' : 'API key added successfully')
       fetchAPIKeys()
     } else {
       const errorData = await response.json()
@@ -77,7 +81,7 @@ export default function APIKeysPage() {
   }
 
   const now = new Date()
-  const in30Days = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+  const [in30Days] = useState(() => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))
 
   const totalKeys = apiKeys.length
   const activeKeys = apiKeys.filter((k) => k.status === 'ACTIVE').length
