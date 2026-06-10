@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { APIKeyModal } from '@/components/api-key-modal'
 import { APIKeysDataTable, type APIKeyResource } from '@/components/api-keys-data-table'
 import { Key, ShieldCheck, AlertTriangle, Activity } from 'lucide-react'
@@ -17,8 +17,6 @@ interface APIKeysClientProps {
 
 export function APIKeysClient({ initialData }: APIKeysClientProps) {
   const router = useRouter()
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
   const [modalState, setModalState] = useState<{
     isOpen: boolean
@@ -43,7 +41,7 @@ export function APIKeysClient({ initialData }: APIKeysClientProps) {
     })
 
     if (response.ok) {
-      setSuccess(mode === 'edit' ? 'API key updated successfully' : 'API key added successfully')
+      toast.success(mode === 'edit' ? 'API key updated successfully' : 'API key added successfully')
       router.refresh()
     } else {
       const errorData = await response.json()
@@ -60,13 +58,13 @@ export function APIKeysClient({ initialData }: APIKeysClientProps) {
     try {
       const response = await fetch(API.resources.apiKeys.detail(deleteTarget.id), { method: 'DELETE' })
       if (response.ok) {
-        setSuccess(`"${deleteTarget.name}" deleted successfully`)
+        toast.success(`"${deleteTarget.name}" deleted successfully`)
         router.refresh()
       } else {
-        setError('Failed to delete API key')
+        toast.error('Failed to delete API key')
       }
     } catch {
-      setError('Error deleting API key')
+      toast.error('Error deleting API key')
     } finally {
       setDeleteTarget(null)
     }
@@ -96,17 +94,6 @@ export function APIKeysClient({ initialData }: APIKeysClientProps) {
           Add API Key
         </Button>
       </div>
-
-      {error && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      {success && (
-        <Alert className="mb-4">
-          <AlertDescription>{success}</AlertDescription>
-        </Alert>
-      )}
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card>

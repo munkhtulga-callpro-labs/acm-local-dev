@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
+import { toast } from 'sonner'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
@@ -80,7 +81,6 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
     handleSubmit,
     control,
     reset,
-    setError,
     formState: { errors, isSubmitting },
   } = useForm<APIKeyFormData>({
     resolver: zodResolver(apiKeyEditSchema),
@@ -109,14 +109,14 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
 
   const onSubmit = async (data: APIKeyFormData) => {
     if (mode === 'create' && !data.apiKeyToken) {
-      setError('apiKeyToken', { message: 'API key token is required' })
+      toast.error('API key token is required')
       return
     }
     try {
       await onSave(data)
       onClose()
     } catch (err) {
-      setError('root', { message: err instanceof Error ? err.message : 'Failed to save API key. Please try again.' })
+      toast.error(err instanceof Error ? err.message : 'Failed to save API key. Please try again.')
     }
   }
 
@@ -341,12 +341,6 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
               </div>
             </div>
           </div>
-
-          {errors.root && (
-            <div className="rounded-md bg-destructive/10 p-4 border border-destructive/20">
-              <p className="text-sm text-destructive font-medium">{errors.root.message}</p>
-            </div>
-          )}
 
           <DialogFooter className="gap-2 pt-6 border-t">
             <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="min-w-24">
