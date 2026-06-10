@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
+import { useForm, Controller } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -14,7 +16,7 @@ import { cn } from '@/lib/utils'
 const apiKeySchema = z.object({
   serviceName: z.string().min(1, 'Service name is required'),
   apiKeyToken: z.string().min(1, 'API key token is required'),
-  keyType: z.enum(['Production', 'Sandbox', 'Development'], { error: 'Key type is required' }),
+  keyType: z.enum(['Production', 'Sandbox', 'Development']),
   scopePermissions: z.string().min(1, 'Scope / permissions is required'),
   rateLimit: z.string().optional(),
   expiryDate: z.string().optional(),
@@ -25,11 +27,12 @@ const apiKeySchema = z.object({
   webhookUrls: z.string().optional(),
 })
 
+// In edit mode the token is stripped from the list response, so it's optional on updates
 const apiKeyEditSchema = apiKeySchema.extend({
   apiKeyToken: z.string().optional(),
 })
 
-type APIKeyFormData = z.infer<typeof apiKeySchema>
+type APIKeyFormData = z.infer<typeof apiKeyEditSchema>
 
 interface APIKeyResource {
   id?: string
@@ -54,7 +57,7 @@ interface APIKeyModalProps {
   onSave: (apiKey: Partial<APIKeyResource>) => Promise<void>
 }
 
-const defaultForm: Partial<APIKeyFormData> = {
+const defaultValues: APIKeyFormData = {
   serviceName: '',
   apiKeyToken: '',
   keyType: 'Production',
@@ -69,21 +72,27 @@ const defaultForm: Partial<APIKeyFormData> = {
 }
 
 export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyModalProps) {
-  const [formData, setFormData] = useState<Partial<APIKeyFormData>>(defaultForm)
-  const [isLoading, setIsLoading] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<APIKeyFormData>({
+    resolver: zodResolver(apiKeyEditSchema),
+    defaultValues,
+  })
 
   useEffect(() => {
     if (apiKey && mode !== 'create') {
-      setFormData({
+      reset({
         serviceName: apiKey.serviceName ?? '',
         apiKeyToken: apiKey.apiKeyToken ?? '',
         keyType: (apiKey.keyType as APIKeyFormData['keyType']) ?? 'Production',
         scopePermissions: apiKey.scopePermissions ?? '',
         rateLimit: apiKey.rateLimit ?? '',
-        expiryDate: apiKey.expiryDate
-          ? new Date(apiKey.expiryDate).toISOString().split('T')[0]
-          : '',
+        expiryDate: apiKey.expiryDate ? new Date(apiKey.expiryDate).toISOString().split('T')[0] : '',
         assignedTo: apiKey.assignedTo ?? '',
         status: (apiKey.status as APIKeyFormData['status']) ?? 'ACTIVE',
         notes: apiKey.notes ?? '',
@@ -91,44 +100,22 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
         webhookUrls: apiKey.webhookUrls ?? '',
       })
     } else if (mode === 'create') {
-      setFormData(defaultForm)
+      reset(defaultValues)
     }
-    setErrors({})
-  }, [apiKey, mode, isOpen])
+  }, [apiKey, mode, isOpen, reset])
 
-  const validate = () => {
-    const schema = mode === 'edit' ? apiKeyEditSchema : apiKeySchema
-    const result = schema.safeParse(formData)
-    if (!result.success) {
-      const fieldErrors: Record<string, string> = {}
-      for (const issue of result.error.issues) {
-        const field = issue.path[0] as string
-        if (!fieldErrors[field]) fieldErrors[field] = issue.message
-      }
-      setErrors(fieldErrors)
-      return false
+  const onSubmit = async (data: APIKeyFormData) => {
+    if (mode === 'create' && !data.apiKeyToken) {
+      setError('apiKeyToken', { message: 'API key token is required' })
+      return
     }
-    setErrors({})
-    return true
-  }
-
-  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (mode === 'view') { onClose(); return }
-    if (!validate()) return
-    setIsLoading(true)
     try {
-      await onSave(formData)
+      await onSave(data)
       onClose()
-    } catch {
-      setErrors({ submit: 'Failed to save API key. Please try again.' })
-    } finally {
-      setIsLoading(false)
+    } catch (err) {
+      setError('root', { message: err instanceof Error ? err.message : 'Failed to save API key. Please try again.' })
     }
   }
-
-  const set = (field: keyof APIKeyResource) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-    setFormData((prev) => ({ ...prev, [field]: e.target.value }))
 
   const isViewMode = mode === 'view'
 
@@ -148,7 +135,10 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-8 py-6">
+        <form
+          onSubmit={isViewMode ? (e) => { e.preventDefault(); onClose() } : handleSubmit(onSubmit)}
+          className="space-y-8 py-6"
+        >
           {/* Key Information */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
@@ -162,34 +152,35 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
                 </Label>
                 <Input
                   id="serviceName"
-                  value={formData.serviceName || ''}
-                  onChange={set('serviceName')}
+                  {...register('serviceName')}
                   disabled={isViewMode}
                   placeholder="e.g. Stripe, Twilio, SendGrid"
                   className={cn(errors.serviceName && 'border-destructive')}
                 />
-                {errors.serviceName && <p className="text-xs text-destructive">{errors.serviceName}</p>}
+                {errors.serviceName && <p className="text-xs text-destructive">{errors.serviceName.message}</p>}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="keyType" className="text-sm font-medium">
                   Key Type {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
-                <Select
-                  value={formData.keyType}
-                  onValueChange={(v) => setFormData({ ...formData, keyType: v as APIKeyFormData['keyType'] })}
-                  disabled={isViewMode}
-                >
-                  <SelectTrigger className={cn('h-10', errors.keyType && 'border-destructive')}>
-                    <SelectValue placeholder="Select key type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Production">Production</SelectItem>
-                    <SelectItem value="Sandbox">Sandbox</SelectItem>
-                    <SelectItem value="Development">Development</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.keyType && <p className="text-xs text-destructive">{errors.keyType}</p>}
+                <Controller
+                  name="keyType"
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange} disabled={isViewMode}>
+                      <SelectTrigger className={cn('h-10', errors.keyType && 'border-destructive')}>
+                        <SelectValue placeholder="Select key type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Production">Production</SelectItem>
+                        <SelectItem value="Sandbox">Sandbox</SelectItem>
+                        <SelectItem value="Development">Development</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.keyType && <p className="text-xs text-destructive">{errors.keyType.message}</p>}
               </div>
 
               <div className="space-y-2 md:col-span-2">
@@ -198,13 +189,12 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
                 </Label>
                 <Textarea
                   id="apiKeyToken"
-                  value={formData.apiKeyToken || ''}
-                  onChange={set('apiKeyToken')}
+                  {...register('apiKeyToken')}
                   disabled={isViewMode}
                   placeholder="sk_live_..."
                   className={cn('min-h-[80px] resize-none font-mono text-sm', errors.apiKeyToken && 'border-destructive')}
                 />
-                {errors.apiKeyToken && <p className="text-xs text-destructive">{errors.apiKeyToken}</p>}
+                {errors.apiKeyToken && <p className="text-xs text-destructive">{errors.apiKeyToken.message}</p>}
               </div>
 
               <div className="space-y-2 md:col-span-2">
@@ -213,13 +203,12 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
                 </Label>
                 <Input
                   id="scopePermissions"
-                  value={formData.scopePermissions || ''}
-                  onChange={set('scopePermissions')}
+                  {...register('scopePermissions')}
                   disabled={isViewMode}
                   placeholder="e.g. read:users, write:payments"
                   className={cn(errors.scopePermissions && 'border-destructive')}
                 />
-                {errors.scopePermissions && <p className="text-xs text-destructive">{errors.scopePermissions}</p>}
+                {errors.scopePermissions && <p className="text-xs text-destructive">{errors.scopePermissions.message}</p>}
               </div>
             </div>
           </div>
@@ -235,8 +224,7 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
                 <Label htmlFor="assignedTo" className="text-sm font-medium">Assigned To</Label>
                 <Input
                   id="assignedTo"
-                  value={formData.assignedTo || ''}
-                  onChange={set('assignedTo')}
+                  {...register('assignedTo')}
                   disabled={isViewMode}
                   placeholder="employee@company.mn"
                 />
@@ -246,8 +234,7 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
                 <Label htmlFor="rateLimit" className="text-sm font-medium">Rate Limit</Label>
                 <Input
                   id="rateLimit"
-                  value={formData.rateLimit || ''}
-                  onChange={set('rateLimit')}
+                  {...register('rateLimit')}
                   disabled={isViewMode}
                   placeholder="e.g. 1000 req/min"
                 />
@@ -258,36 +245,36 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
                 <Input
                   id="expiryDate"
                   type="date"
-                  value={formData.expiryDate || ''}
-                  onChange={set('expiryDate')}
+                  {...register('expiryDate')}
                   disabled={isViewMode}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="status" className="text-sm font-medium">Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(v) => setFormData({ ...formData, status: v as APIKeyFormData['status'] })}
-                  disabled={isViewMode}
-                >
-                  <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ACTIVE">Active</SelectItem>
-                    <SelectItem value="INACTIVE">Inactive</SelectItem>
-                    <SelectItem value="REVOKED">Revoked</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Controller
+                  name="status"
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange} disabled={isViewMode}>
+                      <SelectTrigger className="h-10">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ACTIVE">Active</SelectItem>
+                        <SelectItem value="INACTIVE">Inactive</SelectItem>
+                        <SelectItem value="REVOKED">Revoked</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </div>
 
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="ipRestrictions" className="text-sm font-medium">IP Restrictions</Label>
                 <Input
                   id="ipRestrictions"
-                  value={formData.ipRestrictions || ''}
-                  onChange={set('ipRestrictions')}
+                  {...register('ipRestrictions')}
                   disabled={isViewMode}
                   placeholder="e.g. 192.168.1.0/24, 10.0.0.1"
                   className="font-mono text-sm"
@@ -298,8 +285,7 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
                 <Label htmlFor="webhookUrls" className="text-sm font-medium">Webhook URLs</Label>
                 <Input
                   id="webhookUrls"
-                  value={formData.webhookUrls || ''}
-                  onChange={set('webhookUrls')}
+                  {...register('webhookUrls')}
                   disabled={isViewMode}
                   placeholder="https://..."
                 />
@@ -309,8 +295,7 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
                 <Label htmlFor="notes" className="text-sm font-medium">Notes</Label>
                 <Textarea
                   id="notes"
-                  value={formData.notes || ''}
-                  onChange={set('notes')}
+                  {...register('notes')}
                   disabled={isViewMode}
                   className="min-h-[80px] resize-none"
                   placeholder="Additional notes..."
@@ -319,19 +304,19 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
             </div>
           </div>
 
-          {errors.submit && (
+          {errors.root && (
             <div className="rounded-md bg-destructive/10 p-4 border border-destructive/20">
-              <p className="text-sm text-destructive font-medium">{errors.submit}</p>
+              <p className="text-sm text-destructive font-medium">{errors.root.message}</p>
             </div>
           )}
 
           <DialogFooter className="gap-2 pt-6 border-t">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isLoading} className="min-w-24">
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="min-w-24">
               {isViewMode ? 'Close' : 'Cancel'}
             </Button>
             {!isViewMode && (
-              <Button type="submit" disabled={isLoading} className="min-w-28">
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Button type="submit" disabled={isSubmitting} className="min-w-28">
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {mode === 'edit' ? 'Update API Key' : 'Add API Key'}
               </Button>
             )}
