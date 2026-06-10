@@ -51,7 +51,7 @@ dependencies:
     specifier: ^2.2.6
     version: 2.3.0(@types/react-dom@19.2.3)(@types/react@19.2.17)(react-dom@19.2.0)(react@19.2.0)
   '@radix-ui/react-slot':
-    specifier: ^1.2.3
+    specifier: ^1.2.5
     version: 1.2.5(@types/react@19.2.17)(react@19.2.0)
   '@radix-ui/react-switch':
     specifier: ^1.2.6
@@ -99,7 +99,7 @@ dependencies:
     specifier: ^3.2.0
     version: 3.2.1
   date-fns:
-    specifier: ^4.1.0
+    specifier: ^4.4.0
     version: 4.4.0
   ioredis:
     specifier: ^5.8.2
@@ -125,6 +125,9 @@ dependencies:
   react:
     specifier: 19.2.0
     version: 19.2.0
+  react-day-picker:
+    specifier: ^10.0.1
+    version: 10.0.1(@types/react@19.2.17)(react@19.2.0)
   react-dom:
     specifier: 19.2.0
     version: 19.2.0(react@19.2.0)
@@ -360,6 +363,10 @@ packages:
     dependencies:
       '@babel/helper-string-parser': 7.29.7
       '@babel/helper-validator-identifier': 7.29.7
+
+  /@date-fns/tz@1.5.0:
+    resolution: {integrity: sha512-lwYN/vDPeNRULcepoE/LO2Pgx+7/RV+S9ARfbc9lr2DtGkOD7pAiruHvbR1RX3Qyf6ja47EWJDMsNK5vK08DJg==}
+    dev: false
 
   /@dnd-kit/accessibility@3.1.1(react@19.2.0):
     resolution: {integrity: sha512-2P+YgaXF+gRsIihwwY1gCsQSYnu9Zyj2py8kY5fFvUM1qm2WA2u639R6YNVfU4GWr+ZM5mqEsfHZZLoRONbemw==}
@@ -5187,6 +5194,22 @@ packages:
     dependencies:
       defu: 6.1.7
       destr: 2.0.5
+    dev: false
+
+  /react-day-picker@10.0.1(@types/react@19.2.17)(react@19.2.0):
+    resolution: {integrity: sha512-eNh6BlwcYInWaJtRv18mXQ06Ys/H6rdTZAnTaSdOYJuTpwP1JMCHNd1FDRadA+gbeinq+psdULN5Xnowy9mV8w==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@types/react': '>=16.8.0'
+      react: '>=16.8.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+    dependencies:
+      '@date-fns/tz': 1.5.0
+      '@types/react': 19.2.17
+      date-fns: 4.4.0
+      react: 19.2.0
     dev: false
 
   /react-dom@19.2.0(react@19.2.0):
