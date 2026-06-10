@@ -1,0 +1,420 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { InternalToolModal } from '@/components/internal-tool-modal'
+import {
+  Wrench,
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Eye,
+  MoreHorizontal,
+  ExternalLink
+} from 'lucide-react'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Badge } from '@/components/ui/badge'
+
+interface InternalTool {
+  id: string
+  toolName: string
+  url: string
+  purposeCategory: string
+  accessLevel: string
+  authenticationMethod: string
+  networkAccess: string
+  owner?: string | null
+  ownerDepartment?: string | null
+  status: string
+  createdAt: string
+}
+
+export default function InternalToolsPage() {
+  const [tools, setTools] = useState<InternalTool[]>([])
+  const [employees, setEmployees] = useState<Array<{ id: string; firstName: string; lastName: string; email: string }>>([])
+  const [departments, setDepartments] = useState<Array<{ id: string; name: string }>>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [modalState, setModalState] = useState<{ isOpen: boolean; mode: 'view' | 'edit' | 'create'; tool?: InternalTool }>(
+    {
+      isOpen: false,
+      mode: 'create'
+    }
+  )
+
+  useEffect(() => {
+    fetchTools()
+    fetchEmployees()
+    fetchDepartments()
+  }, [])
+
+  const fetchTools = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/resources/internal-tools')
+      if (response.ok) {
+        const data = await response.json()
+        setTools(data.data || [])
+      } else {
+        setError('Failed to fetch internal tools')
+      }
+    } catch (error) {
+      setError('Error fetching internal tools')
+      console.error('Error:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchEmployees = async () => {
+    try {
+      const response = await fetch('/api/employees?limit=1000')
+      if (response.ok) {
+        const data = await response.json()
+        setEmployees(data.data || data || [])
+      }
+    } catch (error) {
+      console.error('Error fetching employees:', error)
+    }
+  }
+
+  const fetchDepartments = async () => {
+    try {
+      const response = await fetch('/api/departments')
+      if (response.ok) {
+        const data = await response.json()
+        setDepartments(data.data || data || [])
+      }
+    } catch (error) {
+      console.error('Error fetching departments:', error)
+    }
+  }
+
+  const handleSaveTool = async (toolData: Partial<InternalTool>, owners?: any[]) => {
+    try {
+      if (modalState.mode === 'create') {
+        const response = await fetch('/api/resources/internal-tools', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(toolData)
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          const resourceId = data.data?.id
+
+          // Save resource owners
+          if (resourceId && toolData.owner) {
+            const allOwners = [
+              { ownershipType: 'MAIN_OWNER', ownerEmail: toolData.owner },
+              ...(owners || [])
+            ]
+
+            await fetch('/api/resources/owners', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                resourceType: 'INTERNAL_TOOL',
+                resourceId: resourceId,
+                owners: allOwners
+              })
+            })
+          }
+
+          setSuccess('Internal tool added successfully')
+          fetchTools()
+        } else {
+          const errorData = await response.json()
+          setError(errorData.error || 'Failed to add internal tool')
+          throw new Error(errorData.error || 'Failed to add internal tool')
+        }
+      } else if (modalState.mode === 'edit' && modalState.tool) {
+        const response = await fetch(`/api/resources/internal-tools/${modalState.tool.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(toolData)
+        })
+
+        if (response.ok) {
+          // Update resource owners
+          if (toolData.owner) {
+            const allOwners = [
+              { ownershipType: 'MAIN_OWNER', ownerEmail: toolData.owner },
+              ...(owners || [])
+            ]
+
+            await fetch('/api/resources/owners', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                resourceType: 'INTERNAL_TOOL',
+                resourceId: modalState.tool.id,
+                owners: allOwners
+              })
+            })
+          }
+
+          setSuccess('Internal tool updated successfully')
+          fetchTools()
+        } else {
+          const errorData = await response.json()
+          setError(errorData.error || 'Failed to update internal tool')
+          throw new Error(errorData.error || 'Failed to update internal tool')
+        }
+      }
+    } catch (error) {
+      throw error
+    }
+  }
+
+  const handleDeleteTool = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this internal tool?')) return
+
+    try {
+      const response = await fetch(`/api/resources/internal-tools/${id}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        setSuccess('Internal tool deleted successfully')
+        fetchTools()
+      } else {
+        setError('Failed to delete internal tool')
+      }
+    } catch (error) {
+      setError('Error deleting internal tool')
+    }
+  }
+
+  const filteredTools = tools.filter(tool =>
+    tool.toolName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tool.purposeCategory?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tool.ownerDepartment?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const getStatusBadge = (status: string) => {
+    const variants: Record<string, string> = {
+      ACTIVE: 'bg-green-100 text-green-800',
+      INACTIVE: 'bg-gray-100 text-gray-800',
+      MAINTENANCE: 'bg-yellow-100 text-yellow-800',
+      DEPRECATED: 'bg-red-100 text-red-800'
+    }
+    return variants[status] || 'bg-gray-100 text-gray-800'
+  }
+
+  const getCategoryBadge = (category: string) => {
+    const variants: Record<string, string> = {
+      Development: 'bg-blue-100 text-blue-800',
+      Productivity: 'bg-purple-100 text-purple-800',
+      Monitoring: 'bg-orange-100 text-orange-800',
+      Analytics: 'bg-cyan-100 text-cyan-800',
+      Security: 'bg-red-100 text-red-800',
+      Communication: 'bg-green-100 text-green-800',
+      Testing: 'bg-pink-100 text-pink-800',
+      Deployment: 'bg-indigo-100 text-indigo-800'
+    }
+    return variants[category] || 'bg-gray-100 text-gray-800'
+  }
+
+  const getAccessLevelBadge = (level: string) => {
+    const variants: Record<string, string> = {
+      'Admin': 'bg-red-100 text-red-800',
+      'Full Access': 'bg-orange-100 text-orange-800',
+      'User': 'bg-blue-100 text-blue-800',
+      'Read-only': 'bg-gray-100 text-gray-800',
+      'Limited': 'bg-yellow-100 text-yellow-800',
+      'Restricted': 'bg-purple-100 text-purple-800'
+    }
+    return variants[level] || 'bg-gray-100 text-gray-800'
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-foreground flex items-center">
+          <Wrench className="mr-3 h-8 w-8" />
+          Internal Tools
+        </h1>
+        <p className="text-muted-foreground mt-2">
+          Manage internal applications and tools access - ISO 27001 Compliant
+        </p>
+      </div>
+
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {success && (
+        <Alert className="mb-4">
+          <AlertDescription>{success}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* Action Bar */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Search internal tools..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={() => setModalState({ isOpen: true, mode: 'create' })}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Internal Tool
+          </Button>
+        </div>
+      </div>
+
+      {/* Tools Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Internal Tools ({filteredTools.length})</CardTitle>
+          <CardDescription>
+            Manage internal tools, control access, and track integrations
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : filteredTools.length === 0 ? (
+            <div className="text-center py-12">
+              <Wrench className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-2">
+                No Internal Tools Found
+              </h3>
+              <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-4">
+                Get started by adding your first internal tool
+              </p>
+              <Button onClick={() => setModalState({ isOpen: true, mode: 'create' })}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Internal Tool
+              </Button>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Tool Name</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Access Level</TableHead>
+                  <TableHead>Network</TableHead>
+                  <TableHead>Owner</TableHead>
+                  <TableHead>Authentication</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="w-[100px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredTools.map((tool) => (
+                  <TableRow key={tool.id}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <Wrench className="h-4 w-4 text-muted-foreground" />
+                        <span>{tool.toolName}</span>
+                        <a
+                          href={tool.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-muted-foreground hover:text-primary"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getCategoryBadge(tool.purposeCategory)}>
+                        {tool.purposeCategory}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getAccessLevelBadge(tool.accessLevel)}>
+                        {tool.accessLevel}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{tool.networkAccess}</Badge>
+                    </TableCell>
+                    <TableCell>{tool.ownerDepartment || '-'}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{tool.authenticationMethod}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getStatusBadge(tool.status)}>
+                        {tool.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => setModalState({ isOpen: true, mode: 'view', tool })}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            View
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setModalState({ isOpen: true, mode: 'edit', tool })}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteTool(tool.id)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      <InternalToolModal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ isOpen: false, mode: 'create' })}
+        tool={modalState.tool}
+        mode={modalState.mode}
+        onSave={handleSaveTool}
+        employees={employees}
+        departments={departments}
+      />
+    </div>
+  )
+}

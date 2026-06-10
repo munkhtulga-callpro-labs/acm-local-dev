@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pm2 describe:*)",
+      "Bash(pm2 list:*)",
+      "Bash(npm run build:*)",
+      "Bash(cat:*)",
+      "Bash(npx prisma db push:*)",
+      "Bash(export DATABASE_URL=\"postgresql://access_control:password123@localhost:5433/access_control\")",
+      "Bash(PGPASSWORD=password123 psql:*)",
+      "Bash(pm2 restart:*)",
+      "Bash(pm2 logs:*)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "enabledMcpjsonServers": [
+    "shadcn"
+  ],
+  "enableAllProjectMcpServers": true
+}
