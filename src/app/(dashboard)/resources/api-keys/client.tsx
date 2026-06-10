@@ -9,6 +9,7 @@ import { APIKeyModal } from '@/components/api-key-modal'
 import { APIKeysDataTable, type APIKeyResource } from '@/components/api-keys-data-table'
 import { Key, ShieldCheck, AlertTriangle, Activity } from 'lucide-react'
 import { API } from '@/lib/api'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 
 interface APIKeysClientProps {
   initialData: APIKeyResource[]
@@ -18,6 +19,7 @@ export function APIKeysClient({ initialData }: APIKeysClientProps) {
   const router = useRouter()
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
   const [modalState, setModalState] = useState<{
     isOpen: boolean
     mode: 'view' | 'edit' | 'create'
@@ -49,18 +51,24 @@ export function APIKeysClient({ initialData }: APIKeysClientProps) {
     }
   }
 
-  const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete the key for "${name}"?`)) return
+  const handleDelete = (id: string, name: string) => {
+    setDeleteTarget({ id, name })
+  }
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
     try {
-      const response = await fetch(API.resources.apiKeys.detail(id), { method: 'DELETE' })
+      const response = await fetch(API.resources.apiKeys.detail(deleteTarget.id), { method: 'DELETE' })
       if (response.ok) {
-        setSuccess(`"${name}" deleted successfully`)
+        setSuccess(`"${deleteTarget.name}" deleted successfully`)
         router.refresh()
       } else {
         setError('Failed to delete API key')
       }
     } catch {
       setError('Error deleting API key')
+    } finally {
+      setDeleteTarget(null)
     }
   }
 
@@ -168,6 +176,15 @@ export function APIKeysClient({ initialData }: APIKeysClientProps) {
         apiKey={modalState.apiKey}
         mode={modalState.mode}
         onSave={handleSave}
+      />
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Delete API Key"
+        description={`Are you sure you want to delete the key for "${deleteTarget?.name}"? This action cannot be undone.`}
+        onConfirm={confirmDelete}
+        confirmLabel="Delete"
       />
     </div>
   )
