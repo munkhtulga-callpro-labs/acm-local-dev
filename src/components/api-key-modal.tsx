@@ -227,7 +227,9 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
                   {...register('assignedTo')}
                   disabled={isViewMode}
                   placeholder="employee@company.mn"
+                  className={cn(errors.assignedTo && 'border-destructive')}
                 />
+                {errors.assignedTo && <p className="text-xs text-destructive">{errors.assignedTo.message}</p>}
               </div>
 
               <div className="space-y-2">
@@ -237,7 +239,9 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
                   {...register('rateLimit')}
                   disabled={isViewMode}
                   placeholder="e.g. 1000 req/min"
+                  className={cn(errors.rateLimit && 'border-destructive')}
                 />
+                {errors.rateLimit && <p className="text-xs text-destructive">{errors.rateLimit.message}</p>}
               </div>
 
               <div className="space-y-2">
@@ -247,7 +251,9 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
                   type="date"
                   {...register('expiryDate')}
                   disabled={isViewMode}
+                  className={cn(errors.expiryDate && 'border-destructive')}
                 />
+                {errors.expiryDate && <p className="text-xs text-destructive">{errors.expiryDate.message}</p>}
               </div>
 
               <div className="space-y-2">
@@ -277,8 +283,9 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
                   {...register('ipRestrictions')}
                   disabled={isViewMode}
                   placeholder="e.g. 192.168.1.0/24, 10.0.0.1"
-                  className="font-mono text-sm"
+                  className={cn('font-mono text-sm', errors.ipRestrictions && 'border-destructive')}
                 />
+                {errors.ipRestrictions && <p className="text-xs text-destructive">{errors.ipRestrictions.message}</p>}
               </div>
 
               <div className="space-y-2 md:col-span-2">
@@ -288,7 +295,9 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
                   {...register('webhookUrls')}
                   disabled={isViewMode}
                   placeholder="https://..."
+                  className={cn(errors.webhookUrls && 'border-destructive')}
                 />
+                {errors.webhookUrls && <p className="text-xs text-destructive">{errors.webhookUrls.message}</p>}
               </div>
 
               <div className="space-y-2 md:col-span-2">
@@ -297,9 +306,10 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
                   id="notes"
                   {...register('notes')}
                   disabled={isViewMode}
-                  className="min-h-[80px] resize-none"
+                  className={cn('min-h-[80px] resize-none', errors.notes && 'border-destructive')}
                   placeholder="Additional notes..."
                 />
+                {errors.notes && <p className="text-xs text-destructive">{errors.notes.message}</p>}
               </div>
             </div>
           </div>
