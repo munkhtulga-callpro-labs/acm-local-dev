@@ -1,7 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -16,13 +15,23 @@ interface APIKeysClientProps {
 }
 
 export function APIKeysClient({ initialData }: APIKeysClientProps) {
-  const router = useRouter()
+  const [data, setData] = useState<APIKeyResource[]>(initialData)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
   const [modalState, setModalState] = useState<{
     isOpen: boolean
     mode: 'view' | 'edit' | 'create'
     apiKey?: APIKeyResource
   }>({ isOpen: false, mode: 'create' })
+
+  const refreshData = useCallback(async () => {
+    try {
+      const res = await fetch(API.resources.apiKeys.list)
+      if (res.ok) {
+        const json = await res.json()
+        setData(json.data)
+      }
+    } catch {}
+  }, [])
 
   const handleSave = async (apiKeyData: Partial<APIKeyResource>) => {
     const { mode, apiKey } = modalState
@@ -42,7 +51,7 @@ export function APIKeysClient({ initialData }: APIKeysClientProps) {
 
     if (response.ok) {
       toast.success(mode === 'edit' ? 'API key updated successfully' : 'API key added successfully')
-      router.refresh()
+      await refreshData()
     } else {
       const errorData = await response.json()
       throw new Error(errorData.error || 'Failed to save API key')
@@ -59,7 +68,7 @@ export function APIKeysClient({ initialData }: APIKeysClientProps) {
       const response = await fetch(API.resources.apiKeys.detail(deleteTarget.id), { method: 'DELETE' })
       if (response.ok) {
         toast.success(`"${deleteTarget.name}" deleted successfully`)
-        router.refresh()
+        setData(prev => prev.filter(k => k.id !== deleteTarget.id))
       } else {
         toast.error('Failed to delete API key')
       }
@@ -73,10 +82,10 @@ export function APIKeysClient({ initialData }: APIKeysClientProps) {
   const now = new Date()
   const [in30Days] = useState(() => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))
 
-  const totalKeys = initialData.length
-  const activeKeys = initialData.filter((k) => k.status === 'ACTIVE').length
-  const productionKeys = initialData.filter((k) => k.keyType.toLowerCase() === 'production').length
-  const expiringSoon = initialData.filter((k) => {
+  const totalKeys = data.length
+  const activeKeys = data.filter((k) => k.status === 'ACTIVE').length
+  const productionKeys = data.filter((k) => k.keyType.toLowerCase() === 'production').length
+  const expiringSoon = data.filter((k) => {
     if (!k.expiryDate) return false
     const d = new Date(k.expiryDate)
     return d > now && d < in30Days
@@ -150,7 +159,7 @@ export function APIKeysClient({ initialData }: APIKeysClientProps) {
         </CardHeader>
         <CardContent className="pt-0 px-6 pb-6">
           <APIKeysDataTable
-            data={initialData}
+            data={data}
             onEdit={(apiKey) => setModalState({ isOpen: true, mode: 'edit', apiKey })}
             onDelete={handleDelete}
           />
