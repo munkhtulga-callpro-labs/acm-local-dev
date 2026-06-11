@@ -1,7 +1,12 @@
 import { z } from 'zod'
 
 const optStr = z.string().optional().transform(v => v?.trim() || null)
-const optDate = z.string().optional().transform(v => v ? new Date(v) : null)
+const optDate = z.string().optional()
+  .refine(
+    v => !v || new Date(v) >= new Date(new Date().toDateString()),
+    'Expiry date cannot be in the past'
+  )
+  .transform(v => v ? new Date(v) : null)
 
 const optIpList = z.string().optional()
   .refine(
