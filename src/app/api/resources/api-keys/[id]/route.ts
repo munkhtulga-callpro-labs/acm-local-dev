@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { revalidateTag } from 'next/cache'
 import { updateApiKeySchema } from '@/lib/schemas/api-key'
 
 export async function GET(
@@ -54,6 +55,7 @@ export async function PUT(
     const data = apiKeyToken ? { ...rest, apiKeyToken } : rest
 
     const apiKey = await prisma.aPIKey.update({ where: { id }, data })
+    revalidateTag('api-keys', {})
     return NextResponse.json({ data: apiKey })
   } catch (error) {
     console.error('Error updating API key:', error)
@@ -73,6 +75,7 @@ export async function DELETE(
 
     const { id } = await params
     await prisma.aPIKey.delete({ where: { id } })
+    revalidateTag('api-keys', {})
     return NextResponse.json({ message: 'API key deleted successfully' })
   } catch (error) {
     console.error('Error deleting API key:', error)

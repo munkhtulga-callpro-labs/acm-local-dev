@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { revalidateTag } from 'next/cache'
 import { createApiKeySchema } from '@/lib/schemas/api-key'
 
 export async function GET(request: NextRequest) {
@@ -42,6 +43,7 @@ export async function POST(request: NextRequest) {
     }
 
     const apiKey = await prisma.aPIKey.create({ data: result.data })
+    revalidateTag('api-keys', {})
     return NextResponse.json({ data: apiKey }, { status: 201 })
   } catch (error) {
     console.error('Error creating API key:', error)
