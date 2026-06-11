@@ -25,6 +25,15 @@ const optEmail = z.string().optional()
   )
   .transform(v => v?.trim() || null)
 
+const optUrl = z.string().optional()
+  .refine(
+    v => !v?.trim() || v.split(',')
+      .map(s => s.trim())
+      .filter(Boolean)
+      .every(entry => z.url().safeParse(entry).success),
+    "Invalid url"
+  )
+
 export const createApiKeySchema = z.object({
   serviceName: z.string().min(1, 'Service name is required'),
   apiKeyToken: z.string().min(1, 'API key token is required'),
@@ -36,7 +45,7 @@ export const createApiKeySchema = z.object({
   assignedTo: optEmail,
   notes: optStr,
   ipRestrictions: optIpList,
-  webhookUrls: optStr,
+  webhookUrls: optUrl,
 })
 
 export const updateApiKeySchema = createApiKeySchema.extend({
