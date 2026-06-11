@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { z } from 'zod'
+import { createApiKeySchema } from '@/lib/schemas/api-key'
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,20 +13,14 @@ export async function GET(request: NextRequest) {
     }
 
     const apiKeys = await prisma.aPIKey.findMany({
-      orderBy: {
-        createdDate: 'desc'
-      }
+      orderBy: { createdDate: 'desc' }
     })
 
-    const rest = apiKeys.map(({apiKeyToken, ...rest}) => rest);
-
+    const rest = apiKeys.map(({ apiKeyToken, ...rest }) => rest)
     return NextResponse.json({ data: rest })
   } catch (error) {
     console.error('Error fetching API keys:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch API keys' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to fetch API keys' }, { status: 500 })
   }
 }
 
@@ -36,43 +32,19 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
+    const result = createApiKeySchema.safeParse(body)
 
-    // Validate required fields
-    if (!body.serviceName || !body.apiKeyToken || !body.keyType || !body.scopePermissions) {
+    if (!result.success) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: z.flattenError(result.error).fieldErrors },
         { status: 400 }
       )
     }
 
-    const apiKey = await prisma.aPIKey.create({
-      data: {
-        serviceName: body.serviceName,
-        apiKeyToken: body.apiKeyToken,
-        keyType: body.keyType,
-        scopePermissions: body.scopePermissions,
-        rateLimit: body.rateLimit || null,
-        expiryDate: body.expiryDate ? new Date(body.expiryDate) : null,
-        assignedTo: body.assignedTo || null,
-        status: body.status || 'ACTIVE',
-        notes: body.notes || null,
-        ipRestrictions: body.ipRestrictions || null,
-        webhookUrls: body.webhookUrls || null,
-        requestDate: body.requestDate ? new Date(body.requestDate) : null,
-        requestedBy: body.requestedBy || null,
-        approvedBy: body.approvedBy || null,
-        approvalDate: body.approvalDate ? new Date(body.approvalDate) : null,
-        businessJustification: body.businessJustification || null,
-        accessRequestTicketId: body.accessRequestTicketId || null,
-      }
-    })
-
+    const apiKey = await prisma.aPIKey.create({ data: result.data })
     return NextResponse.json({ data: apiKey }, { status: 201 })
   } catch (error) {
     console.error('Error creating API key:', error)
-    return NextResponse.json(
-      { error: 'Failed to create API key' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to create API key' }, { status: 500 })
   }
 }

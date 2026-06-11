@@ -17,6 +17,21 @@ import { Key, Shield, Loader2, CalendarIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { format, parseISO } from 'date-fns'
 
+const optEmail = z.string().optional()
+  .refine(
+    v => !v?.trim() || z.email().safeParse(v.trim()).success,
+    'Invalid email address'
+  )
+
+const optIpList = z.string().optional()
+  .refine(
+    v => !v?.trim() || v.split(',')
+      .map(s => s.trim())
+      .filter(Boolean)
+      .every(entry => z.ipv4().safeParse(entry).success || z.cidrv4().safeParse(entry).success),
+    'Must be valid IPv4 addresses or CIDR ranges (e.g. 10.0.0.1, 192.168.1.0/24)'
+  )
+
 const apiKeySchema = z.object({
   serviceName: z.string().min(1, 'Service name is required'),
   apiKeyToken: z.string().min(1, 'API key token is required'),
@@ -24,10 +39,10 @@ const apiKeySchema = z.object({
   scopePermissions: z.string().min(1, 'Scope / permissions is required'),
   rateLimit: z.string().optional(),
   expiryDate: z.string().optional(),
-  assignedTo: z.email().optional(),
+  assignedTo: optEmail,
   status: z.enum(['ACTIVE', 'INACTIVE', 'REVOKED']),
   notes: z.string().optional(),
-  ipRestrictions: z.ipv4().optional(),
+  ipRestrictions: optIpList,
   webhookUrls: z.string().optional(),
 })
 
