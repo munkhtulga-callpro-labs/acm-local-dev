@@ -15,12 +15,23 @@ const optIpList = z.string().optional()
     'Must be valid IPv4 addresses or CIDR ranges (e.g. 10.0.0.1, 192.168.1.0/24)'
   )
 
+const isValidWebhookUrl = (entry: string): boolean => {
+  try {
+    const { hostname } = new URL(entry)
+    if (hostname === 'localhost') return true
+    if (/^\d{1,3}(\.\d{1,3}){3}$/.test(hostname)) return true
+    return /\.[a-zA-Z]{2,}$/.test(hostname)
+  } catch {
+    return false
+  }
+}
+
 const optUrl = z.string().optional()
   .refine(
     v => !v?.trim() || v.split(',')
       .map(s => s.trim())
       .filter(Boolean)
-      .every(entry => z.url().safeParse(entry).success),
+      .every(isValidWebhookUrl),
     'Must be valid URLs (e.g. https://example.com/webhook)'
   )
 
