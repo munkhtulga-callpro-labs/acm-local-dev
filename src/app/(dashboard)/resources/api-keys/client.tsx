@@ -1,21 +1,20 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { APIKeyModal } from '@/components/api-key-modal'
 import { APIKeysDataTable, type APIKeyResource } from '@/components/api-keys-data-table'
 import { Key, ShieldCheck, AlertTriangle, Activity } from 'lucide-react'
-import { API } from '@/lib/api'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { createApiKey, updateApiKey, deleteApiKey } from '@/lib/actions/api-keys'
 
 interface APIKeysClientProps {
   initialData: APIKeyResource[]
 }
 
 export function APIKeysClient({ initialData }: APIKeysClientProps) {
-  const [data, setData] = useState<APIKeyResource[]>(initialData)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
   const [modalState, setModalState] = useState<{
     isOpen: boolean
@@ -23,38 +22,18 @@ export function APIKeysClient({ initialData }: APIKeysClientProps) {
     apiKey?: APIKeyResource
   }>({ isOpen: false, mode: 'create' })
 
-  const refreshData = useCallback(async () => {
-    try {
-      const res = await fetch(API.resources.apiKeys.list)
-      if (res.ok) {
-        const json = await res.json()
-        setData(json.data)
-      }
-    } catch {}
-  }, [])
-
   const handleSave = async (apiKeyData: Partial<APIKeyResource>) => {
     const { mode, apiKey } = modalState
 
-    let url: string
-    if (mode === 'edit' && apiKey) {
-      url = API.resources.apiKeys.detail(apiKey.id)
+    const result = mode === 'edit' && apiKey
+      ? await updateApiKey(apiKey.id, apiKeyData)
+      : await createApiKey(apiKeyData)
+
+    if (result?.error) {
+      console.log(result.error.fieldErrors);
+      toast.error('API key couldn\'t get updated');
     } else {
-      url = API.resources.apiKeys.list
-    }
-
-    const response = await fetch(url, {
-      method: mode === 'edit' ? 'PUT' : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(apiKeyData),
-    })
-
-    if (response.ok) {
       toast.success(mode === 'edit' ? 'API key updated successfully' : 'API key added successfully')
-      await refreshData()
-    } else {
-      const errorData = await response.json()
-      throw new Error(errorData.error || 'Failed to save API key')
     }
   }
 
@@ -65,13 +44,8 @@ export function APIKeysClient({ initialData }: APIKeysClientProps) {
   const confirmDelete = async () => {
     if (!deleteTarget) return
     try {
-      const response = await fetch(API.resources.apiKeys.detail(deleteTarget.id), { method: 'DELETE' })
-      if (response.ok) {
-        toast.success(`"${deleteTarget.name}" deleted successfully`)
-        setData(prev => prev.filter(k => k.id !== deleteTarget.id))
-      } else {
-        toast.error('Failed to delete API key')
-      }
+      await deleteApiKey(deleteTarget.id)
+      toast.success(`"${deleteTarget.name}" deleted successfully`)
     } catch {
       toast.error('Error deleting API key')
     } finally {
@@ -82,10 +56,10 @@ export function APIKeysClient({ initialData }: APIKeysClientProps) {
   const now = new Date()
   const [in30Days] = useState(() => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))
 
-  const totalKeys = data.length
-  const activeKeys = data.filter((k) => k.status === 'ACTIVE').length
-  const productionKeys = data.filter((k) => k.keyType.toLowerCase() === 'production').length
-  const expiringSoon = data.filter((k) => {
+  const totalKeys = initialData.length
+  const activeKeys = initialData.filter((k) => k.status === 'ACTIVE').length
+  const productionKeys = initialData.filter((k) => k.keyType.toLowerCase() === 'production').length
+  const expiringSoon = initialData.filter((k) => {
     if (!k.expiryDate) return false
     const d = new Date(k.expiryDate)
     return d > now && d < in30Days
@@ -159,7 +133,7 @@ export function APIKeysClient({ initialData }: APIKeysClientProps) {
         </CardHeader>
         <CardContent className="pt-0 px-6 pb-6">
           <APIKeysDataTable
-            data={data}
+            data={initialData}
             onEdit={(apiKey) => setModalState({ isOpen: true, mode: 'edit', apiKey })}
             onDelete={handleDelete}
           />
