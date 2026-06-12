@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { toast } from 'sonner'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { type z } from 'zod'
+import { apiKeyEditBaseSchema } from '@/lib/schemas/api-key'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,46 +18,7 @@ import { Key, Shield, Loader2, CalendarIcon, Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { format, parseISO } from 'date-fns'
 
-const optEmail = z.string().optional()
-  .refine(
-    v => !v?.trim() || z.email().safeParse(v.trim()).success,
-    'Invalid email address'
-  )
-
-const optIpList = z.string().optional()
-  .refine(
-    v => !v?.trim() || v.split(',')
-      .map(s => s.trim())
-      .filter(Boolean)
-      .every(entry => z.ipv4().safeParse(entry).success || z.cidrv4().safeParse(entry).success),
-    'Must be valid IPv4 addresses or CIDR ranges (e.g. 10.0.0.1, 192.168.1.0/24)'
-  )
-
-const optUrl = z.string().optional()
-  .refine(
-    v => !v?.trim() || z.url().safeParse(v.trim()).success,
-    'Must be a valid URL (e.g. https://example.com/webhook)'
-  )
-
-const apiKeySchema = z.object({
-  serviceName: z.string().min(1, 'Service name is required'),
-  apiKeyToken: z.string().min(1, 'API key token is required'),
-  keyType: z.enum(['Production', 'Sandbox', 'Development']),
-  scopePermissions: z.string().min(1, 'Scope / permissions is required'),
-  rateLimit: z.string().optional(),
-  expiryDate: z.string().optional(),
-  assignedTo: optEmail,
-  status: z.enum(['ACTIVE', 'INACTIVE', 'REVOKED']),
-  notes: z.string().optional(),
-  ipRestrictions: optIpList,
-  webhookUrls: optUrl,
-})
-
-const apiKeyEditSchema = apiKeySchema.extend({
-  apiKeyToken: z.string().optional(),
-})
-
-type APIKeyFormData = z.infer<typeof apiKeyEditSchema>
+type APIKeyFormData = z.infer<typeof apiKeyEditBaseSchema>
 
 interface APIKeyResource {
   id?: string
@@ -109,7 +71,7 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave, onRevealTok
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<APIKeyFormData>({
-    resolver: zodResolver(apiKeyEditSchema),
+    resolver: zodResolver(apiKeyEditBaseSchema),
     defaultValues,
   })
 

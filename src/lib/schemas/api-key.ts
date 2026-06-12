@@ -1,12 +1,10 @@
 import { z } from 'zod'
 
-const optStr = z.string().optional().transform(v => v?.trim() || null)
-const optDate = z.string().optional()
+const optEmail = z.string().optional()
   .refine(
-    v => !v || new Date(v) >= new Date(new Date().toDateString()),
-    'Expiry date cannot be in the past'
+    v => !v?.trim() || z.email().safeParse(v.trim()).success,
+    'Invalid email address'
   )
-  .transform(v => v ? new Date(v) : null)
 
 const optIpList = z.string().optional()
   .refine(
@@ -16,14 +14,6 @@ const optIpList = z.string().optional()
       .every(entry => z.ipv4().safeParse(entry).success || z.cidrv4().safeParse(entry).success),
     'Must be valid IPv4 addresses or CIDR ranges (e.g. 10.0.0.1, 192.168.1.0/24)'
   )
-  .transform(v => v?.trim() || null)
-
-const optEmail = z.string().optional()
-  .refine(
-    v => !v?.trim() || z.email().safeParse(v.trim()).success,
-    'Invalid email address'
-  )
-  .transform(v => v?.trim() || null)
 
 const optUrl = z.string().optional()
   .refine(
@@ -31,26 +21,54 @@ const optUrl = z.string().optional()
       .map(s => s.trim())
       .filter(Boolean)
       .every(entry => z.url().safeParse(entry).success),
-    "Invalid url"
+    'Must be valid URLs (e.g. https://example.com/webhook)'
   )
 
-export const createApiKeySchema = z.object({
+const optDate = z.string().optional()
+  .refine(
+    v => !v || new Date(v) >= new Date(new Date().toDateString()),
+    'Expiry date cannot be in the past'
+  )
+
+export const apiKeyBaseSchema = z.object({
   serviceName: z.string().min(1, 'Service name is required'),
   apiKeyToken: z.string().min(1, 'API key token is required'),
   keyType: z.enum(['Production', 'Sandbox', 'Development']),
   scopePermissions: z.string().min(1, 'Scope / permissions is required'),
-  status: z.enum(['ACTIVE', 'INACTIVE', 'REVOKED']).default('ACTIVE'),
-  rateLimit: optStr,
+  status: z.enum(['ACTIVE', 'INACTIVE', 'REVOKED']),
+  rateLimit: z.string().optional(),
   expiryDate: optDate,
   assignedTo: optEmail,
-  notes: optStr,
+  notes: z.string().optional(),
   ipRestrictions: optIpList,
   webhookUrls: optUrl,
 })
 
-export const updateApiKeySchema = createApiKeySchema.extend({
-  apiKeyToken: optStr,
+export const apiKeyEditBaseSchema = apiKeyBaseSchema.extend({
+  apiKeyToken: z.string().optional(),
 })
+
+type CommonFields = Omit<z.infer<typeof apiKeyEditBaseSchema>, 'apiKeyToken'>
+
+const transformCommonFields = (data: CommonFields) => ({
+  rateLimit: data.rateLimit?.trim() || null,
+  expiryDate: data.expiryDate ? new Date(data.expiryDate) : null,
+  assignedTo: data.assignedTo?.trim() || null,
+  notes: data.notes?.trim() || null,
+  ipRestrictions: data.ipRestrictions?.trim() || null,
+  webhookUrls: data.webhookUrls?.trim() || null,
+})
+
+export const createApiKeySchema = apiKeyBaseSchema.transform(data => ({
+  ...data,
+  ...transformCommonFields(data),
+}))
+
+export const updateApiKeySchema = apiKeyEditBaseSchema.transform(data => ({
+  ...data,
+  ...transformCommonFields(data),
+  apiKeyToken: data.apiKeyToken?.trim() || null,
+}))
 
 export type CreateApiKeyInput = z.infer<typeof createApiKeySchema>
 export type UpdateApiKeyInput = z.infer<typeof updateApiKeySchema>
