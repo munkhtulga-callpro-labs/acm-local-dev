@@ -21,5 +21,13 @@ services:
       - "6379:6379"
     restart: unless-stopped
 
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: acm-mailpit-dev
+    ports:
+      - "1025:1025"  # SMTP — matches SMTP_HOST/PORT in .env
+      - "8025:8025"  # Web UI at http://localhost:8025
+    restart: unless-stopped
+
 volumes:
   acm_postgres_dev:

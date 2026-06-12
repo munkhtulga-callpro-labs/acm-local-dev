@@ -50,3 +50,6 @@ env.development
 .env.*
 *.gserviceaccount*.json
 callpro-acm-google.json
+
+# .env.example is safe to commit (no real values)
+!.env.example

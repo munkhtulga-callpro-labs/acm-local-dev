@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import * as bcrypt from 'bcryptjs'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -149,11 +150,13 @@ async function importGoogleUsers() {
         }
 
         // Create user
+        const tempPassword = process.env.SEED_DEFAULT_PASSWORD ?? 'changeme'
+        const hashedPassword = await bcrypt.hash(tempPassword, 12)
         const user = await prisma.user.create({
           data: {
             name: `${userData.firstName} ${userData.lastName}`.trim(),
             email: userData.email,
-            password: 'temp_password_123', // Will need to be changed on first login
+            password: hashedPassword,
             role: 'EMPLOYEE',
             company: companyName
           }

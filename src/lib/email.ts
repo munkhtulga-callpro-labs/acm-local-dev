@@ -1,9 +1,13 @@
 import nodemailer from 'nodemailer'
 
+if (!process.env.SMTP_HOST) {
+  throw new Error('SMTP_HOST is not set. Configure it in .env — do not rely on production defaults.')
+}
+
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'email-smtp.us-west-2.amazonaws.com',
-  port: parseInt(process.env.SMTP_PORT || '465'),
-  secure: true, // true for 465, false for other ports
+  host: process.env.SMTP_HOST,
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: process.env.SMTP_PORT === '465',
   auth: {
     user: process.env.SMTP_USERNAME || process.env.SMTP_USER,
     pass: process.env.SMTP_PASSWORD,
@@ -23,7 +27,7 @@ export async function sendEmail({
 }) {
   try {
     const info = await transporter.sendMail({
-      from: `"Access Control Management" <${process.env.SMTP_FROM || 'acm@callpro.mn'}>`,
+      from: `"Access Control Management" <${process.env.SMTP_FROM}>`,
       to,
       subject,
       html,

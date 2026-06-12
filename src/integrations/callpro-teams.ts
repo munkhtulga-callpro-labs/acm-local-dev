@@ -6,7 +6,10 @@ export class CallProTeamsIntegration extends BaseIntegration {
 
   constructor(config: IntegrationConfig) {
     super(config)
-    this.apiUrl = process.env.CALLPRO_TEAMS_API_URL || 'https://teams.callpro.mn/api'
+    if (!process.env.CALLPRO_TEAMS_API_URL) {
+      throw new Error('CALLPRO_TEAMS_API_URL is not set. Configure it in .env — do not rely on production defaults.')
+    }
+    this.apiUrl = process.env.CALLPRO_TEAMS_API_URL
     this.apiKey = process.env.CALLPRO_TEAMS_API_KEY || ''
   }
 
