@@ -9,13 +9,18 @@ import { APIKeyModal } from '@/components/api-key-modal'
 import { APIKeysDataTable, type APIKeyResource } from '@/components/api-keys-data-table'
 import { Key, ShieldCheck, AlertTriangle, Activity } from 'lucide-react'
 import { ConfirmDialog } from '@/components/confirm-dialog'
-import { createApiKey, updateApiKey, deleteApiKey } from '@/lib/actions/api-keys'
+
+type MutationResult = { error: unknown } | undefined
 
 interface APIKeysClientProps {
   initialData: APIKeyResource[]
+  onCreateApiKey: (body: unknown) => Promise<MutationResult>
+  onUpdateApiKey: (id: string, body: unknown) => Promise<MutationResult>
+  onDeleteApiKey: (id: string) => Promise<{ error: string } | undefined>
+  onGetApiKeyToken: (id: string) => Promise<{ token: string } | { error: string }>
 }
 
-export function APIKeysClient({ initialData }: APIKeysClientProps) {
+export function APIKeysClient({ initialData, onCreateApiKey, onUpdateApiKey, onDeleteApiKey, onGetApiKeyToken }: APIKeysClientProps) {
   const router = useRouter()
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
   const [modalState, setModalState] = useState<{
@@ -28,8 +33,8 @@ export function APIKeysClient({ initialData }: APIKeysClientProps) {
     const { mode, apiKey } = modalState
 
     const result = mode === 'edit' && apiKey
-      ? await updateApiKey(apiKey.id, apiKeyData)
-      : await createApiKey(apiKeyData)
+      ? await onUpdateApiKey(apiKey.id, apiKeyData)
+      : await onCreateApiKey(apiKeyData)
 
     if (result?.error) {
       if (typeof result.error === 'string') {
@@ -52,7 +57,7 @@ export function APIKeysClient({ initialData }: APIKeysClientProps) {
   const confirmDelete = async () => {
     if (!deleteTarget) return
     try {
-      const result = await deleteApiKey(deleteTarget.id)
+      const result = await onDeleteApiKey(deleteTarget.id)
       if (result?.error) {
         toast.error(result.error === 'Forbidden'
           ? 'You don\'t have permission to delete API keys'
@@ -161,6 +166,7 @@ export function APIKeysClient({ initialData }: APIKeysClientProps) {
         apiKey={modalState.apiKey}
         mode={modalState.mode}
         onSave={handleSave}
+        onRevealToken={onGetApiKeyToken}
       />
 
       <ConfirmDialog

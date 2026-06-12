@@ -79,6 +79,7 @@ interface APIKeyModalProps {
   apiKey?: APIKeyResource
   mode: 'view' | 'edit' | 'create'
   onSave: (apiKey: Partial<APIKeyResource>) => Promise<void>
+  onRevealToken: (id: string) => Promise<{ token: string } | { error: string }>
 }
 
 const defaultValues: APIKeyFormData = {
@@ -95,7 +96,7 @@ const defaultValues: APIKeyFormData = {
   webhookUrls: '',
 }
 
-export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyModalProps) {
+export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave, onRevealToken }: APIKeyModalProps) {
   const [revealedToken, setRevealedToken] = useState<string | null>(null)
   const [tokenVisible, setTokenVisible] = useState(false)
   const [isFetchingToken, setIsFetchingToken] = useState(false)
@@ -127,16 +128,16 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
     if (!apiKey?.id) return
     setIsFetchingToken(true)
     try {
-      const res = await fetch(`/api/resources/api-keys/${apiKey.id}/token`)
-      if (res.status === 403) {
-        toast.error('You don\'t have permission to view this token')
+      const result = await onRevealToken(apiKey.id)
+      if ('error' in result) {
+        toast.error(result.error === 'Forbidden'
+          ? 'You don\'t have permission to view this token'
+          : 'Failed to fetch token')
         return
       }
-      if (!res.ok) throw new Error()
-      const { token } = await res.json()
-      setRevealedToken(token)
+      setRevealedToken(result.token)
       setTokenVisible(true)
-      if (mode === 'edit') setValue('apiKeyToken', token)
+      if (mode === 'edit') setValue('apiKeyToken', result.token)
     } catch {
       toast.error('Failed to fetch token')
     } finally {

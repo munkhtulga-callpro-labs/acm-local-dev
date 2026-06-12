@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { APIKeysClient } from './client'
 import { cacheLife, cacheTag } from 'next/cache'
+import { createApiKey, updateApiKey, deleteApiKey, getApiKeyToken } from '@/lib/actions/api-keys'
 
 export default async function APIKeysPage() {
   const session = await getServerSession(authOptions)
@@ -26,5 +27,13 @@ export default async function APIKeysPage() {
     updatedAt: updatedAt.toISOString(),
   }))
 
-  return <APIKeysClient initialData={initialData} />
+  return (
+    <APIKeysClient
+      initialData={initialData}
+      onCreateApiKey={createApiKey}
+      onUpdateApiKey={updateApiKey}
+      onDeleteApiKey={deleteApiKey}
+      onGetApiKeyToken={getApiKeyToken}
+    />
+  )
 }

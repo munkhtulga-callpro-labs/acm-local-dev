@@ -1,6 +1,7 @@
 'use server'
 
 import z from "zod";
+import { headers } from "next/headers";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth";
 import { createApiKeySchema, updateApiKeySchema } from "../schemas/api-key"
@@ -45,4 +46,36 @@ export async function deleteApiKey(id: string) {
 
   await prisma.aPIKey.delete({ where: { id } });
   updateTag('api-keys')
+}
+
+export async function getApiKeyToken(id: string) {
+  const session = await getServerSession(authOptions)
+  if (!session) return { error: 'Unauthorized' as const }
+
+  const apiKey = await prisma.aPIKey.findUnique({
+    where: { id },
+    select: { id: true, serviceName: true, apiKeyToken: true, assignedTo: true },
+  })
+
+  if (!apiKey) return { error: 'Not found' as const }
+
+  const isPrivileged = PRIVILEGED_ROLES.includes(session.user.role)
+  const isOwner = apiKey.assignedTo === session.user.email
+
+  if (!isPrivileged && !isOwner) return { error: 'Forbidden' as const }
+
+  const hdrs = await headers()
+  await prisma.auditLog.create({
+    data: {
+      action: 'VIEW_TOKEN',
+      entityType: 'APIKey',
+      entityId: id,
+      userId: session.user.id,
+      ipAddress: hdrs.get('x-forwarded-for') ?? hdrs.get('x-real-ip') ?? undefined,
+      userAgent: hdrs.get('user-agent') ?? undefined,
+      newValues: { serviceName: apiKey.serviceName },
+    },
+  })
+
+  return { token: apiKey.apiKeyToken }
 }
