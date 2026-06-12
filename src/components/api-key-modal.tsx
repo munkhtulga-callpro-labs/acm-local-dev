@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { toast } from 'sonner'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
-import { Key, Shield, Loader2, CalendarIcon } from 'lucide-react'
+import { Key, Shield, Loader2, CalendarIcon, Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { format, parseISO } from 'date-fns'
 
@@ -32,6 +32,12 @@ const optIpList = z.string().optional()
     'Must be valid IPv4 addresses or CIDR ranges (e.g. 10.0.0.1, 192.168.1.0/24)'
   )
 
+const optUrl = z.string().optional()
+  .refine(
+    v => !v?.trim() || z.url().safeParse(v.trim()).success,
+    'Must be a valid URL (e.g. https://example.com/webhook)'
+  )
+
 const apiKeySchema = z.object({
   serviceName: z.string().min(1, 'Service name is required'),
   apiKeyToken: z.string().min(1, 'API key token is required'),
@@ -43,10 +49,9 @@ const apiKeySchema = z.object({
   status: z.enum(['ACTIVE', 'INACTIVE', 'REVOKED']),
   notes: z.string().optional(),
   ipRestrictions: optIpList,
-  webhookUrls: z.string().optional(),
+  webhookUrls: optUrl,
 })
 
-// In edit mode the token is stripped from the list response, so it's optional on updates
 const apiKeyEditSchema = apiKeySchema.extend({
   apiKeyToken: z.string().optional(),
 })
@@ -91,16 +96,53 @@ const defaultValues: APIKeyFormData = {
 }
 
 export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyModalProps) {
+  const [revealedToken, setRevealedToken] = useState<string | null>(null)
+  const [tokenVisible, setTokenVisible] = useState(false)
+  const [isFetchingToken, setIsFetchingToken] = useState(false)
+
   const {
     register,
     handleSubmit,
     control,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<APIKeyFormData>({
     resolver: zodResolver(apiKeyEditSchema),
     defaultValues,
   })
+
+  useEffect(() => {
+    if (!isOpen) {
+      setRevealedToken(null)
+      setTokenVisible(false)
+    }
+  }, [isOpen])
+
+  const handleRevealToken = async () => {
+    if (revealedToken !== null) {
+      setTokenVisible(v => !v)
+      return
+    }
+    if (!apiKey?.id) return
+    setIsFetchingToken(true)
+    try {
+      const res = await fetch(`/api/resources/api-keys/${apiKey.id}/token`)
+      if (res.status === 403) {
+        toast.error('You don\'t have permission to view this token')
+        return
+      }
+      if (!res.ok) throw new Error()
+      const { token } = await res.json()
+      setRevealedToken(token)
+      setTokenVisible(true)
+      if (mode === 'edit') setValue('apiKeyToken', token)
+    } catch {
+      toast.error('Failed to fetch token')
+    } finally {
+      setIsFetchingToken(false)
+    }
+  }
 
   useEffect(() => {
     if (apiKey && mode !== 'create') {
@@ -205,14 +247,55 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave }: APIKeyMod
                 <Label htmlFor="apiKeyToken" className="text-sm font-medium">
                   API Key / Token {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
-                <Textarea
-                  id="apiKeyToken"
-                  {...register('apiKeyToken')}
-                  disabled={isViewMode}
-                  placeholder="sk_live_..."
-                  className={cn('min-h-[80px] resize-none font-mono text-sm', errors.apiKeyToken && 'border-destructive')}
-                />
-                {errors.apiKeyToken && <p className="text-xs text-destructive">{errors.apiKeyToken.message}</p>}
+                {mode === 'create' ? (
+                  <>
+                    <Textarea
+                      id="apiKeyToken"
+                      {...register('apiKeyToken')}
+                      placeholder="sk_live_..."
+                      className={cn('min-h-[80px] resize-none font-mono text-sm', errors.apiKeyToken && 'border-destructive')}
+                    />
+                    {errors.apiKeyToken && <p className="text-xs text-destructive">{errors.apiKeyToken.message}</p>}
+                  </>
+                ) : (
+                  <>
+                    <div className="flex gap-2">
+                      {isViewMode ? (
+                        <div className={cn(
+                          'flex-1 min-h-[80px] rounded-md border bg-muted px-3 py-2 font-mono text-sm break-all',
+                          tokenVisible ? 'text-foreground' : 'text-muted-foreground select-none'
+                        )}>
+                          {tokenVisible && revealedToken ? revealedToken : '••••••••••••••••••••••••••••••••'}
+                        </div>
+                      ) : (
+                        <Input
+                          id="apiKeyToken"
+                          {...register('apiKeyToken')}
+                          type={tokenVisible ? 'text' : 'password'}
+                          placeholder="Leave blank to keep current token"
+                          className={cn('flex-1 font-mono text-sm', errors.apiKeyToken && 'border-destructive')}
+                        />
+                      )}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="shrink-0 self-start"
+                        onClick={handleRevealToken}
+                        disabled={isFetchingToken}
+                        title={tokenVisible ? 'Hide token' : 'Reveal token'}
+                      >
+                        {isFetchingToken
+                          ? <Loader2 className="h-4 w-4 animate-spin" />
+                          : tokenVisible
+                            ? <EyeOff className="h-4 w-4" />
+                            : <Eye className="h-4 w-4" />
+                        }
+                      </Button>
+                    </div>
+                    {errors.apiKeyToken && <p className="text-xs text-destructive">{errors.apiKeyToken.message}</p>}
+                  </>
+                )}
               </div>
 
               <div className="space-y-2 md:col-span-2">

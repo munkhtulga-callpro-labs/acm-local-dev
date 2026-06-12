@@ -6,6 +6,8 @@ import { z } from 'zod'
 import { revalidateTag } from 'next/cache'
 import { updateApiKeySchema } from '@/lib/schemas/api-key'
 
+const PRIVILEGED_ROLES = ['ADMIN', 'IT_STAFF']
+
 export async function GET(
   _: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -39,6 +41,9 @@ export async function PUT(
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+    if (!PRIVILEGED_ROLES.includes(session.user.role)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
 
     const { id } = await params
     const body = await request.json()
@@ -71,6 +76,9 @@ export async function DELETE(
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    if (!PRIVILEGED_ROLES.includes(session.user.role)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const { id } = await params

@@ -6,6 +6,8 @@ import { z } from 'zod'
 import { revalidateTag } from 'next/cache'
 import { createApiKeySchema } from '@/lib/schemas/api-key'
 
+const PRIVILEGED_ROLES = ['ADMIN', 'IT_STAFF']
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -30,6 +32,9 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    if (!PRIVILEGED_ROLES.includes(session.user.role)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const body = await request.json()

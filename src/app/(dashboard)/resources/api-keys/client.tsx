@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -15,6 +16,7 @@ interface APIKeysClientProps {
 }
 
 export function APIKeysClient({ initialData }: APIKeysClientProps) {
+  const router = useRouter()
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
   const [modalState, setModalState] = useState<{
     isOpen: boolean
@@ -30,10 +32,16 @@ export function APIKeysClient({ initialData }: APIKeysClientProps) {
       : await createApiKey(apiKeyData)
 
     if (result?.error) {
-      console.log(result.error.fieldErrors);
-      toast.error('API key couldn\'t get updated');
+      if (typeof result.error === 'string') {
+        toast.error(result.error === 'Forbidden'
+          ? 'You don\'t have permission to manage API keys'
+          : 'Session expired, please log in again')
+      } else {
+        toast.error('Please fix the form errors and try again')
+      }
     } else {
       toast.success(mode === 'edit' ? 'API key updated successfully' : 'API key added successfully')
+      router.refresh()
     }
   }
 
@@ -44,8 +52,15 @@ export function APIKeysClient({ initialData }: APIKeysClientProps) {
   const confirmDelete = async () => {
     if (!deleteTarget) return
     try {
-      await deleteApiKey(deleteTarget.id)
+      const result = await deleteApiKey(deleteTarget.id)
+      if (result?.error) {
+        toast.error(result.error === 'Forbidden'
+          ? 'You don\'t have permission to delete API keys'
+          : 'Session expired, please log in again')
+        return
+      }
       toast.success(`"${deleteTarget.name}" deleted successfully`)
+      router.refresh()
     } catch {
       toast.error('Error deleting API key')
     } finally {
