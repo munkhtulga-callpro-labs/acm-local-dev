@@ -16,6 +16,7 @@ import {
   IconUser,
   IconActivity,
   IconAlertTriangle,
+  IconDownload,
 } from "@tabler/icons-react"
 import {
   ColumnDef,
@@ -32,6 +33,7 @@ import {
   VisibilityState,
 } from "@tanstack/react-table"
 import { z } from "zod"
+import * as XLSX from "xlsx"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -185,6 +187,25 @@ const formatAuditDetails = (log: AuditLog): string => {
 
   // Default fallback
   return 'No details available'
+}
+
+const exportAuditLogs = (logs: AuditLog[], format: 'csv' | 'xlsx') => {
+  const rows = logs.map((log) => ({
+    Timestamp: formatDate(log.createdAt),
+    Action: log.action,
+    User: log.user?.name || 'System',
+    'User Email': log.user?.email || '',
+    'Entity Type': log.entityType,
+    'Entity ID': log.entityId,
+    Details: formatAuditDetails(log),
+  }))
+
+  const worksheet = XLSX.utils.json_to_sheet(rows)
+  const workbook = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Audit Logs')
+
+  const timestamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
+  XLSX.writeFile(workbook, `audit-logs-${timestamp}.${format}`, format === 'csv' ? { bookType: 'csv' } : undefined)
 }
 
 const createColumns = (): ColumnDef<AuditLog>[] => [
@@ -403,6 +424,37 @@ export function AuditLogsDataTable({
 
         {/* Spacer */}
         <div className="flex-1" />
+
+        {/* Export current filtered view */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9"
+              disabled={table.getFilteredRowModel().rows.length === 0}
+            >
+              <IconDownload className="mr-2 h-4 w-4" />
+              Export
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={() =>
+                exportAuditLogs(table.getSortedRowModel().rows.map((r) => r.original), 'csv')
+              }
+            >
+              Export as CSV
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() =>
+                exportAuditLogs(table.getSortedRowModel().rows.map((r) => r.original), 'xlsx')
+              }
+            >
+              Export as Excel
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Table with proper alignment */}
