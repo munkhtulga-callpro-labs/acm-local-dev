@@ -5,14 +5,13 @@ import { getServerSession } from "next-auth";
 import { updateTag } from "next/cache";
 import { authOptions } from "../auth";
 import { prisma } from "../prisma";
+import { isPrivilegedRole } from "../roles";
 import { createPhysicalAccessSchema, updatePhysicalAccessSchema } from "../schemas/physical-access";
-
-const PRIVILEGED_ROLES = ['ADMIN', 'IT_STAFF']
 
 async function requirePrivilege() {
   const session = await getServerSession(authOptions)
   if (!session) return 'Unauthorized' as const
-  if (!PRIVILEGED_ROLES.includes(session.user.role)) return 'Forbidden' as const
+  if (!isPrivilegedRole(session.user.role)) return 'Forbidden' as const
   return null
 }
 
