@@ -7,13 +7,16 @@ import { authOptions } from "../auth";
 import { createApiKeySchema, updateApiKeySchema } from "../schemas/api-key"
 import { prisma } from "../prisma";
 import { updateTag } from "next/cache";
-
-const PRIVILEGED_ROLES = ['ADMIN', 'IT_STAFF']
+import { isPrivilegedRole } from "../roles";
 
 async function requirePrivilege() {
   const session = await getServerSession(authOptions)
-  if (!session) return 'Unauthorized' as const
-  if (!PRIVILEGED_ROLES.includes(session.user.role)) return 'Forbidden' as const
+  if (!session) {
+    return 'Unauthorized' as const
+  }
+  if (!isPrivilegedRole(session.user.role)) {
+    return 'Forbidden' as const
+  }
   return null
 }
 
@@ -59,7 +62,7 @@ export async function getApiKeyToken(id: string) {
 
   if (!apiKey) return { error: 'Not found' as const }
 
-  const isPrivileged = PRIVILEGED_ROLES.includes(session.user.role)
+  const isPrivileged = isPrivilegedRole(session.user.role)
   const isOwner = apiKey.assignedTo === session.user.email
 
   if (!isPrivileged && !isOwner) return { error: 'Forbidden' as const }

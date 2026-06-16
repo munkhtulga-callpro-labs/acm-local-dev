@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-
-const PRIVILEGED_ROLES = ['ADMIN', 'IT_STAFF']
+import { isPrivilegedRole } from '@/lib/roles'
 
 export async function GET(
   request: NextRequest,
@@ -25,7 +24,7 @@ export async function GET(
       return NextResponse.json({ error: 'API key not found' }, { status: 404 })
     }
 
-    const isPrivileged = PRIVILEGED_ROLES.includes(session.user.role)
+    const isPrivileged = isPrivilegedRole(session.user.role)
     const isOwner = apiKey.assignedTo === session.user.email
 
     if (!isPrivileged && !isOwner) {
