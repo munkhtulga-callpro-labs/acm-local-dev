@@ -5,10 +5,9 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { revalidateTag } from 'next/cache'
 import { createApiKeySchema } from '@/lib/schemas/api-key'
+import { isPrivilegedRole } from '@/lib/roles'
 
-const PRIVILEGED_ROLES = ['ADMIN', 'IT_STAFF']
-
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
@@ -19,7 +18,7 @@ export async function GET(request: NextRequest) {
       orderBy: { createdDate: 'desc' }
     })
 
-    const rest = apiKeys.map(({ apiKeyToken, ...rest }) => rest)
+    const rest = apiKeys.map(({ apiKeyToken: _, ...rest }) => rest)
     return NextResponse.json({ data: rest })
   } catch (error) {
     console.error('Error fetching API keys:', error)
@@ -33,7 +32,7 @@ export async function POST(request: NextRequest) {
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    if (!PRIVILEGED_ROLES.includes(session.user.role)) {
+    if (!isPrivilegedRole(session.user.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
