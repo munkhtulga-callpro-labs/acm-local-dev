@@ -29,6 +29,24 @@ import {
   type SystemSettingsData,
 } from '@/lib/schemas/settings'
 
+const SECURITY_TOGGLES = [
+  ['requireSpecialChars', 'Require Special Characters', 'Passwords must contain special characters'],
+  ['requireNumbers', 'Require Numbers', 'Passwords must contain numbers'],
+  ['requireUppercase', 'Require Uppercase', 'Passwords must contain uppercase letters'],
+  ['twoFactorAuth', 'Two-Factor Authentication', 'Enable 2FA for all users'],
+  ['ipWhitelist', 'IP Whitelist', 'Restrict access to specific IP addresses'],
+  ['auditLogging', 'Audit Logging', 'Log all system activities for compliance'],
+] as const
+
+const NOTIFICATION_TOGGLES = [
+  ['emailNotifications', 'Email Notifications', 'Send notifications via email'],
+  ['smsNotifications', 'SMS Notifications', 'Send notifications via SMS'],
+  ['approvalReminders', 'Approval Reminders', 'Send reminders for pending approvals'],
+  ['expiryWarnings', 'Expiry Warnings', 'Notify before access expires'],
+  ['securityAlerts', 'Security Alerts', 'Send alerts for security events'],
+  ['systemUpdates', 'System Updates', 'Notify about system updates'],
+] as const
+
 type InitialSettings = {
   companyName: string
   systemName: string
@@ -284,14 +302,7 @@ export function SettingsClient({ initialSettings, onSave }: SettingsClientProps)
                       <p className="text-sm text-destructive">{securityForm.formState.errors.sessionTimeout.message}</p>
                     )}
                   </div>
-                  {([
-                    ['requireSpecialChars', 'Require Special Characters', 'Passwords must contain special characters'],
-                    ['requireNumbers', 'Require Numbers', 'Passwords must contain numbers'],
-                    ['requireUppercase', 'Require Uppercase', 'Passwords must contain uppercase letters'],
-                    ['twoFactorAuth', 'Two-Factor Authentication', 'Enable 2FA for all users'],
-                    ['ipWhitelist', 'IP Whitelist', 'Restrict access to specific IP addresses'],
-                    ['auditLogging', 'Audit Logging', 'Log all system activities for compliance'],
-                  ] as const).map(([name, label, desc]) => (
+                  {SECURITY_TOGGLES.map(([name, label, desc]) => (
                     <div key={name} className="flex items-center justify-between">
                       <div className="space-y-0.5">
                         <Label>{label}</Label>
@@ -329,14 +340,7 @@ export function SettingsClient({ initialSettings, onSave }: SettingsClientProps)
             <CardContent>
               <form onSubmit={onSubmitNotifications} className="space-y-6">
                 <div className="space-y-4">
-                  {([
-                    ['emailNotifications', 'Email Notifications', 'Send notifications via email'],
-                    ['smsNotifications', 'SMS Notifications', 'Send notifications via SMS'],
-                    ['approvalReminders', 'Approval Reminders', 'Send reminders for pending approvals'],
-                    ['expiryWarnings', 'Expiry Warnings', 'Notify before access expires'],
-                    ['securityAlerts', 'Security Alerts', 'Send alerts for security events'],
-                    ['systemUpdates', 'System Updates', 'Notify about system updates'],
-                  ] as const).map(([name, label, desc]) => (
+                  {NOTIFICATION_TOGGLES.map(([name, label, desc]) => (
                     <div key={name} className="flex items-center justify-between">
                       <div className="space-y-0.5">
                         <Label>{label}</Label>
