@@ -1061,3 +1061,46 @@ model ResourceAssignment {
   @@index([validTo])
   @@map("resource_assignments")
 }
+
+model SystemSettings {
+  id                  String   @id @default("settings")
+
+  // General
+  companyName         String   @default("CallPro LLC")
+  systemName          String   @default("HR Access Control System")
+  timezone            String   @default("Asia/Ulaanbaatar")
+  dateFormat          String   @default("MM/DD/YYYY")
+  language            String   @default("en")
+  autoLogout          Int      @default(30)
+
+  // Security
+  passwordMinLength   Int      @default(8)
+  requireSpecialChars Boolean  @default(true)
+  requireNumbers      Boolean  @default(true)
+  requireUppercase    Boolean  @default(true)
+  sessionTimeout      Int      @default(60)
+  twoFactorAuth       Boolean  @default(false)
+  ipWhitelist         Boolean  @default(false)
+  auditLogging        Boolean  @default(true)
+
+  // Notifications
+  emailNotifications  Boolean  @default(true)
+  smsNotifications    Boolean  @default(false)
+  approvalReminders   Boolean  @default(true)
+  expiryWarnings      Boolean  @default(true)
+  securityAlerts      Boolean  @default(true)
+  systemUpdates       Boolean  @default(false)
+  reminderDays        Int      @default(7)
+
+  // System
+  maxFileSize         Int      @default(10)
+  backupFrequency     String   @default("daily")
+  logRetention        Int      @default(90)
+  maintenanceMode     Boolean  @default(false)
+  debugMode           Boolean  @default(false)
+  apiRateLimit        Int      @default(1000)
+
+  updatedAt           DateTime @updatedAt
+
+  @@map("system_settings")
+}
