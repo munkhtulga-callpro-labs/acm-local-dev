@@ -1,16 +1,22 @@
 'use client'
 
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Clock, CheckCircle, AlertTriangle, XCircle, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { AccessControlDataTable, type AccessAssignment } from '@/components/access-control-data-table'
+import { RequestAccessModal } from '@/components/request-access-modal'
 
 interface AccessClientProps {
   initialData: AccessAssignment[]
 }
 
 export function AccessClient({ initialData }: AccessClientProps) {
+  const router = useRouter()
+  const [modalOpen, setModalOpen] = useState(false)
   const now = new Date()
 
   const isExpiringSoon = (validTo: string | null) => {
@@ -85,7 +91,7 @@ export function AccessClient({ initialData }: AccessClientProps) {
               Manage and monitor resource access assignments
             </CardDescription>
           </div>
-          <Button size="sm">
+          <Button size="sm" onClick={() => setModalOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Request Access
           </Button>
@@ -103,6 +109,16 @@ export function AccessClient({ initialData }: AccessClientProps) {
           )}
         </CardContent>
       </Card>
+
+      <RequestAccessModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSuccess={() => {
+          setModalOpen(false)
+          toast.success('Access request submitted successfully')
+          router.refresh()
+        }}
+      />
     </div>
   )
 }

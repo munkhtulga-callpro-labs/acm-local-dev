@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { toast } from 'sonner'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -9,11 +10,18 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Calendar, Loader2, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { createAccessRequest } from '@/lib/actions/access-requests'
+
+const RESOURCE_TYPES = [
+  'DATABASE', 'SERVER', 'SOFTWARE_LICENSE', 'SAAS_SUBSCRIPTION',
+  'CLOUD_ACCOUNT', 'DEVICE', 'INTERNAL_TOOL', 'VPN_NETWORK_ACCESS',
+  'CODE_REPOSITORY', 'API_KEY', 'FILE_STORAGE', 'PHYSICAL_ACCESS',
+] as const
 
 interface RequestAccessModalProps {
   isOpen: boolean
   onClose: () => void
-  resource: any
+  resource?: { id: string; displayName: string; resourceType: string }
   onSuccess: () => void
 }
 
@@ -24,6 +32,8 @@ export function RequestAccessModal({
   onSuccess
 }: RequestAccessModalProps) {
   const [formData, setFormData] = useState({
+    resourceType: resource?.resourceType ?? '',
+    resourceName: resource?.displayName ?? '',
     accessLevel: '',
     businessJustification: '',
     accessRequestTicketId: '',
@@ -38,14 +48,18 @@ export function RequestAccessModal({
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
+    if (!resource && !formData.resourceType) {
+      newErrors.resourceType = 'Resource type is required'
+    }
+    if (!resource && !formData.resourceName.trim()) {
+      newErrors.resourceName = 'Resource name is required'
+    }
     if (!formData.accessLevel) {
       newErrors.accessLevel = 'Access level is required'
     }
-
     if (!formData.businessJustification || formData.businessJustification.length < 20) {
       newErrors.businessJustification = 'Business justification is required (minimum 20 characters)'
     }
-
     if (!formData.validFrom) {
       newErrors.validFrom = 'Start date is required'
     }
@@ -65,38 +79,39 @@ export function RequestAccessModal({
     setErrors({})
 
     try {
-      const response = await fetch('/api/resources/access-requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          resourceType: resource.resourceType,
-          resourceId: resource.id,
-          resourceName: resource.displayName,
-          accessLevel: formData.accessLevel,
-          businessJustification: formData.businessJustification,
-          accessRequestTicketId: formData.accessRequestTicketId || null,
-          validFrom: formData.validFrom,
-          validTo: formData.validTo || null,
-          priority: formData.priority
-        })
+      const result = await createAccessRequest({
+        resourceType: resource?.resourceType ?? formData.resourceType,
+        resourceId: resource?.id ?? formData.resourceName.trim().toLowerCase().replace(/\s+/g, '-'),
+        resourceName: resource?.displayName ?? formData.resourceName.trim(),
+        accessLevel: formData.accessLevel,
+        businessJustification: formData.businessJustification,
+        accessRequestTicketId: formData.accessRequestTicketId || null,
+        validFrom: formData.validFrom,
+        validTo: formData.validTo || null,
+        priority: formData.priority,
       })
 
-      if (response.ok) {
+      if (result?.error) {
+        if (typeof result.error === 'string') {
+          toast.error(result.error)
+        } else {
+          toast.error('Please fix the form errors and try again')
+        }
+      } else {
         onSuccess()
         setFormData({
+          resourceType: resource?.resourceType ?? '',
+          resourceName: resource?.displayName ?? '',
           accessLevel: '',
           businessJustification: '',
           accessRequestTicketId: '',
           validFrom: new Date().toISOString().split('T')[0],
           validTo: '',
-          priority: 'MEDIUM'
+          priority: 'MEDIUM',
         })
-      } else {
-        const errorData = await response.json()
-        setErrors({ submit: errorData.error || 'Failed to submit request' })
       }
-    } catch (error) {
-      setErrors({ submit: 'Error submitting request. Please try again.' })
+    } catch {
+      toast.error('Error submitting request. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -117,7 +132,8 @@ export function RequestAccessModal({
     PHYSICAL_ACCESS: ['Standard Hours', 'Extended Hours', '24/7']
   }
 
-  const availableAccessLevels = accessLevels[resource.resourceType as keyof typeof accessLevels] || ['Read', 'Write', 'Admin']
+  const activeResourceType = resource?.resourceType ?? formData.resourceType
+  const availableAccessLevels = accessLevels[activeResourceType as keyof typeof accessLevels] || ['Read', 'Write', 'Admin']
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -126,15 +142,53 @@ export function RequestAccessModal({
           <DialogTitle className="text-2xl font-semibold">
             Request Access to Resource
           </DialogTitle>
-          <DialogDescription className="text-base">
-            <div className="space-y-2">
-              <div><span className="font-medium">Resource:</span> {resource.displayName}</div>
-              <div><span className="font-medium">Type:</span> {resource.resourceType.replace(/_/g, ' ')}</div>
+          {resource && (
+            <div className="text-base text-muted-foreground space-y-2">
+              <div><span className="font-medium text-foreground">Resource:</span> {resource.displayName}</div>
+              <div><span className="font-medium text-foreground">Type:</span> {resource.resourceType.replace(/_/g, ' ')}</div>
             </div>
-          </DialogDescription>
+          )}
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 py-6">
+          {/* Resource picker — only shown when no resource is pre-selected */}
+          {!resource && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">
+                  Resource Type <span className="text-destructive">*</span>
+                </Label>
+                <Select
+                  value={formData.resourceType}
+                  onValueChange={(value) => setFormData({ ...formData, resourceType: value, accessLevel: '' })}
+                >
+                  <SelectTrigger className={cn('h-10', errors.resourceType && 'border-destructive')}>
+                    <SelectValue placeholder="Select resource type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {RESOURCE_TYPES.map(t => (
+                      <SelectItem key={t} value={t}>{t.replace(/_/g, ' ')}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.resourceType && <p className="text-xs text-destructive">{errors.resourceType}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="resourceName" className="text-sm font-medium">
+                  Resource Name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="resourceName"
+                  value={formData.resourceName}
+                  onChange={(e) => setFormData({ ...formData, resourceName: e.target.value })}
+                  placeholder="e.g. Production Database"
+                  className={cn(errors.resourceName && 'border-destructive')}
+                />
+                {errors.resourceName && <p className="text-xs text-destructive">{errors.resourceName}</p>}
+              </div>
+            </div>
+          )}
+
           {/* Access Level */}
           <div className="space-y-2">
             <Label htmlFor="accessLevel" className="text-sm font-medium">

@@ -1,18 +1,19 @@
 import nodemailer from 'nodemailer'
 
-if (!process.env.SMTP_HOST) {
-  throw new Error('SMTP_HOST is not set. Configure it in .env — do not rely on production defaults.')
+function getTransporter() {
+  if (!process.env.SMTP_HOST) {
+    throw new Error('SMTP_HOST is not set. Configure it in .env before sending emails.')
+  }
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: process.env.SMTP_PORT === '465',
+    auth: {
+      user: process.env.SMTP_USERNAME || process.env.SMTP_USER,
+      pass: process.env.SMTP_PASSWORD,
+    },
+  })
 }
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: process.env.SMTP_PORT === '465',
-  auth: {
-    user: process.env.SMTP_USERNAME || process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD,
-  },
-})
 
 export async function sendEmail({
   to,
@@ -26,7 +27,7 @@ export async function sendEmail({
   text?: string
 }) {
   try {
-    const info = await transporter.sendMail({
+    const info = await getTransporter().sendMail({
       from: `"Access Control Management" <${process.env.SMTP_FROM}>`,
       to,
       subject,
@@ -42,7 +43,7 @@ export async function sendEmail({
   }
 }
 
-export { transporter }
+export { getTransporter as transporter }
 
 // ============================================
 // ACCESS CONTROL EMAIL NOTIFICATIONS
