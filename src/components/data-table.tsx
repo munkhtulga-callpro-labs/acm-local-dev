@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { format } from 'date-fns'
 import {
   closestCenter,
   DndContext,
@@ -50,7 +51,6 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table"
-import { toast } from "sonner"
 import { z } from "zod"
 
 import { Badge } from "@/components/ui/badge"
@@ -264,21 +264,11 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     accessorKey: "requestedAt",
     header: "Date",
     size: 160,
-    cell: ({ row }) => {
-      const date = new Date(row.original.requestedAt)
-      const year = date.getFullYear()
-      const month = String(date.getMonth() + 1).padStart(2, '0')
-      const day = String(date.getDate()).padStart(2, '0')
-      const hours = String(date.getHours()).padStart(2, '0')
-      const minutes = String(date.getMinutes()).padStart(2, '0')
-      const seconds = String(date.getSeconds()).padStart(2, '0')
-      
-      return (
-        <div className="text-muted-foreground text-sm whitespace-nowrap">
-          {year}-{month}-{day} {hours}:{minutes}:{seconds}
-        </div>
-      )
-    },
+    cell: ({ row }) => (
+      <div className="text-muted-foreground text-sm whitespace-nowrap">
+        {format(new Date(row.original.requestedAt), 'yyyy-MM-dd HH:mm:ss')}
+      </div>
+    ),
   },
   {
     accessorKey: "status",

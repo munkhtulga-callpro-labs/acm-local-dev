@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { format as formatDateFns } from 'date-fns'
 import {
   IconChevronLeft,
   IconChevronRight,
@@ -115,10 +116,7 @@ const getActionBadge = (action: string) => {
   )
 }
 
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
-  return date.toISOString().slice(0, 19).replace('T', ' ')
-}
+const formatDate = (dateString: string) => formatDateFns(new Date(dateString), 'yyyy-MM-dd HH:mm:ss')
 
 const formatAuditDetails = (log: AuditLog): string => {
   const { action, oldValues, newValues, entityType } = log
@@ -204,7 +202,7 @@ const exportAuditLogs = (logs: AuditLog[], format: 'csv' | 'xlsx') => {
   const workbook = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Audit Logs')
 
-  const timestamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
+  const timestamp = formatDateFns(new Date(), 'yyyy-MM-dd-HH-mm-ss')
   XLSX.writeFile(workbook, `audit-logs-${timestamp}.${format}`, format === 'csv' ? { bookType: 'csv' } : undefined)
 }
 
