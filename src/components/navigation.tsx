@@ -29,11 +29,14 @@ import {
   FolderKey,
   HardDrive,
   DoorOpen,
-  PlusCircle
+  PlusCircle,
+  Sun,
+  Moon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { signOut } from 'next-auth/react'
 import { useState } from 'react'
+import { useTheme } from 'next-themes'
 
 const mainNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -68,6 +71,7 @@ export function Navigation() {
   const pathname = usePathname()
   const [isDirectoryOpen, setIsDirectoryOpen] = useState(false)
   const [isResourcesOpen, setIsResourcesOpen] = useState(false)
+  const { theme, setTheme } = useTheme()
 
   return (
     <nav className="flex flex-col space-y-1 p-4">
@@ -195,7 +199,19 @@ export function Navigation() {
         Settings
       </Link>
       
-      <div className="pt-4 mt-4 border-t border-border">
+      <div className="pt-4 mt-4 border-t border-border space-y-1">
+        <Button
+          variant="ghost"
+          className="w-full justify-start text-muted-foreground hover:text-foreground"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        >
+          {theme === 'dark' ? (
+            <Sun className="mr-3 h-4 w-4" />
+          ) : (
+            <Moon className="mr-3 h-4 w-4" />
+          )}
+          {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+        </Button>
         <Button
           variant="ghost"
           className="w-full justify-start text-muted-foreground hover:text-foreground"
