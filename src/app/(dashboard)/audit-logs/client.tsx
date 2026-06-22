@@ -1,9 +1,8 @@
 'use client'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Activity, Download, AlertTriangle, FileText } from 'lucide-react'
+import { Activity, AlertTriangle, FileText } from 'lucide-react'
 import { AuditLogsDataTable, type AuditLog } from '@/components/audit-logs-data-table'
 
 interface AuditLogsClientProps {
@@ -11,11 +10,6 @@ interface AuditLogsClientProps {
 }
 
 export function AuditLogsClient({ initialData }: AuditLogsClientProps) {
-  const exportLogs = () => {
-    // TODO: Implement CSV export
-    console.log('Exporting audit logs...')
-  }
-
   const totalLogs = initialData.length
   const activityLogs = initialData.filter(log => log.action.includes('UPDATE') || log.action.includes('MODIFY')).length
   const securityLogs = initialData.filter(log => log.action.includes('LOGIN') || log.action.includes('SIGNIN') || log.action.includes('LOGOUT')).length
@@ -75,17 +69,11 @@ export function AuditLogsClient({ initialData }: AuditLogsClientProps) {
       </div>
 
       <Card>
-        <CardHeader className="pb-4 flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>Audit Trail</CardTitle>
-            <CardDescription className="mt-1.5">
-              System activity and security logs
-            </CardDescription>
-          </div>
-          <Button variant="outline" size="sm" onClick={exportLogs}>
-            <Download className="mr-2 h-4 w-4" />
-            Export
-          </Button>
+        <CardHeader className="pb-4">
+          <CardTitle>Audit Trail</CardTitle>
+          <CardDescription className="mt-1.5">
+            System activity and security logs
+          </CardDescription>
         </CardHeader>
         <CardContent className="pt-0 px-6 pb-6">
           {initialData.length === 0 ? (
