@@ -6,13 +6,16 @@ import { updateTag } from "next/cache";
 import { authOptions } from "../auth";
 import { prisma } from "../prisma";
 import { createFileStorageSchema, updateFileStorageSchema } from "../schemas/file-storage";
-
-const PRIVILEGED_ROLES = ['ADMIN', 'IT_STAFF']
+import { isPrivilegedRole } from "../roles";
 
 async function requirePrivilege() {
   const session = await getServerSession(authOptions)
-  if (!session) return 'Unauthorized' as const
-  if (!PRIVILEGED_ROLES.includes(session.user.role)) return 'Forbidden' as const
+  if (!session) {
+    return 'Unauthorized' as const
+  }
+  if (!isPrivilegedRole(session.user.role)) {
+    return 'Forbidden' as const
+  }
   return null
 }
 
