@@ -26,7 +26,7 @@ export async function sendEmail({
   })
 
   try {
-    const info = await transporter.sendMail({
+    const info = await getTransporter().sendMail({
       from: `"Access Control Management" <${process.env.SMTP_FROM}>`,
       to,
       subject,

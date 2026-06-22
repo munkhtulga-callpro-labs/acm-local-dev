@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { AccessRequestWithRelations, ApprovalWithRelations } from '@/types'
+import { AccessRequestWithRelations } from '@/types'
 import { AuditService } from './audit-service'
 import { AccessService } from './access-service'
 import { EmailService } from './email-service'
