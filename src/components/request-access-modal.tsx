@@ -8,7 +8,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Calendar, Loader2, AlertCircle } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Calendar } from '@/components/ui/calendar'
+import { CalendarIcon, Loader2, AlertCircle } from 'lucide-react'
+import { format, parseISO } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { createAccessRequest } from '@/lib/actions/access-requests'
 
@@ -216,16 +219,31 @@ export function RequestAccessModal({
               <Label htmlFor="validFrom" className="text-sm font-medium">
                 Access From <span className="text-destructive">*</span>
               </Label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                <Input
-                  id="validFrom"
-                  type="date"
-                  value={formData.validFrom}
-                  onChange={(e) => setFormData({ ...formData, validFrom: e.target.value })}
-                  className={cn("pl-10", errors.validFrom && "border-destructive")}
-                />
-              </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    id="validFrom"
+                    type="button"
+                    variant="outline"
+                    className={cn(
+                      'h-10 w-full justify-start text-left font-normal',
+                      !formData.validFrom && 'text-muted-foreground',
+                      errors.validFrom && 'border-destructive'
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+                    {formData.validFrom ? format(parseISO(formData.validFrom), 'PPP') : 'Pick a date'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.validFrom ? parseISO(formData.validFrom) : undefined}
+                    onSelect={(date) => setFormData({ ...formData, validFrom: date ? format(date, 'yyyy-MM-dd') : '' })}
+                    autoFocus
+                  />
+                </PopoverContent>
+              </Popover>
               {errors.validFrom && <p className="text-xs text-destructive">{errors.validFrom}</p>}
             </div>
 
@@ -233,16 +251,31 @@ export function RequestAccessModal({
               <Label htmlFor="validTo" className="text-sm font-medium">
                 Access Until (Optional)
               </Label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                <Input
-                  id="validTo"
-                  type="date"
-                  value={formData.validTo}
-                  onChange={(e) => setFormData({ ...formData, validTo: e.target.value })}
-                  className="pl-10"
-                />
-              </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    id="validTo"
+                    type="button"
+                    variant="outline"
+                    className={cn(
+                      'h-10 w-full justify-start text-left font-normal',
+                      !formData.validTo && 'text-muted-foreground'
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+                    {formData.validTo ? format(parseISO(formData.validTo), 'PPP') : 'Pick a date'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.validTo ? parseISO(formData.validTo) : undefined}
+                    onSelect={(date) => setFormData({ ...formData, validTo: date ? format(date, 'yyyy-MM-dd') : '' })}
+                    disabled={formData.validFrom ? { before: parseISO(formData.validFrom) } : undefined}
+                    autoFocus
+                  />
+                </PopoverContent>
+              </Popover>
               <p className="text-xs text-muted-foreground">Leave empty for permanent access</p>
             </div>
           </div>
