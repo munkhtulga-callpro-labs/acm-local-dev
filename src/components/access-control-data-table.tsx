@@ -54,6 +54,7 @@ import {
   VisibilityState,
 } from "@tanstack/react-table"
 import { toast } from "sonner"
+import { useTranslations } from "next-intl"
 import { z } from "zod"
 
 import { Badge } from "@/components/ui/badge"
@@ -116,10 +117,10 @@ export const accessAssignmentSchema = z.object({
 
 export type AccessAssignment = z.infer<typeof accessAssignmentSchema>
 
-function DragHandle({ id }: { id: string }) {
-  const { attributes, listeners } = useSortable({
-    id,
-  })
+type T = ReturnType<typeof useTranslations<'accessControl'>>
+
+function DragHandle({ id, label }: { id: string; label: string }) {
+  const { attributes, listeners } = useSortable({ id })
 
   return (
     <Button
@@ -130,18 +131,17 @@ function DragHandle({ id }: { id: string }) {
       className="text-muted-foreground size-6 hover:bg-transparent"
     >
       <IconGripVertical className="text-muted-foreground size-3" />
-      <span className="sr-only">Drag to reorder</span>
+      <span className="sr-only">{label}</span>
     </Button>
   )
 }
 
-const getStatusBadge = (status: string, validTo: string | null) => {
-  // Check if expired
+function getStatusBadge(status: string, validTo: string | null, t: T) {
   if (validTo && new Date(validTo) < new Date()) {
     return (
       <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
         <IconClock className="mr-1 w-3 h-3 text-orange-500" />
-        Expired
+        {t('table.expired2')}
       </Badge>
     )
   }
@@ -151,14 +151,14 @@ const getStatusBadge = (status: string, validTo: string | null) => {
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400 mr-1 w-3 h-3" />
-          Active
+          {t('table.active')}
         </Badge>
       )
     case 'REVOKED':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconX className="mr-1 w-3 h-3 text-red-500" />
-          Revoked
+          {t('table.revoked2')}
         </Badge>
       )
     default:
@@ -170,7 +170,7 @@ const getStatusBadge = (status: string, validTo: string | null) => {
   }
 }
 
-const getResourceTypeBadge = (resourceType: string) => {
+function getResourceTypeBadge(resourceType: string) {
   const formatted = resourceType.replace(/_/g, ' ').toLowerCase()
   return (
     <Badge variant="outline" className="text-muted-foreground px-2 py-0.5 text-xs">
@@ -179,8 +179,8 @@ const getResourceTypeBadge = (resourceType: string) => {
   )
 }
 
-const formatDate = (dateString: string | null) => {
-  if (!dateString) return 'No expiry'
+function formatDate(dateString: string | null, noExpiryLabel: string) {
+  if (!dateString) return noExpiryLabel
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
@@ -189,126 +189,130 @@ const formatDate = (dateString: string | null) => {
   })
 }
 
-const columns: ColumnDef<AccessAssignment>[] = [
-  {
-    id: "drag",
-    header: () => null,
-    size: 40,
-    cell: ({ row }) => <DragHandle id={row.original.id} />,
-  },
-  {
-    id: "select",
-    header: ({ table }) => (
-      <div className="flex items-center justify-center">
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      </div>
-    ),
-    cell: ({ row }) => (
-      <div className="flex items-center justify-center">
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      </div>
-    ),
-    size: 40,
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "assigneeName",
-    header: "User",
-    size: 200,
-    cell: ({ row }) => {
-      return <TableCellViewer item={row.original} />
+function createColumns(t: T): ColumnDef<AccessAssignment>[] {
+  return [
+    {
+      id: "drag",
+      header: () => null,
+      size: 40,
+      cell: ({ row }) => <DragHandle id={row.original.id} label={t('table.dragToReorder')} />,
     },
-    enableHiding: false,
-  },
-  {
-    accessorKey: "resourceName",
-    header: "Resource",
-    size: 150,
-    cell: ({ row }) => (
-      <div className="text-sm font-medium">
-        {row.original.resourceName}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "resourceType",
-    header: "Type",
-    size: 120,
-    cell: ({ row }) => getResourceTypeBadge(row.original.resourceType),
-  },
-  {
-    accessorKey: "accessLevel",
-    header: "Access Level",
-    size: 120,
-    cell: ({ row }) => (
-      <Badge variant="secondary" className="text-xs">
-        {row.original.accessLevel}
-      </Badge>
-    ),
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    size: 100,
-    cell: ({ row }) => getStatusBadge(row.original.status, row.original.validTo),
-  },
-  {
-    accessorKey: "grantedBy",
-    header: "Granted By",
-    size: 120,
-    cell: ({ row }) => (
-      <div className="text-sm text-muted-foreground">
-        {row.original.grantedBy}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "validTo",
-    header: "Expires",
-    size: 120,
-    cell: ({ row }) => (
-      <div className="text-sm text-muted-foreground">
-        {formatDate(row.original.validTo)}
-      </div>
-    ),
-  },
-  {
-    id: "actions",
-    size: 40,
-    cell: () => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className="data-[state=open]:bg-muted text-muted-foreground flex size-6"
-            size="icon"
-          >
-            <IconDotsVertical className="size-3" />
-            <span className="sr-only">Open menu</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-32">
-          <DropdownMenuItem>View Details</DropdownMenuItem>
-          <DropdownMenuItem>Edit Permission</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>Revoke Access</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
-  },
-]
+    {
+      id: "select",
+      header: ({ table }) => (
+        <div className="flex items-center justify-center">
+          <Checkbox
+            checked={
+              table.getIsAllPageRowsSelected() ||
+              (table.getIsSomePageRowsSelected() && "indeterminate")
+            }
+            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+            aria-label={t('table.selectAll')}
+          />
+        </div>
+      ),
+      cell: ({ row }) => (
+        <div className="flex items-center justify-center">
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            aria-label={t('table.selectRow')}
+          />
+        </div>
+      ),
+      size: 40,
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "assigneeName",
+      header: t('table.user'),
+      size: 200,
+      cell: ({ row }) => <TableCellViewer item={row.original} />,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "resourceName",
+      header: t('table.resource'),
+      size: 150,
+      cell: ({ row }) => (
+        <div className="text-sm font-medium">
+          {row.original.resourceName}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "resourceType",
+      header: t('table.type'),
+      size: 120,
+      cell: ({ row }) => getResourceTypeBadge(row.original.resourceType),
+    },
+    {
+      accessorKey: "accessLevel",
+      header: t('table.accessLevel'),
+      size: 120,
+      cell: ({ row }) => (
+        <Badge variant="secondary" className="text-xs">
+          {row.original.accessLevel}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: t('table.status'),
+      size: 100,
+      cell: ({ row }) => getStatusBadge(row.original.status, row.original.validTo, t),
+    },
+    {
+      accessorKey: "grantedBy",
+      header: t('table.grantedBy'),
+      size: 120,
+      cell: ({ row }) => (
+        <div className="text-sm text-muted-foreground">
+          {row.original.grantedBy}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "validTo",
+      header: t('table.expires'),
+      size: 120,
+      cell: ({ row }) => (
+        <div className="text-sm text-muted-foreground">
+          {formatDate(row.original.validTo, t('table.noExpiry'))}
+        </div>
+      ),
+    },
+    {
+      id: "actions",
+      size: 40,
+      cell: ({ row }) => <RowActions row={row} t={t} />,
+    },
+  ]
+}
+
+function RowActions({ row, t }: { row: Row<AccessAssignment>; t: T }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          className="data-[state=open]:bg-muted text-muted-foreground flex size-6"
+          size="icon"
+        >
+          <IconDotsVertical className="size-3" />
+          <span className="sr-only">{t('table.openMenu')}</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-32">
+        <DropdownMenuItem>{t('table.viewDetails')}</DropdownMenuItem>
+        <DropdownMenuItem>{t('table.editPermission')}</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>{t('table.revokeAccess')}</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
 
 function DraggableRow({ row }: { row: Row<AccessAssignment> }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({
@@ -344,6 +348,9 @@ export function AccessControlDataTable({
 }: {
   data: AccessAssignment[]
 }) {
+  const t = useTranslations('accessControl')
+  const columns = React.useMemo(() => createColumns(t), [t])
+
   const [data, setData] = React.useState(() => initialData)
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
@@ -409,23 +416,22 @@ export function AccessControlDataTable({
 
   return (
     <div className="w-full space-y-4">
-      {/* Standardized Toolbar */}
       <DataTableToolbar
-        searchPlaceholder="Search permissions..."
+        searchPlaceholder={t('table.searchPlaceholder')}
         searchValue={searchValue}
         onSearchChange={setSearchValue}
         filter1Options={[
-          { value: "ALL", label: "All Status" },
-          { value: "ACTIVE", label: "Active" },
-          { value: "EXPIRED", label: "Expired" },
-          { value: "REVOKED", label: "Revoked" },
-          { value: "PENDING", label: "Pending" },
+          { value: "ALL", label: t('table.allStatus') },
+          { value: "ACTIVE", label: t('table.active') },
+          { value: "EXPIRED", label: t('table.expired2') },
+          { value: "REVOKED", label: t('table.revoked2') },
+          { value: "PENDING", label: t('table.pending') },
         ]}
         filter1Value={statusFilter}
         onFilter1Change={setStatusFilter}
-        filter1Placeholder="All Status"
+        filter1Placeholder={t('table.allStatus')}
         filter2Options={[
-          { value: "ALL", label: "All Systems" },
+          { value: "ALL", label: t('table.allSystems') },
           { value: "Google Workspace", label: "Google Workspace" },
           { value: "Monday.com", label: "Monday.com" },
           { value: "GitHub", label: "GitHub" },
@@ -434,14 +440,13 @@ export function AccessControlDataTable({
         ]}
         filter2Value={systemFilter}
         onFilter2Change={setSystemFilter}
-        filter2Placeholder="All Systems"
+        filter2Placeholder={t('table.allSystems')}
         primaryAction={{
-          label: "Grant Access",
+          label: t('table.grantAccess'),
           onClick: () => console.log("Grant access clicked")
         }}
       />
 
-      {/* Table with proper alignment */}
       <div className="rounded-md border">
         <DndContext
           collisionDetection={closestCenter}
@@ -490,7 +495,7 @@ export function AccessControlDataTable({
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    No results.
+                    {t('table.noResults')}
                   </TableCell>
                 </TableRow>
               )}
@@ -499,16 +504,17 @@ export function AccessControlDataTable({
         </DndContext>
       </div>
 
-      {/* Pagination */}
       <div className="flex items-center justify-between">
         <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {t('table.rowsSelected', {
+            selected: table.getFilteredSelectedRowModel().rows.length,
+            total: table.getFilteredRowModel().rows.length,
+          })}
         </div>
         <div className="flex w-full items-center gap-8 lg:w-fit">
           <div className="hidden items-center gap-2 lg:flex">
             <Label htmlFor="rows-per-page" className="text-sm font-medium">
-              Rows per page
+              {t('table.rowsPerPage')}
             </Label>
             <Select
               value={`${table.getState().pagination.pageSize}`}
@@ -531,8 +537,10 @@ export function AccessControlDataTable({
             </Select>
           </div>
           <div className="flex w-fit items-center justify-center text-sm font-medium">
-            Page {table.getState().pagination.pageIndex + 1} of{" "}
-            {table.getPageCount()}
+            {t('table.pageOf', {
+              current: table.getState().pagination.pageIndex + 1,
+              total: table.getPageCount(),
+            })}
           </div>
           <div className="ml-auto flex items-center gap-2 lg:ml-0">
             <Button
@@ -541,7 +549,7 @@ export function AccessControlDataTable({
               onClick={() => table.setPageIndex(0)}
               disabled={!table.getCanPreviousPage()}
             >
-              <span className="sr-only">Go to first page</span>
+              <span className="sr-only">{t('table.goToFirstPage')}</span>
               <IconChevronsLeft />
             </Button>
             <Button
@@ -551,7 +559,7 @@ export function AccessControlDataTable({
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
-              <span className="sr-only">Go to previous page</span>
+              <span className="sr-only">{t('table.goToPreviousPage')}</span>
               <IconChevronLeft />
             </Button>
             <Button
@@ -561,7 +569,7 @@ export function AccessControlDataTable({
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >
-              <span className="sr-only">Go to next page</span>
+              <span className="sr-only">{t('table.goToNextPage')}</span>
               <IconChevronRight />
             </Button>
             <Button
@@ -571,7 +579,7 @@ export function AccessControlDataTable({
               onClick={() => table.setPageIndex(table.getPageCount() - 1)}
               disabled={!table.getCanNextPage()}
             >
-              <span className="sr-only">Go to last page</span>
+              <span className="sr-only">{t('table.goToLastPage')}</span>
               <IconChevronsRight />
             </Button>
           </div>
@@ -582,6 +590,8 @@ export function AccessControlDataTable({
 }
 
 function TableCellViewer({ item }: { item: AccessAssignment }) {
+  const t = useTranslations('accessControl.drawer')
+
   return (
     <Drawer direction="right">
       <DrawerTrigger asChild>
@@ -592,49 +602,47 @@ function TableCellViewer({ item }: { item: AccessAssignment }) {
       <DrawerContent>
         <DrawerHeader className="gap-1">
           <DrawerTitle>{item.assigneeName}</DrawerTitle>
-          <DrawerDescription>
-            Resource access assignment details
-          </DrawerDescription>
+          <DrawerDescription>{t('description')}</DrawerDescription>
         </DrawerHeader>
         <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
           <div className="grid gap-2">
             <div className="flex gap-2 leading-none font-medium">
-              Email: {item.assigneeEmail}
+              {t('email')}: {item.assigneeEmail}
             </div>
             <div className="text-muted-foreground">
-              Resource: {item.resourceName}
+              {t('resource')}: {item.resourceName}
             </div>
             <div className="text-muted-foreground">
-              Resource Type: {item.resourceType}
+              {t('resourceType')}: {item.resourceType}
             </div>
             <div className="text-muted-foreground">
-              Access Level: {item.accessLevel}
+              {t('accessLevel')}: {item.accessLevel}
             </div>
             {item.assigneeDepartment && (
               <div className="text-muted-foreground">
-                Department: {item.assigneeDepartment}
+                {t('department')}: {item.assigneeDepartment}
               </div>
             )}
             <div className="text-muted-foreground">
-              Status: {item.status}
+              {t('status')}: {item.status}
             </div>
             <div className="text-muted-foreground">
-              Granted By: {item.grantedBy}
+              {t('grantedBy')}: {item.grantedBy}
             </div>
             <div className="text-muted-foreground">
-              Granted At: {new Date(item.grantedAt).toISOString().slice(0, 19).replace('T', ' ')}
+              {t('grantedAt')}: {new Date(item.grantedAt).toISOString().slice(0, 19).replace('T', ' ')}
             </div>
             {item.validTo && (
               <div className="text-muted-foreground">
-                Expires At: {new Date(item.validTo).toISOString().slice(0, 19).replace('T', ' ')}
+                {t('expiresAt')}: {new Date(item.validTo).toISOString().slice(0, 19).replace('T', ' ')}
               </div>
             )}
           </div>
         </div>
         <DrawerFooter>
-          <Button variant="outline">Revoke Access</Button>
+          <Button variant="outline">{t('revokeAccess')}</Button>
           <DrawerClose asChild>
-            <Button variant="outline">Close</Button>
+            <Button variant="outline">{t('close')}</Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>
