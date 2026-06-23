@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -78,6 +79,7 @@ export function ApprovalDecisionModal({
   request,
   onSuccess
 }: ApprovalDecisionModalProps) {
+  const t = useTranslations('approvals.modal')
   const [decision, setDecision] = useState<'APPROVED' | 'REJECTED' | null>(null)
   const [comments, setComments] = useState('')
   const [accessCredentials, setAccessCredentials] = useState({
@@ -123,7 +125,7 @@ export function ApprovalDecisionModal({
   }
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A'
+    if (!dateString) return t('na')
     const date = new Date(dateString)
     return date.toLocaleString('en-US', {
       year: 'numeric',
@@ -138,11 +140,10 @@ export function ApprovalDecisionModal({
     const newErrors: Record<string, string> = {}
 
     if (!decision) {
-      newErrors.decision = 'Please select approve or reject'
+      newErrors.decision = t('errors.decisionRequired')
     }
 
     if (decision === 'APPROVED') {
-      // Validate based on resource type - require at least some credential info
       const hasAnyCredential =
         accessCredentials.username ||
         accessCredentials.password ||
@@ -152,7 +153,7 @@ export function ApprovalDecisionModal({
         accessCredentials.otherDetails
 
       if (!hasAnyCredential) {
-        newErrors.credentials = 'Please provide at least some access credentials or details'
+        newErrors.credentials = t('errors.credentialsRequired')
       }
     }
 
@@ -184,10 +185,10 @@ export function ApprovalDecisionModal({
         onClose()
       } else {
         const errorData = await response.json()
-        setErrors({ submit: errorData.error || 'Failed to submit decision' })
+        setErrors({ submit: errorData.error || t('errors.submitFailed') })
       }
-    } catch (error) {
-      setErrors({ submit: 'Error submitting decision. Please try again.' })
+    } catch {
+      setErrors({ submit: t('errors.submitError') })
     } finally {
       setIsLoading(false)
     }
@@ -206,7 +207,7 @@ export function ApprovalDecisionModal({
               </div>
               <div>
                 <DialogTitle className="text-2xl font-semibold">
-                  {isReadOnly ? 'Access Request Details' : 'Review Access Request'}
+                  {isReadOnly ? t('titleReadOnly') : t('titleReview')}
                 </DialogTitle>
                 <DialogDescription className="text-base mt-1">
                   {request.resourceType.replace(/_/g, ' ')} - {request.resourceName}
@@ -224,25 +225,25 @@ export function ApprovalDecisionModal({
           <div className="space-y-4">
             <h3 className="text-lg font-semibold flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Request Information
+              {t('requestInfo')}
             </h3>
             <div className="grid grid-cols-2 gap-4 bg-muted/50 p-4 rounded-lg">
               <div>
-                <Label className="text-xs text-muted-foreground">Request ID</Label>
+                <Label className="text-xs text-muted-foreground">{t('requestId')}</Label>
                 <p className="text-sm font-mono">{request.id}</p>
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground">Status</Label>
+                <Label className="text-xs text-muted-foreground">{t('status')}</Label>
                 <Badge variant="outline" className="mt-1">
                   {request.status}
                 </Badge>
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground">Access Level</Label>
+                <Label className="text-xs text-muted-foreground">{t('accessLevel')}</Label>
                 <p className="text-sm font-medium">{request.accessLevel}</p>
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground">Requested Date</Label>
+                <Label className="text-xs text-muted-foreground">{t('requestedDate')}</Label>
                 <p className="text-sm flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
                   {formatDate(request.requestedAt)}
@@ -250,19 +251,19 @@ export function ApprovalDecisionModal({
               </div>
               {request.validFrom && (
                 <div>
-                  <Label className="text-xs text-muted-foreground">Valid From</Label>
+                  <Label className="text-xs text-muted-foreground">{t('validFrom')}</Label>
                   <p className="text-sm">{formatDate(request.validFrom)}</p>
                 </div>
               )}
               {request.validTo && (
                 <div>
-                  <Label className="text-xs text-muted-foreground">Valid Until</Label>
+                  <Label className="text-xs text-muted-foreground">{t('validUntil')}</Label>
                   <p className="text-sm">{formatDate(request.validTo)}</p>
                 </div>
               )}
               {request.accessRequestTicketId && (
                 <div className="col-span-2">
-                  <Label className="text-xs text-muted-foreground">Ticket ID</Label>
+                  <Label className="text-xs text-muted-foreground">{t('ticketId')}</Label>
                   <p className="text-sm font-mono">{request.accessRequestTicketId}</p>
                 </div>
               )}
@@ -273,7 +274,7 @@ export function ApprovalDecisionModal({
           <div className="space-y-4">
             <h3 className="text-lg font-semibold flex items-center gap-2">
               <User className="h-5 w-5" />
-              Requester
+              {t('requesterSection')}
             </h3>
             <div className="bg-muted/50 p-4 rounded-lg space-y-2">
               <div className="flex items-center gap-2">
@@ -296,7 +297,7 @@ export function ApprovalDecisionModal({
           <div className="space-y-4">
             <h3 className="text-lg font-semibold flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Business Justification
+              {t('justificationSection')}
             </h3>
             <div className="bg-muted/50 p-4 rounded-lg">
               <p className="text-sm whitespace-pre-wrap">{request.businessJustification}</p>
@@ -308,10 +309,10 @@ export function ApprovalDecisionModal({
             <div className="space-y-4">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <Clock className="h-5 w-5" />
-                Approval Chain
+                {t('approvalChain')}
               </h3>
               <div className="space-y-2">
-                {request.approvals.map((approval, index) => (
+                {request.approvals.map((approval) => (
                   <div key={approval.id} className="bg-muted/50 p-3 rounded-lg">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -355,7 +356,7 @@ export function ApprovalDecisionModal({
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
                   <Shield className="h-5 w-5" />
-                  Your Decision
+                  {t('yourDecision')}
                 </h3>
                 <div className="flex gap-4">
                   <Button
@@ -368,7 +369,7 @@ export function ApprovalDecisionModal({
                     onClick={() => setDecision('APPROVED')}
                   >
                     <CheckCircle className="mr-2 h-4 w-4" />
-                    Approve
+                    {t('approve')}
                   </Button>
                   <Button
                     type="button"
@@ -380,7 +381,7 @@ export function ApprovalDecisionModal({
                     onClick={() => setDecision('REJECTED')}
                   >
                     <XCircle className="mr-2 h-4 w-4" />
-                    Reject
+                    {t('reject')}
                   </Button>
                 </div>
                 {errors.decision && (
@@ -394,91 +395,88 @@ export function ApprovalDecisionModal({
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold flex items-center gap-2">
                       <Key className="h-5 w-5" />
-                      Access Credentials
+                      {t('credentials')}
                     </h3>
                     <Badge variant="secondary" className="text-xs">
-                      Will be sent via email
+                      {t('credentialsBadge')}
                     </Badge>
                   </div>
                   <Alert>
                     <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      Provide credentials that the requester will use to access this resource.
-                      These will be encrypted and sent securely via email.
-                    </AlertDescription>
+                    <AlertDescription>{t('credentialsAlert')}</AlertDescription>
                   </Alert>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="username">Username / Account ID</Label>
+                      <Label htmlFor="username">{t('username')}</Label>
                       <Input
                         id="username"
                         value={accessCredentials.username}
                         onChange={(e) => setAccessCredentials({...accessCredentials, username: e.target.value})}
-                        placeholder="username or account ID"
+                        placeholder={t('usernamePlaceholder')}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="password">Password / Secret</Label>
+                      <Label htmlFor="password">{t('password')}</Label>
                       <Input
                         id="password"
                         type="password"
                         value={accessCredentials.password}
                         onChange={(e) => setAccessCredentials({...accessCredentials, password: e.target.value})}
-                        placeholder="password or secret key"
+                        placeholder={t('passwordPlaceholder')}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="host">Host / URL</Label>
+                      <Label htmlFor="host">{t('host')}</Label>
                       <Input
                         id="host"
                         value={accessCredentials.host}
                         onChange={(e) => setAccessCredentials({...accessCredentials, host: e.target.value})}
-                        placeholder="hostname or URL"
+                        placeholder={t('hostPlaceholder')}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="port">Port</Label>
+                      <Label htmlFor="port">{t('port')}</Label>
                       <Input
                         id="port"
                         value={accessCredentials.port}
                         onChange={(e) => setAccessCredentials({...accessCredentials, port: e.target.value})}
-                        placeholder="port number"
+                        placeholder={t('portPlaceholder')}
                       />
                     </div>
                     <div className="space-y-2 col-span-2">
-                      <Label htmlFor="connectionString">Connection String</Label>
+                      <Label htmlFor="connectionString">{t('connectionString')}</Label>
                       <Input
                         id="connectionString"
                         value={accessCredentials.connectionString}
                         onChange={(e) => setAccessCredentials({...accessCredentials, connectionString: e.target.value})}
-                        placeholder="Full connection string"
+                        placeholder={t('connectionStringPlaceholder')}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="apiKey">API Key</Label>
+                      <Label htmlFor="apiKey">{t('apiKey')}</Label>
                       <Input
                         id="apiKey"
                         value={accessCredentials.apiKey}
                         onChange={(e) => setAccessCredentials({...accessCredentials, apiKey: e.target.value})}
-                        placeholder="API key if applicable"
+                        placeholder={t('apiKeyPlaceholder')}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="accessToken">Access Token</Label>
+                      <Label htmlFor="accessToken">{t('accessToken')}</Label>
                       <Input
                         id="accessToken"
                         value={accessCredentials.accessToken}
                         onChange={(e) => setAccessCredentials({...accessCredentials, accessToken: e.target.value})}
-                        placeholder="Access token if applicable"
+                        placeholder={t('accessTokenPlaceholder')}
                       />
                     </div>
                     <div className="space-y-2 col-span-2">
-                      <Label htmlFor="otherDetails">Additional Details / Instructions</Label>
+                      <Label htmlFor="otherDetails">{t('additionalDetails')}</Label>
                       <Textarea
                         id="otherDetails"
                         value={accessCredentials.otherDetails}
                         onChange={(e) => setAccessCredentials({...accessCredentials, otherDetails: e.target.value})}
-                        placeholder="Any additional information or instructions for the requester..."
+                        placeholder={t('additionalDetailsPlaceholder')}
                         className="min-h-[80px]"
                       />
                     </div>
@@ -492,7 +490,7 @@ export function ApprovalDecisionModal({
               {/* Comments */}
               <div className="space-y-4">
                 <Label htmlFor="comments">
-                  Comments {decision === 'REJECTED' && <span className="text-muted-foreground">(Required for rejection)</span>}
+                  {t('comments')} {decision === 'REJECTED' && <span className="text-muted-foreground">{t('commentsRequired')}</span>}
                 </Label>
                 <Textarea
                   id="comments"
@@ -500,8 +498,8 @@ export function ApprovalDecisionModal({
                   onChange={(e) => setComments(e.target.value)}
                   placeholder={
                     decision === 'APPROVED'
-                      ? "Optional: Add any notes or instructions..."
-                      : "Please explain the reason for rejection..."
+                      ? t('commentsPlaceholderApproved')
+                      : t('commentsPlaceholderRejected')
                   }
                   className="min-h-[100px]"
                 />
@@ -524,7 +522,7 @@ export function ApprovalDecisionModal({
             onClick={onClose}
             disabled={isLoading}
           >
-            {isReadOnly ? 'Close' : 'Cancel'}
+            {isReadOnly ? t('close') : t('cancel')}
           </Button>
           {!isReadOnly && (
             <Button
@@ -537,7 +535,7 @@ export function ApprovalDecisionModal({
               )}
             >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Submit Decision
+              {t('submitDecision')}
             </Button>
           )}
         </DialogFooter>
