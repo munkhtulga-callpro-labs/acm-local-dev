@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,6 +35,9 @@ export function RequestAccessModal({
   resource,
   onSuccess
 }: RequestAccessModalProps) {
+  const t = useTranslations('requestAccess')
+  const m = useTranslations('requestAccess.modal')
+
   const [formData, setFormData] = useState({
     resourceType: resource?.resourceType ?? '',
     resourceName: resource?.displayName ?? '',
@@ -52,19 +56,19 @@ export function RequestAccessModal({
     const newErrors: Record<string, string> = {}
 
     if (!resource && !formData.resourceType) {
-      newErrors.resourceType = 'Resource type is required'
+      newErrors.resourceType = m('errors.resourceTypeRequired')
     }
     if (!resource && !formData.resourceName.trim()) {
-      newErrors.resourceName = 'Resource name is required'
+      newErrors.resourceName = m('errors.resourceNameRequired')
     }
     if (!formData.accessLevel) {
-      newErrors.accessLevel = 'Access level is required'
+      newErrors.accessLevel = m('errors.accessLevelRequired')
     }
     if (!formData.businessJustification || formData.businessJustification.length < 20) {
-      newErrors.businessJustification = 'Business justification is required (minimum 20 characters)'
+      newErrors.businessJustification = m('errors.justificationRequired')
     }
     if (!formData.validFrom) {
-      newErrors.validFrom = 'Start date is required'
+      newErrors.validFrom = m('errors.startDateRequired')
     }
 
     setErrors(newErrors)
@@ -98,7 +102,7 @@ export function RequestAccessModal({
         if (typeof result.error === 'string') {
           toast.error(result.error)
         } else {
-          toast.error('Please fix the form errors and try again')
+          toast.error(m('errors.formErrors'))
         }
       } else {
         onSuccess()
@@ -114,7 +118,7 @@ export function RequestAccessModal({
         })
       }
     } catch {
-      toast.error('Error submitting request. Please try again.')
+      toast.error(m('errors.submitError'))
     } finally {
       setIsLoading(false)
     }
@@ -143,34 +147,33 @@ export function RequestAccessModal({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="space-y-3 pb-6 border-b">
           <DialogTitle className="text-2xl font-semibold">
-            Request Access to Resource
+            {m('title')}
           </DialogTitle>
           {resource && (
             <div className="text-base text-muted-foreground space-y-2">
-              <div><span className="font-medium text-foreground">Resource:</span> {resource.displayName}</div>
-              <div><span className="font-medium text-foreground">Type:</span> {resource.resourceType.replace(/_/g, ' ')}</div>
+              <div><span className="font-medium text-foreground">{m('resourceLabel')}:</span> {resource.displayName}</div>
+              <div><span className="font-medium text-foreground">{m('typeLabel')}:</span> {t(`resourceTypes.${resource.resourceType}`)}</div>
             </div>
           )}
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 py-6">
-          {/* Resource picker — only shown when no resource is pre-selected */}
           {!resource && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-sm font-medium">
-                  Resource Type <span className="text-destructive">*</span>
+                  {m('resourceType')} <span className="text-destructive">*</span>
                 </Label>
                 <Select
                   value={formData.resourceType}
                   onValueChange={(value) => setFormData({ ...formData, resourceType: value, accessLevel: '' })}
                 >
                   <SelectTrigger className={cn('h-10', errors.resourceType && 'border-destructive')}>
-                    <SelectValue placeholder="Select resource type" />
+                    <SelectValue placeholder={m('selectResourceType')} />
                   </SelectTrigger>
                   <SelectContent>
-                    {RESOURCE_TYPES.map(t => (
-                      <SelectItem key={t} value={t}>{t.replace(/_/g, ' ')}</SelectItem>
+                    {RESOURCE_TYPES.map(type => (
+                      <SelectItem key={type} value={type}>{t(`resourceTypes.${type}`)}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -178,13 +181,13 @@ export function RequestAccessModal({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="resourceName" className="text-sm font-medium">
-                  Resource Name <span className="text-destructive">*</span>
+                  {m('resourceName')} <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="resourceName"
                   value={formData.resourceName}
                   onChange={(e) => setFormData({ ...formData, resourceName: e.target.value })}
-                  placeholder="e.g. Production Database"
+                  placeholder={m('resourceNamePlaceholder')}
                   className={cn(errors.resourceName && 'border-destructive')}
                 />
                 {errors.resourceName && <p className="text-xs text-destructive">{errors.resourceName}</p>}
@@ -192,17 +195,16 @@ export function RequestAccessModal({
             </div>
           )}
 
-          {/* Access Level */}
           <div className="space-y-2">
             <Label htmlFor="accessLevel" className="text-sm font-medium">
-              Access Level <span className="text-destructive">*</span>
+              {m('accessLevel')} <span className="text-destructive">*</span>
             </Label>
             <Select
               value={formData.accessLevel}
               onValueChange={(value) => setFormData({ ...formData, accessLevel: value })}
             >
               <SelectTrigger className={cn("h-10", errors.accessLevel && "border-destructive")}>
-                <SelectValue placeholder="Select access level" />
+                <SelectValue placeholder={m('selectAccessLevel')} />
               </SelectTrigger>
               <SelectContent>
                 {availableAccessLevels.map(level => (
@@ -213,11 +215,10 @@ export function RequestAccessModal({
             {errors.accessLevel && <p className="text-xs text-destructive">{errors.accessLevel}</p>}
           </div>
 
-          {/* Duration */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="validFrom" className="text-sm font-medium">
-                Access From <span className="text-destructive">*</span>
+                {m('accessFrom')} <span className="text-destructive">*</span>
               </Label>
               <Popover>
                 <PopoverTrigger asChild>
@@ -232,7 +233,7 @@ export function RequestAccessModal({
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
-                    {formData.validFrom ? format(parseISO(formData.validFrom), 'PPP') : 'Pick a date'}
+                    {formData.validFrom ? format(parseISO(formData.validFrom), 'PPP') : m('pickDate')}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -249,7 +250,7 @@ export function RequestAccessModal({
 
             <div className="space-y-2">
               <Label htmlFor="validTo" className="text-sm font-medium">
-                Access Until (Optional)
+                {m('accessUntil')}
               </Label>
               <Popover>
                 <PopoverTrigger asChild>
@@ -263,7 +264,7 @@ export function RequestAccessModal({
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
-                    {formData.validTo ? format(parseISO(formData.validTo), 'PPP') : 'Pick a date'}
+                    {formData.validTo ? format(parseISO(formData.validTo), 'PPP') : m('pickDate')}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -276,14 +277,13 @@ export function RequestAccessModal({
                   />
                 </PopoverContent>
               </Popover>
-              <p className="text-xs text-muted-foreground">Leave empty for permanent access</p>
+              <p className="text-xs text-muted-foreground">{m('permanentAccess')}</p>
             </div>
           </div>
 
-          {/* Priority */}
           <div className="space-y-2">
             <Label htmlFor="priority" className="text-sm font-medium">
-              Priority
+              {m('priority')}
             </Label>
             <Select
               value={formData.priority}
@@ -293,60 +293,54 @@ export function RequestAccessModal({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="LOW">Low</SelectItem>
-                <SelectItem value="MEDIUM">Medium</SelectItem>
-                <SelectItem value="HIGH">High</SelectItem>
-                <SelectItem value="URGENT">Urgent</SelectItem>
+                <SelectItem value="LOW">{m('low')}</SelectItem>
+                <SelectItem value="MEDIUM">{m('medium')}</SelectItem>
+                <SelectItem value="HIGH">{m('high')}</SelectItem>
+                <SelectItem value="URGENT">{m('urgent')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {/* Ticket ID */}
           <div className="space-y-2">
             <Label htmlFor="accessRequestTicketId" className="text-sm font-medium">
-              Access Request Ticket ID (Optional)
+              {m('ticketId')}
             </Label>
             <Input
               id="accessRequestTicketId"
               value={formData.accessRequestTicketId}
               onChange={(e) => setFormData({ ...formData, accessRequestTicketId: e.target.value })}
-              placeholder="TICK-12345"
+              placeholder={m('ticketIdPlaceholder')}
             />
-            <p className="text-xs text-muted-foreground">If you have an existing ticket for this request</p>
+            <p className="text-xs text-muted-foreground">{m('ticketIdHint')}</p>
           </div>
 
-          {/* Business Justification */}
           <div className="space-y-2">
             <Label htmlFor="businessJustification" className="text-sm font-medium">
-              Business Justification <span className="text-destructive">*</span>
+              {m('justification')} <span className="text-destructive">*</span>
             </Label>
             <Textarea
               id="businessJustification"
               value={formData.businessJustification}
               onChange={(e) => setFormData({ ...formData, businessJustification: e.target.value })}
               className={cn("min-h-[120px] resize-none", errors.businessJustification && "border-destructive")}
-              placeholder="Explain why you need access to this resource and how it will be used..."
+              placeholder={m('justificationPlaceholder')}
             />
             <div className="flex justify-between items-center">
               {errors.businessJustification && (
                 <p className="text-xs text-destructive">{errors.businessJustification}</p>
               )}
               <p className="text-xs text-muted-foreground ml-auto">
-                {formData.businessJustification.length} / 20 minimum
+                {m('justificationMinLength', { count: formData.businessJustification.length })}
               </p>
             </div>
           </div>
 
-          {/* ISO 27001 Compliance Notice */}
           <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
             <div className="flex gap-2">
               <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
               <div className="text-sm text-blue-800">
-                <p className="font-medium mb-1">ISO 27001 Compliance</p>
-                <p>
-                  Your request will be reviewed by the resource owner. You will receive an email notification
-                  with access credentials once approved. Please ensure your justification is clear and complete.
-                </p>
+                <p className="font-medium mb-1">{m('isoTitle')}</p>
+                <p>{m('isoBody')}</p>
               </div>
             </div>
           </div>
@@ -364,11 +358,11 @@ export function RequestAccessModal({
               onClick={onClose}
               disabled={isLoading}
             >
-              Cancel
+              {m('cancel')}
             </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Submit Request
+              {m('submit')}
             </Button>
           </DialogFooter>
         </form>
