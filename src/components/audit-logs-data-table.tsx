@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { format as formatDateFns } from 'date-fns'
+import { useTranslations } from "next-intl"
 import {
   IconChevronLeft,
   IconChevronRight,
@@ -206,7 +207,9 @@ const exportAuditLogs = (logs: AuditLog[], format: 'csv' | 'xlsx') => {
   XLSX.writeFile(workbook, `audit-logs-${timestamp}.${format}`, format === 'csv' ? { bookType: 'csv' } : undefined)
 }
 
-const createColumns = (): ColumnDef<AuditLog>[] => [
+type TFunc = ReturnType<typeof useTranslations<'auditLogs.table'>>
+
+const createColumns = (t: TFunc): ColumnDef<AuditLog>[] => [
   {
     accessorKey: "createdAt",
     header: ({ column }) => {
@@ -215,7 +218,7 @@ const createColumns = (): ColumnDef<AuditLog>[] => [
           className="flex items-center gap-1 hover:text-foreground"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Timestamp
+          {t('timestamp')}
           {column.getIsSorted() === "asc" ? (
             <IconArrowUp className="h-3 w-3" />
           ) : column.getIsSorted() === "desc" ? (
@@ -243,7 +246,7 @@ const createColumns = (): ColumnDef<AuditLog>[] => [
           className="flex items-center gap-1 hover:text-foreground"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Action
+          {t('action')}
           {column.getIsSorted() === "asc" ? (
             <IconArrowUp className="h-3 w-3" />
           ) : column.getIsSorted() === "desc" ? (
@@ -267,7 +270,7 @@ const createColumns = (): ColumnDef<AuditLog>[] => [
           className="flex items-center gap-1 hover:text-foreground"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          User
+          {t('user')}
           {column.getIsSorted() === "asc" ? (
             <IconArrowUp className="h-3 w-3" />
           ) : column.getIsSorted() === "desc" ? (
@@ -293,7 +296,7 @@ const createColumns = (): ColumnDef<AuditLog>[] => [
           className="flex items-center gap-1 hover:text-foreground"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Entity Type
+          {t('entityType')}
           {column.getIsSorted() === "asc" ? (
             <IconArrowUp className="h-3 w-3" />
           ) : column.getIsSorted() === "desc" ? (
@@ -314,7 +317,7 @@ const createColumns = (): ColumnDef<AuditLog>[] => [
   },
   {
     accessorKey: "details",
-    header: "Details",
+    header: t('details'),
     size: 300,
     cell: ({ row }) => (
       <div className="max-w-md text-sm text-muted-foreground truncate" title={formatAuditDetails(row.original)}>
@@ -326,7 +329,7 @@ const createColumns = (): ColumnDef<AuditLog>[] => [
   {
     id: "actions",
     size: 40,
-    cell: ({ row }) => (
+    cell: () => (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
@@ -335,12 +338,12 @@ const createColumns = (): ColumnDef<AuditLog>[] => [
             size="icon"
           >
             <IconDotsVertical className="size-3" />
-            <span className="sr-only">Open menu</span>
+            <span className="sr-only">{t('openMenu')}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-32">
-          <DropdownMenuItem>View Details</DropdownMenuItem>
-          <DropdownMenuItem>Export Log</DropdownMenuItem>
+          <DropdownMenuItem>{t('viewDetails')}</DropdownMenuItem>
+          <DropdownMenuItem>{t('exportLog')}</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     ),
@@ -352,6 +355,7 @@ export function AuditLogsDataTable({
 }: {
   data: AuditLog[]
 }) {
+  const t = useTranslations('auditLogs.table')
   const [data, setData] = React.useState(() => initialData)
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
@@ -362,7 +366,7 @@ export function AuditLogsDataTable({
   const [sorting, setSorting] = React.useState<SortingState>([
     {
       id: "createdAt",
-      desc: true, // Most recent first
+      desc: true,
     }
   ])
   const [globalFilter, setGlobalFilter] = React.useState("")
@@ -371,12 +375,11 @@ export function AuditLogsDataTable({
     pageSize: 20,
   })
 
-  // Sync internal data state with parent data changes
   React.useEffect(() => {
     setData(initialData)
   }, [initialData])
 
-  const columns = React.useMemo(() => createColumns(), [])
+  const columns = React.useMemo(() => createColumns(t), [t])
 
   const table = useReactTable({
     data,
@@ -413,7 +416,7 @@ export function AuditLogsDataTable({
         {/* Search Input */}
         <div className="relative flex-1 max-w-sm">
           <Input
-            placeholder="Search audit logs..."
+            placeholder={t('searchPlaceholder')}
             value={globalFilter ?? ""}
             onChange={(e) => setGlobalFilter(e.target.value)}
             className="h-9"
@@ -433,7 +436,7 @@ export function AuditLogsDataTable({
               disabled={table.getFilteredRowModel().rows.length === 0}
             >
               <IconDownload className="mr-2 h-4 w-4" />
-              Export
+              {t('export')}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -442,14 +445,14 @@ export function AuditLogsDataTable({
                 exportAuditLogs(table.getSortedRowModel().rows.map((r) => r.original), 'csv')
               }
             >
-              Export as CSV
+              {t('exportCsv')}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() =>
                 exportAuditLogs(table.getSortedRowModel().rows.map((r) => r.original), 'xlsx')
               }
             >
-              Export as Excel
+              {t('exportExcel')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -506,7 +509,7 @@ export function AuditLogsDataTable({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  {t('noResults')}
                 </TableCell>
               </TableRow>
             )}
@@ -517,13 +520,15 @@ export function AuditLogsDataTable({
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <div className="text-muted-foreground text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {t('rowsSelected', {
+            selected: table.getFilteredSelectedRowModel().rows.length,
+            total: table.getFilteredRowModel().rows.length,
+          })}
         </div>
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <Label htmlFor="rows-per-page" className="text-sm font-medium">
-              Rows per page
+              {t('rowsPerPage')}
             </Label>
             <Select
               value={`${table.getState().pagination.pageSize}`}
@@ -546,8 +551,10 @@ export function AuditLogsDataTable({
             </Select>
           </div>
           <div className="text-sm font-medium">
-            Page {table.getState().pagination.pageIndex + 1} of{" "}
-            {table.getPageCount()}
+            {t('pageOf', {
+              current: table.getState().pagination.pageIndex + 1,
+              total: table.getPageCount(),
+            })}
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -556,7 +563,7 @@ export function AuditLogsDataTable({
               onClick={() => table.setPageIndex(0)}
               disabled={!table.getCanPreviousPage()}
             >
-              <span className="sr-only">Go to first page</span>
+              <span className="sr-only">{t('goToFirstPage')}</span>
               <IconChevronsLeft className="h-4 w-4" />
             </Button>
             <Button
@@ -565,7 +572,7 @@ export function AuditLogsDataTable({
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
-              <span className="sr-only">Go to previous page</span>
+              <span className="sr-only">{t('goToPreviousPage')}</span>
               <IconChevronLeft className="h-4 w-4" />
             </Button>
             <Button
@@ -574,7 +581,7 @@ export function AuditLogsDataTable({
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >
-              <span className="sr-only">Go to next page</span>
+              <span className="sr-only">{t('goToNextPage')}</span>
               <IconChevronRight className="h-4 w-4" />
             </Button>
             <Button
@@ -583,7 +590,7 @@ export function AuditLogsDataTable({
               onClick={() => table.setPageIndex(table.getPageCount() - 1)}
               disabled={!table.getCanNextPage()}
             >
-              <span className="sr-only">Go to last page</span>
+              <span className="sr-only">{t('goToLastPage')}</span>
               <IconChevronsRight className="h-4 w-4" />
             </Button>
           </div>
@@ -594,6 +601,8 @@ export function AuditLogsDataTable({
 }
 
 function TableCellViewer({ item }: { item: AuditLog }) {
+  const t = useTranslations('auditLogs.drawer')
+
   return (
     <Drawer direction="right">
       <DrawerTrigger asChild>
@@ -603,36 +612,36 @@ function TableCellViewer({ item }: { item: AuditLog }) {
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="gap-1">
-          <DrawerTitle>Audit Log Details</DrawerTitle>
+          <DrawerTitle>{t('title')}</DrawerTitle>
           <DrawerDescription>
-            Complete audit trail information
+            {t('description')}
           </DrawerDescription>
         </DrawerHeader>
         <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
           <div className="grid gap-2">
             <div className="flex gap-2 leading-none font-medium">
-              User: {item.user?.name || 'System'}
+              {t('user')}: {item.user?.name || 'System'}
             </div>
             {item.user?.email && (
               <div className="text-muted-foreground">
-                Email: {item.user.email}
+                {t('email')}: {item.user.email}
               </div>
             )}
             <div className="text-muted-foreground">
-              Action: {item.action}
+              {t('action')}: {item.action}
             </div>
             <div className="text-muted-foreground">
-              Entity Type: {item.entityType}
+              {t('entityType')}: {item.entityType}
             </div>
             <div className="text-muted-foreground">
-              Entity ID: {item.entityId}
+              {t('entityId')}: {item.entityId}
             </div>
             <div className="text-muted-foreground">
-              Timestamp: {formatDate(item.createdAt)}
+              {t('timestamp')}: {formatDate(item.createdAt)}
             </div>
             {item.details && (
               <div className="text-muted-foreground">
-                <div className="font-medium mb-1">Details:</div>
+                <div className="font-medium mb-1">{t('details')}:</div>
                 <pre className="text-xs bg-muted p-2 rounded overflow-auto max-h-60">
                   {typeof item.details === 'object'
                     ? JSON.stringify(item.details, null, 2)
@@ -645,7 +654,7 @@ function TableCellViewer({ item }: { item: AuditLog }) {
         </div>
         <DrawerFooter>
           <DrawerClose asChild>
-            <Button variant="outline">Close</Button>
+            <Button variant="outline">{t('close')}</Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>
