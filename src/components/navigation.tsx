@@ -36,7 +36,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { signOut } from 'next-auth/react'
 import { useState } from 'react'
-import { useTheme } from 'next-themes'
+import { LocaleSwitcher } from './locale-switcher'
 
 const mainNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -212,6 +212,7 @@ export function Navigation() {
           )}
           {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
         </Button>
+        <LocaleSwitcher />
         <Button
           variant="ghost"
           className="w-full justify-start text-muted-foreground hover:text-foreground"

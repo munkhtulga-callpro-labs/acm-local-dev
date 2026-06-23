@@ -1,0 +1,26 @@
+{
+  "dashboard": {
+    "title": "Хяналтын самбар",
+    "welcome": "Тавтай морил, {name}",
+    "totalEmployees": "Нийт ажилтан",
+    "totalEmployeesDesc": "Системд бүртгэлтэй бүх ажилтан",
+    "pendingRequests": "Хүлээгдэж буй хүсэлт",
+    "pendingRequestsDesc": "Хүлээгдэж буй хүсэлтүүд",
+    "totalSystems": "Нийт систем",
+    "totalSystemsDesc": "Бүртгэлтэй бүх систем",
+    "expiringAccess": "Дуусах эрх",
+    "expiringAccessDesc": "7 хоногийн дотор",
+    "systemsAndResources": "Систем ба нөөц",
+    "systemsAndResourcesDesc": "Эрхийн удирдлагын систем, төхөөрөмж, сервер, мэдээллийн сан болон бусад нөөцийг удирдах",
+    "devices": "Төхөөрөмж",
+    "devicesDesc": "Зөөврийн компьютер, утас гэх мэт",
+    "servers": "Сервер",
+    "serversDesc": "Продакшн болон туршилтын орчин",
+    "databases": "Өгөгдлийн сан",
+    "databasesDesc": "Өгөгдөл хадгалах систем",
+    "approvalDetails": "Зөвшөөрлийн дэлгэрэнгүй",
+    "approvalDetailsDesc": "Эрхийн хяналтын зөвшөөрлийн хүсэлтүүдийг харах, удирдах",
+    "loading": "Батлалтын хүсэлт ачаалж байна...",
+    "noApprovalRequests": "Зөвшөөрлийн хүсэлт олдсонгүй"
+  }
+}

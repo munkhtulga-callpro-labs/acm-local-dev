@@ -1,0 +1,26 @@
+{
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back, {name}",
+    "totalEmployees": "Total Employees",
+    "totalEmployeesDesc": "All employees in system",
+    "pendingRequests": "Pending Requests",
+    "pendingRequestsDesc": "Awaiting approval",
+    "totalSystems": "Total Systems",
+    "totalSystemsDesc": "All registered systems",
+    "expiringAccess": "Expiring Access",
+    "expiringAccessDesc": "Within 7 days",
+    "systemsAndResources": "Systems & Resources",
+    "systemsAndResourcesDesc": "Manage systems, devices, servers, databases, and other resources for access control",
+    "devices": "Devices",
+    "devicesDesc": "Laptops, phones, etc.",
+    "servers": "Servers",
+    "serversDesc": "Production & staging",
+    "databases": "Databases",
+    "databasesDesc": "Data storage systems",
+    "approvalDetails": "Approval Details",
+    "approvalDetailsDesc": "Review and manage access control approval requests",
+    "loading": "Loading approval requests...",
+    "noApprovalRequests": "No approval requests found"
+  }
+}
