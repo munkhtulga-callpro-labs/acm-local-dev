@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -44,6 +45,7 @@ export function DepartmentModal({
     company: ''
   })
 
+  const t = useTranslations('departments.modal')
   const [selectedCompany, setSelectedCompany] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -72,10 +74,10 @@ export function DepartmentModal({
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.name?.trim()) newErrors.name = 'Department name is required'
-    if (!selectedCompany) newErrors.company = 'Company is required'
+    if (!formData.name?.trim()) newErrors.name = t('errors.nameRequired')
+    if (!selectedCompany) newErrors.company = t('errors.companyRequired')
     if (formData.manager && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.manager)) {
-      newErrors.manager = 'Invalid email format'
+      newErrors.manager = t('errors.invalidEmail')
     }
 
     setErrors(newErrors)
@@ -104,7 +106,7 @@ export function DepartmentModal({
       onClose()
     } catch (error) {
       console.error('Error saving department:', error)
-      setErrors({ submit: 'Failed to save department. Please try again.' })
+      setErrors({ submit: t('errors.saveFailed') })
     } finally {
       setIsLoading(false)
     }
@@ -123,14 +125,14 @@ export function DepartmentModal({
         <DialogHeader className="space-y-3 pb-6 border-b">
           <DialogTitle className="text-2xl font-semibold flex items-center gap-2">
             <Building2 className="h-6 w-6 text-primary" />
-            {mode === 'view' && 'Department Details'}
-            {mode === 'edit' && 'Edit Department'}
-            {mode === 'create' && 'Add New Department'}
+            {mode === 'view' && t('titleView')}
+            {mode === 'edit' && t('titleEdit')}
+            {mode === 'create' && t('titleCreate')}
           </DialogTitle>
           <DialogDescription className="text-base">
-            {mode === 'view' && 'View detailed information about this department.'}
-            {mode === 'edit' && 'Update department information. Fields marked with * are required.'}
-            {mode === 'create' && 'Fill in the details to add a new department. Fields marked with * are required.'}
+            {mode === 'view' && t('descriptionView')}
+            {mode === 'edit' && t('descriptionEdit')}
+            {mode === 'create' && t('descriptionCreate')}
           </DialogDescription>
         </DialogHeader>
 
@@ -139,12 +141,12 @@ export function DepartmentModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Building2 className="h-4 w-4" />
-              Basic Information
+              {t('basicInfo')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-sm font-medium">
-                  Department Name {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('departmentName')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="name"
@@ -152,7 +154,7 @@ export function DepartmentModal({
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   disabled={isViewMode}
                   className={cn(errors.name && "border-destructive focus-visible:ring-destructive")}
-                  placeholder="Engineering"
+                  placeholder={t('departmentNamePlaceholder')}
                 />
                 {errors.name && (
                   <p className="text-xs text-destructive">{errors.name}</p>
@@ -161,7 +163,7 @@ export function DepartmentModal({
 
               <div className="space-y-2">
                 <Label htmlFor="company" className="text-sm font-medium">
-                  Company {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('company')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={companies.find(c => c.name === selectedCompany)?.id || ''}
@@ -169,7 +171,7 @@ export function DepartmentModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Select company" />
+                    <SelectValue placeholder={t('selectCompany')} />
                   </SelectTrigger>
                   <SelectContent>
                     {companies.map((company) => (
@@ -190,12 +192,12 @@ export function DepartmentModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <User className="h-4 w-4" />
-              Management Information
+              {t('managementInfo')}
             </h3>
             <div className="grid grid-cols-1 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="manager" className="text-sm font-medium">
-                  Manager Email
+                  {t('managerEmail')}
                 </Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -206,7 +208,7 @@ export function DepartmentModal({
                     onChange={(e) => setFormData({ ...formData, manager: e.target.value })}
                     disabled={isViewMode}
                     className={cn("pl-10", errors.manager && "border-destructive focus-visible:ring-destructive")}
-                    placeholder="manager@company.com"
+                    placeholder={t('managerEmailPlaceholder')}
                   />
                 </div>
                 {errors.manager && (
@@ -220,12 +222,12 @@ export function DepartmentModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Building2 className="h-4 w-4" />
-              Additional Information
+              {t('additionalInfo')}
             </h3>
             <div className="grid grid-cols-1 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="description" className="text-sm font-medium">
-                  Description
+                  {t('description')}
                 </Label>
                 <Textarea
                   id="description"
@@ -233,7 +235,7 @@ export function DepartmentModal({
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   disabled={isViewMode}
                   className="min-h-[100px] resize-none"
-                  placeholder="Brief description of the department..."
+                  placeholder={t('descriptionPlaceholder')}
                 />
               </div>
             </div>
@@ -253,7 +255,7 @@ export function DepartmentModal({
               disabled={isLoading}
               className="min-w-24"
             >
-              {isViewMode ? 'Close' : 'Cancel'}
+              {isViewMode ? t('close') : t('cancel')}
             </Button>
             {!isViewMode && (
               <Button
@@ -262,7 +264,7 @@ export function DepartmentModal({
                 className="min-w-28"
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {mode === 'edit' ? 'Update Department' : 'Add Department'}
+                {mode === 'edit' ? t('updateDepartment') : t('addDepartment')}
               </Button>
             )}
           </DialogFooter>

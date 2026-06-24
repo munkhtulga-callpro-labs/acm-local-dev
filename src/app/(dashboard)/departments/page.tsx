@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { DepartmentModal } from '@/components/department-modal'
@@ -11,6 +12,7 @@ import {
 import { DepartmentsDataTable, type Department } from '@/components/departments-data-table'
 
 export default function DepartmentsPage() {
+  const t = useTranslations('departments')
   const [departments, setDepartments] = useState<Department[]>([])
   const [companies, setCompanies] = useState<Array<{ id: string; name: string }>>([])
   const [loading, setLoading] = useState(true)
@@ -39,11 +41,11 @@ export default function DepartmentsPage() {
         setError('') // Clear any previous errors
       } else {
         const errorData = await response.json()
-        setError(`Failed to fetch departments: ${errorData.error || 'Unknown error'}`)
-        setDepartments([]) // Set empty array to prevent undefined errors
+        setError(t('errors.fetchFailed', { error: errorData.error || 'Unknown error' }))
+        setDepartments([])
       }
-    } catch (error) {
-      setError('Error fetching departments')
+    } catch {
+      setError(t('errors.fetchError'))
       setDepartments([]) // Set empty array to prevent undefined errors
     } finally {
       setLoading(false)
@@ -73,12 +75,12 @@ export default function DepartmentsPage() {
         })
 
         if (response.ok) {
-          setSuccess('Department added successfully')
+          setSuccess(t('success.added'))
           fetchDepartments()
         } else {
           const errorData = await response.json()
-          setError(errorData.error || 'Failed to add department')
-          throw new Error(errorData.error || 'Failed to add department')
+          setError(errorData.error || t('errors.addFailed'))
+          throw new Error(errorData.error || t('errors.addFailed'))
         }
       } else if (modalState.mode === 'edit' && modalState.department) {
         const response = await fetch(`/api/departments/${modalState.department.id}`, {
@@ -88,12 +90,12 @@ export default function DepartmentsPage() {
         })
 
         if (response.ok) {
-          setSuccess('Department updated successfully')
+          setSuccess(t('success.updated'))
           fetchDepartments()
         } else {
           const errorData = await response.json()
-          setError(errorData.error || 'Failed to update department')
-          throw new Error(errorData.error || 'Failed to update department')
+          setError(errorData.error || t('errors.updateFailed'))
+          throw new Error(errorData.error || t('errors.updateFailed'))
         }
       }
     } catch (error) {
@@ -106,7 +108,7 @@ export default function DepartmentsPage() {
   }
 
   const handleDeleteClick = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete ${name}?`)) return
+    if (!confirm(t('confirmDelete', { name }))) return
 
     try {
       const response = await fetch(`/api/departments/${id}`, {
@@ -114,13 +116,13 @@ export default function DepartmentsPage() {
       })
 
       if (response.ok) {
-        setSuccess(`${name} has been deleted successfully`)
+        setSuccess(t('success.deleted', { name }))
         fetchDepartments()
       } else {
-        setError('Failed to delete department')
+        setError(t('errors.deleteFailed'))
       }
-    } catch (error) {
-      setError('Error deleting department')
+    } catch {
+      setError(t('errors.deleteError'))
     }
   }
 
@@ -132,8 +134,8 @@ export default function DepartmentsPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Department Management</h1>
-        <p className="text-muted-foreground">Manage departments and organizational structure</p>
+        <h1 className="text-3xl font-bold text-foreground">{t('title')}</h1>
+        <p className="text-muted-foreground">{t('subtitle')}</p>
       </div>
 
       {error && (
@@ -152,33 +154,33 @@ export default function DepartmentsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Departments</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('totalDepartments')}</CardTitle>
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalDepartments}</div>
             <p className="text-xs text-muted-foreground">
-              {activeDepartments} active
+              {t('activeDepartments', { count: activeDepartments })}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Employees</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('totalEmployees')}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalEmployees}</div>
             <p className="text-xs text-muted-foreground">
-              Across all departments
+              {t('acrossAllDepartments')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Department Size</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('avgSize')}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -186,7 +188,7 @@ export default function DepartmentsPage() {
               {totalDepartments > 0 ? Math.round(totalEmployees / totalDepartments) : 0}
             </div>
             <p className="text-xs text-muted-foreground">
-              Employees per department
+              {t('employeesPerDepartment')}
             </p>
           </CardContent>
         </Card>
@@ -195,9 +197,9 @@ export default function DepartmentsPage() {
       {/* Departments Table */}
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle>Departments</CardTitle>
+          <CardTitle>{t('departmentsCard')}</CardTitle>
           <CardDescription className="mt-1.5">
-            Manage department information and structure
+            {t('departmentsCardDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-0 px-6 pb-6">
@@ -207,7 +209,7 @@ export default function DepartmentsPage() {
             </div>
           ) : departments.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No departments found
+              {t('noDepartments')}
             </div>
           ) : (
             <DepartmentsDataTable
