@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { useTranslations } from 'next-intl'
 import {
   flexRender,
   getCoreRowModel,
@@ -108,35 +109,37 @@ const getUtilizationBadge = (used: number, total: number) => {
   }
 }
 
-const getStatusBadge = (status: string) => {
+type TFunc = ReturnType<typeof useTranslations<'saasSubscriptions.table'>>
+
+const getStatusBadge = (status: string, t: TFunc) => {
   const statusUpper = status.toUpperCase()
   switch (statusUpper) {
     case 'ACTIVE':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400 mr-1 w-3 h-3" />
-          Active
+          {t('statusActive')}
         </Badge>
       )
     case 'EXPIRED':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleFilled className="fill-red-500 dark:fill-red-400 mr-1 w-3 h-3" />
-          Expired
+          {t('statusExpired')}
         </Badge>
       )
     case 'CANCELLED':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleFilled className="fill-gray-400 dark:fill-gray-500 mr-1 w-3 h-3" />
-          Cancelled
+          {t('statusCancelled')}
         </Badge>
       )
     case 'INACTIVE':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleFilled className="fill-gray-400 dark:fill-gray-500 mr-1 w-3 h-3" />
-          Inactive
+          {t('statusInactive')}
         </Badge>
       )
     default:
@@ -155,6 +158,8 @@ export function SaaSSubscriptionsDataTable({
   onView,
   onAdd,
 }: SaaSSubscriptionsDataTableProps) {
+  const t = useTranslations('saasSubscriptions.table')
+  const tDrawer = useTranslations('saasSubscriptions.drawer')
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -172,7 +177,7 @@ export function SaaSSubscriptionsDataTable({
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
             className="px-0 hover:bg-transparent"
           >
-            Service Name
+            {t('serviceName')}
             <ArrowUpDown className="ml-2 h-3 w-3" />
           </Button>
         )
@@ -189,7 +194,7 @@ export function SaaSSubscriptionsDataTable({
     },
     {
       accessorKey: 'category',
-      header: 'Category',
+      header: () => t('category'),
       cell: ({ row }) => {
         const category = row.getValue('category') as string
         return (
@@ -201,7 +206,7 @@ export function SaaSSubscriptionsDataTable({
     },
     {
       accessorKey: 'subscriptionPlan',
-      header: 'Plan',
+      header: () => t('plan'),
       cell: ({ row }) => {
         const plan = row.getValue('subscriptionPlan') as string
         return <span className="text-sm">{plan}</span>
@@ -209,7 +214,7 @@ export function SaaSSubscriptionsDataTable({
     },
     {
       accessorKey: 'usedSeats',
-      header: 'Seats',
+      header: () => t('seats'),
       cell: ({ row }) => {
         const used = row.getValue('usedSeats') as number
         const total = row.original.totalSeats
@@ -230,7 +235,7 @@ export function SaaSSubscriptionsDataTable({
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
             className="px-0 hover:bg-transparent"
           >
-            Utilization
+            {t('utilization')}
             <ArrowUpDown className="ml-2 h-3 w-3" />
           </Button>
         )
@@ -248,7 +253,7 @@ export function SaaSSubscriptionsDataTable({
     },
     {
       accessorKey: 'cost',
-      header: 'Cost',
+      header: () => t('cost'),
       cell: ({ row }) => {
         const cost = row.getValue('cost') as number | null
         return cost ? (
@@ -263,7 +268,7 @@ export function SaaSSubscriptionsDataTable({
     },
     {
       accessorKey: 'billingCycle',
-      header: 'Billing',
+      header: () => t('billing'),
       cell: ({ row }) => {
         const cycle = row.getValue('billingCycle') as string
         return (
@@ -282,14 +287,14 @@ export function SaaSSubscriptionsDataTable({
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
             className="px-0 hover:bg-transparent"
           >
-            Status
+            {t('status')}
             <ArrowUpDown className="ml-2 h-3 w-3" />
           </Button>
         )
       },
       cell: ({ row }) => {
         const status = row.getValue('status') as string
-        return getStatusBadge(status)
+        return getStatusBadge(status, t)
       },
     },
     {
@@ -302,24 +307,24 @@ export function SaaSSubscriptionsDataTable({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
+                <span className="sr-only">{t('openMenu')}</span>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('actionsLabel')}</DropdownMenuLabel>
               <DropdownMenuItem
                 onClick={() => {
                   setSelectedSubscription(subscription)
                   setDrawerOpen(true)
                 }}
               >
-                View details
+                {t('viewDetails')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {onEdit && (
                 <DropdownMenuItem onClick={() => onEdit(subscription)}>
-                  Edit subscription
+                  {t('editSubscription')}
                 </DropdownMenuItem>
               )}
               {onDelete && (
@@ -327,7 +332,7 @@ export function SaaSSubscriptionsDataTable({
                   onClick={() => onDelete(subscription.id, subscription.serviceName)}
                   className="text-destructive"
                 >
-                  Delete subscription
+                  {t('deleteSubscription')}
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
@@ -365,7 +370,7 @@ export function SaaSSubscriptionsDataTable({
     <div className="w-full">
       <div className="flex items-center gap-2 py-4">
         <Input
-          placeholder="Search subscriptions..."
+          placeholder={t('searchPlaceholder')}
           value={(table.getColumn('serviceName')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
             table.getColumn('serviceName')?.setFilterValue(event.target.value)
@@ -375,7 +380,7 @@ export function SaaSSubscriptionsDataTable({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
+              {t('columns')} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -400,7 +405,7 @@ export function SaaSSubscriptionsDataTable({
         </DropdownMenu>
         {onAdd && (
           <Button onClick={onAdd} size="sm">
-            Add Subscription
+            {t('addSubscription')}
           </Button>
         )}
       </div>
@@ -447,7 +452,7 @@ export function SaaSSubscriptionsDataTable({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  {t('noResults')}
                 </TableCell>
               </TableRow>
             )}
@@ -456,7 +461,7 @@ export function SaaSSubscriptionsDataTable({
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredRowModel().rows.length} subscription(s) total
+          {t('subscriptionTotal', { count: table.getFilteredRowModel().rows.length })}
         </div>
         <div className="space-x-2">
           <Button
@@ -465,7 +470,7 @@ export function SaaSSubscriptionsDataTable({
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            Previous
+            {t('previous')}
           </Button>
           <Button
             variant="outline"
@@ -473,7 +478,7 @@ export function SaaSSubscriptionsDataTable({
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            {t('next')}
           </Button>
         </div>
       </div>
@@ -487,40 +492,40 @@ export function SaaSSubscriptionsDataTable({
                 <IconCloudComputing className="w-5 h-5" />
                 {selectedSubscription?.serviceName}
               </DrawerTitle>
-              <DrawerDescription>SaaS subscription details</DrawerDescription>
+              <DrawerDescription>{tDrawer('description')}</DrawerDescription>
             </DrawerHeader>
             {selectedSubscription && (
               <div className="p-4 pb-0 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Category</p>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('category')}</p>
                     <p className="text-sm mt-1">{selectedSubscription.category}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Plan</p>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('plan')}</p>
                     <p className="text-sm mt-1">{selectedSubscription.subscriptionPlan}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Seats</p>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('seats')}</p>
                     <p className="text-sm mt-1">{selectedSubscription.usedSeats} / {selectedSubscription.totalSeats}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Utilization</p>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('utilization')}</p>
                     <div className="mt-1">{getUtilizationBadge(selectedSubscription.usedSeats, selectedSubscription.totalSeats)}</div>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Billing Cycle</p>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('billingCycle')}</p>
                     <p className="text-sm mt-1">{selectedSubscription.billingCycle}</p>
                   </div>
                   {selectedSubscription.cost && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Cost</p>
+                      <p className="text-sm font-medium text-muted-foreground">{tDrawer('cost')}</p>
                       <p className="text-sm mt-1">${selectedSubscription.cost.toLocaleString()}</p>
                     </div>
                   )}
                   {selectedSubscription.renewalDate && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Renewal Date</p>
+                      <p className="text-sm font-medium text-muted-foreground">{tDrawer('renewalDate')}</p>
                       <p className="text-sm mt-1">
                         {new Date(selectedSubscription.renewalDate).toLocaleDateString()}
                       </p>
@@ -528,16 +533,16 @@ export function SaaSSubscriptionsDataTable({
                   )}
                   {selectedSubscription.ownerDepartment && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Owner Department</p>
+                      <p className="text-sm font-medium text-muted-foreground">{tDrawer('ownerDepartment')}</p>
                       <p className="text-sm mt-1">{selectedSubscription.ownerDepartment}</p>
                     </div>
                   )}
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Status</p>
-                    <div className="mt-1">{getStatusBadge(selectedSubscription.status)}</div>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('status')}</p>
+                    <div className="mt-1">{getStatusBadge(selectedSubscription.status, t)}</div>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Features</p>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('features')}</p>
                     <div className="flex gap-1.5 mt-1">
                       {selectedSubscription.ssoEnabled && (
                         <Badge variant="outline" className="text-xs">
@@ -554,7 +559,7 @@ export function SaaSSubscriptionsDataTable({
                     </div>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Created</p>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('created')}</p>
                     <p className="text-sm mt-1">
                       {new Date(selectedSubscription.createdAt).toLocaleDateString()}
                     </p>
@@ -573,7 +578,7 @@ export function SaaSSubscriptionsDataTable({
                     }}
                     className="flex-1"
                   >
-                    Edit
+                    {tDrawer('edit')}
                   </Button>
                 )}
                 {onDelete && selectedSubscription && (
@@ -585,12 +590,12 @@ export function SaaSSubscriptionsDataTable({
                     }}
                     className="flex-1"
                   >
-                    Delete
+                    {tDrawer('delete')}
                   </Button>
                 )}
               </div>
               <DrawerClose asChild>
-                <Button variant="outline">Close</Button>
+                <Button variant="outline">{tDrawer('close')}</Button>
               </DrawerClose>
             </DrawerFooter>
           </div>
