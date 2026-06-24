@@ -31,9 +31,12 @@ interface ResourceOwnershipSectionProps {
   disabled?: boolean
 
   // Optional customization
+  sectionTitle?: string
   primaryOwnerLabel?: string
+  primaryOwnerPlaceholder?: string
   primaryOwnerHelp?: string
   additionalOwnersLabel?: string
+  additionalOwnersViewLabel?: string
   additionalOwnersHelp?: string
 }
 
@@ -46,9 +49,12 @@ export function ResourceOwnershipSection({
   owners,
   onOwnersChange,
   disabled = false,
+  sectionTitle = 'Resource Ownership',
   primaryOwnerLabel = 'Primary Owner',
+  primaryOwnerPlaceholder = 'Search and select primary owner...',
   primaryOwnerHelp = 'Primary owner manages this resource and approves access requests',
   additionalOwnersLabel = 'Additional Owners (Optional)',
+  additionalOwnersViewLabel,
   additionalOwnersHelp = 'Add department owners and secondary owners who will also approve access requests',
 }: ResourceOwnershipSectionProps) {
   const isViewMode = disabled
@@ -57,7 +63,7 @@ export function ResourceOwnershipSection({
     <div className="space-y-4">
       <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
         <Building2 className="h-4 w-4" />
-        Resource Ownership
+        {sectionTitle}
       </h3>
 
       <div className="space-y-4">
@@ -70,7 +76,7 @@ export function ResourceOwnershipSection({
             employees={employees}
             value={owner}
             onValueChange={onOwnerChange}
-            placeholder="Search and select primary owner..."
+            placeholder={primaryOwnerPlaceholder}
             disabled={isViewMode}
             className={cn(ownerError && "border-destructive")}
           />
@@ -100,7 +106,7 @@ export function ResourceOwnershipSection({
         {/* Additional Owners - View Mode */}
         {isViewMode && owners.length > 0 && (
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Additional Owners</Label>
+            <Label className="text-sm font-medium">{additionalOwnersViewLabel ?? additionalOwnersLabel}</Label>
             <ResourceOwnerManager
               owners={owners}
               onChange={onOwnersChange}

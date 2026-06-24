@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Database, Server, User, Key, FileText, Shield, Calendar, Loader2 } from 'lucide-react'
+import { Database, Server, User, FileText, Shield, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ResourceOwnershipSection } from '@/components/resource-ownership-section'
 
@@ -33,7 +34,6 @@ interface DatabaseResource {
   accessLevel: string
   description?: string | null
 
-  // ISO 27001 Compliance Fields
   requestedBy?: string | null
   approvedBy?: string | null
   approvalDate?: string | null
@@ -71,6 +71,8 @@ export function DatabaseModal({
   employees,
   departments
 }: DatabaseModalProps) {
+  const t = useTranslations('databases.modal')
+
   const [formData, setFormData] = useState<Partial<DatabaseResource>>({
     name: '',
     databaseType: 'PostgreSQL',
@@ -106,16 +108,13 @@ export function DatabaseModal({
         lastBackupDate: database.lastBackupDate ? new Date(database.lastBackupDate).toISOString().split('T')[0] : '',
       })
 
-      // ✅ FIX: Load existing owners from API when editing
       const loadOwners = async () => {
         try {
           const response = await fetch(`/api/resources/owners?resourceType=DATABASE&resourceId=${database.id}`)
           if (response.ok) {
             const data = await response.json()
             setOwners(data.data || [])
-            console.log('✅ Loaded existing owners:', data.data?.length)
           } else {
-            console.error('Failed to load owners:', response.statusText)
             setOwners([])
           }
         } catch (error) {
@@ -125,7 +124,6 @@ export function DatabaseModal({
       }
       loadOwners()
     } else if (mode === 'create') {
-      // Reset owners when creating new resource
       setOwners([])
       setFormData({
         name: '',
@@ -157,13 +155,13 @@ export function DatabaseModal({
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.name?.trim()) newErrors.name = 'Database name is required'
-    if (!formData.databaseType) newErrors.databaseType = 'Database type is required'
-    if (!formData.host?.trim()) newErrors.host = 'Host is required'
-    if (!formData.port || formData.port < 1 || formData.port > 65535) newErrors.port = 'Valid port number is required (1-65535)'
-    if (!formData.owner?.trim()) newErrors.owner = 'Owner is required'
-    if (!formData.environment) newErrors.environment = 'Environment is required'
-    if (!formData.accessLevel) newErrors.accessLevel = 'Access level is required'
+    if (!formData.name?.trim()) newErrors.name = t('errors.nameRequired')
+    if (!formData.databaseType) newErrors.databaseType = t('errors.typeRequired')
+    if (!formData.host?.trim()) newErrors.host = t('errors.hostRequired')
+    if (!formData.port || formData.port < 1 || formData.port > 65535) newErrors.port = t('errors.portRequired')
+    if (!formData.owner?.trim()) newErrors.owner = t('errors.ownerRequired')
+    if (!formData.environment) newErrors.environment = t('errors.environmentRequired')
+    if (!formData.accessLevel) newErrors.accessLevel = t('errors.accessLevelRequired')
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -188,7 +186,7 @@ export function DatabaseModal({
       onClose()
     } catch (error) {
       console.error('Error saving database:', error)
-      setErrors({ submit: 'Failed to save database. Please try again.' })
+      setErrors({ submit: t('errors.saveFailed') })
     } finally {
       setIsLoading(false)
     }
@@ -201,7 +199,6 @@ export function DatabaseModal({
   const accessLevels = ['read', 'write', 'admin', 'full']
   const backupFrequencies = ['hourly', 'daily', 'weekly', 'monthly']
 
-  // Default ports for database types
   const defaultPorts: Record<string, number> = {
     'PostgreSQL': 5432,
     'MySQL': 3306,
@@ -229,14 +226,14 @@ export function DatabaseModal({
         <DialogHeader className="space-y-3 pb-6 border-b">
           <DialogTitle className="text-2xl font-semibold flex items-center gap-2">
             <Database className="h-6 w-6 text-primary" />
-            {mode === 'view' && 'Database Resource Details'}
-            {mode === 'edit' && 'Edit Database Resource'}
-            {mode === 'create' && 'Add New Database Resource'}
+            {mode === 'view' && t('titleView')}
+            {mode === 'edit' && t('titleEdit')}
+            {mode === 'create' && t('titleCreate')}
           </DialogTitle>
           <DialogDescription className="text-base">
-            {mode === 'view' && 'View detailed information about this database resource.'}
-            {mode === 'edit' && 'Update database resource information. Fields marked with * are required for ISO 27001 compliance.'}
-            {mode === 'create' && 'Register a new database resource. Fields marked with * are required for ISO 27001 compliance.'}
+            {mode === 'view' && t('descriptionView')}
+            {mode === 'edit' && t('descriptionEdit')}
+            {mode === 'create' && t('descriptionCreate')}
           </DialogDescription>
         </DialogHeader>
 
@@ -245,12 +242,12 @@ export function DatabaseModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Server className="h-4 w-4" />
-              Database Configuration
+              {t('dbConfig')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-sm font-medium">
-                  Database Name {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('databaseName')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="name"
@@ -265,7 +262,7 @@ export function DatabaseModal({
 
               <div className="space-y-2">
                 <Label htmlFor="databaseType" className="text-sm font-medium">
-                  Database Type {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('databaseType')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.databaseType}
@@ -273,7 +270,7 @@ export function DatabaseModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn("h-10", errors.databaseType && "border-destructive")}>
-                    <SelectValue placeholder="Select type" />
+                    <SelectValue placeholder={t('selectType')} />
                   </SelectTrigger>
                   <SelectContent>
                     {databaseTypes.map((type) => (
@@ -286,7 +283,7 @@ export function DatabaseModal({
 
               <div className="space-y-2">
                 <Label htmlFor="version" className="text-sm font-medium">
-                  Version
+                  {t('version')}
                 </Label>
                 <Input
                   id="version"
@@ -299,7 +296,7 @@ export function DatabaseModal({
 
               <div className="space-y-2">
                 <Label htmlFor="environment" className="text-sm font-medium">
-                  Environment {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('environment')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.environment}
@@ -307,7 +304,7 @@ export function DatabaseModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn("h-10", errors.environment && "border-destructive")}>
-                    <SelectValue placeholder="Select environment" />
+                    <SelectValue placeholder={t('selectEnvironment')} />
                   </SelectTrigger>
                   <SelectContent>
                     {environments.map((env) => (
@@ -322,7 +319,7 @@ export function DatabaseModal({
 
               <div className="space-y-2">
                 <Label htmlFor="host" className="text-sm font-medium">
-                  Host {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('host')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="host"
@@ -337,7 +334,7 @@ export function DatabaseModal({
 
               <div className="space-y-2">
                 <Label htmlFor="port" className="text-sm font-medium">
-                  Port {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('port')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="port"
@@ -353,7 +350,7 @@ export function DatabaseModal({
 
               <div className="space-y-2">
                 <Label htmlFor="databaseName" className="text-sm font-medium">
-                  Database Name
+                  {t('databaseNameField')}
                 </Label>
                 <Input
                   id="databaseName"
@@ -366,7 +363,7 @@ export function DatabaseModal({
 
               <div className="space-y-2">
                 <Label htmlFor="schema" className="text-sm font-medium">
-                  Schema
+                  {t('schema')}
                 </Label>
                 <Input
                   id="schema"
@@ -379,7 +376,7 @@ export function DatabaseModal({
 
               <div className="space-y-2">
                 <Label htmlFor="adminUser" className="text-sm font-medium">
-                  Admin User
+                  {t('adminUser')}
                 </Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -400,12 +397,12 @@ export function DatabaseModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Shield className="h-4 w-4" />
-              Security & Backup
+              {t('securityBackup')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="isEncrypted" className="text-sm font-medium">
-                  Encryption Status
+                  {t('encryptionStatus')}
                 </Label>
                 <div className="flex items-center space-x-3 pt-2">
                   <Switch
@@ -415,14 +412,14 @@ export function DatabaseModal({
                     disabled={isViewMode}
                   />
                   <Label htmlFor="isEncrypted" className="text-sm text-muted-foreground cursor-pointer">
-                    {formData.isEncrypted ? 'Encrypted' : 'Not Encrypted'}
+                    {formData.isEncrypted ? t('encrypted') : t('notEncrypted')}
                   </Label>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="encryptionType" className="text-sm font-medium">
-                  Encryption Type
+                  {t('encryptionType')}
                 </Label>
                 <Input
                   id="encryptionType"
@@ -435,7 +432,7 @@ export function DatabaseModal({
 
               <div className="space-y-2">
                 <Label htmlFor="backupEnabled" className="text-sm font-medium">
-                  Backup Status
+                  {t('backupStatus')}
                 </Label>
                 <div className="flex items-center space-x-3 pt-2">
                   <Switch
@@ -445,14 +442,14 @@ export function DatabaseModal({
                     disabled={isViewMode}
                   />
                   <Label htmlFor="backupEnabled" className="text-sm text-muted-foreground cursor-pointer">
-                    {formData.backupEnabled ? 'Backup Enabled' : 'Backup Disabled'}
+                    {formData.backupEnabled ? t('backupEnabled') : t('backupDisabled')}
                   </Label>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="backupFrequency" className="text-sm font-medium">
-                  Backup Frequency
+                  {t('backupFrequency')}
                 </Label>
                 <Select
                   value={formData.backupFrequency || ''}
@@ -460,7 +457,7 @@ export function DatabaseModal({
                   disabled={isViewMode || !formData.backupEnabled}
                 >
                   <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Select frequency" />
+                    <SelectValue placeholder={t('selectFrequency')} />
                   </SelectTrigger>
                   <SelectContent>
                     {backupFrequencies.map((freq) => (
@@ -474,7 +471,7 @@ export function DatabaseModal({
 
               <div className="space-y-2">
                 <Label htmlFor="accessLevel" className="text-sm font-medium">
-                  Access Level {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('accessLevel')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.accessLevel}
@@ -482,7 +479,7 @@ export function DatabaseModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn("h-10", errors.accessLevel && "border-destructive")}>
-                    <SelectValue placeholder="Select access level" />
+                    <SelectValue placeholder={t('selectAccessLevel')} />
                   </SelectTrigger>
                   <SelectContent>
                     {accessLevels.map((level) => (
@@ -507,18 +504,25 @@ export function DatabaseModal({
             owners={owners}
             onOwnersChange={setOwners}
             disabled={isViewMode}
+            sectionTitle={t('ownership')}
+            primaryOwnerLabel={t('primaryOwner')}
+            primaryOwnerPlaceholder={t('searchOwner')}
+            primaryOwnerHelp={t('primaryOwnerHelp')}
+            additionalOwnersLabel={t('additionalOwners')}
+            additionalOwnersViewLabel={t('additionalOwnersView')}
+            additionalOwnersHelp={t('additionalOwnersHelp')}
           />
 
           {/* Additional Information Section */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <FileText className="h-4 w-4" />
-              Additional Information
+              {t('additionalInfo')}
             </h3>
             <div className="grid grid-cols-1 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="description" className="text-sm font-medium">
-                  Description
+                  {t('description')}
                 </Label>
                 <Textarea
                   id="description"
@@ -533,7 +537,7 @@ export function DatabaseModal({
               {!isViewMode && (
                 <div className="space-y-2">
                   <Label htmlFor="isActive" className="text-sm font-medium">
-                    Status
+                    {t('activeStatus')}
                   </Label>
                   <div className="flex items-center space-x-3 pt-2">
                     <Switch
@@ -542,7 +546,7 @@ export function DatabaseModal({
                       onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
                     />
                     <Label htmlFor="isActive" className="text-sm text-muted-foreground cursor-pointer">
-                      {formData.isActive ? 'Active' : 'Inactive'}
+                      {formData.isActive ? t('active') : t('inactive')}
                     </Label>
                   </div>
                 </div>
@@ -564,7 +568,7 @@ export function DatabaseModal({
               disabled={isLoading}
               className="min-w-24"
             >
-              {isViewMode ? 'Close' : 'Cancel'}
+              {isViewMode ? t('close') : t('cancel')}
             </Button>
             {!isViewMode && (
               <Button
@@ -573,7 +577,7 @@ export function DatabaseModal({
                 className="min-w-28"
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {mode === 'edit' ? 'Update Database' : 'Add Database'}
+                {mode === 'edit' ? t('updateDatabase') : t('addDatabase')}
               </Button>
             )}
           </DialogFooter>
