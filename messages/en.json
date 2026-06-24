@@ -427,6 +427,227 @@
       }
     }
   },
+  "employees": {
+    "title": "Employee Management",
+    "subtitle": "Manage employee access and permissions",
+    "employeesCard": "Employees ({count})",
+    "employeesCardDesc": "Manage employee information and access",
+    "noEmployees": "No employees found",
+    "errors": {
+      "fetchFailed": "Failed to fetch employees",
+      "fetchError": "Error fetching employees",
+      "saveFailed": "Failed to save employee"
+    },
+    "success": {
+      "created": "Employee created successfully!",
+      "updated": "Employee updated successfully!"
+    },
+    "table": {
+      "searchPlaceholder": "Search employees...",
+      "addEmployee": "Add Employee",
+      "noResults": "No results.",
+      "employee": "Employee",
+      "position": "Position",
+      "department": "Department",
+      "company": "Company",
+      "status": "Status",
+      "startDate": "Start Date",
+      "active": "Active",
+      "inactive": "Inactive",
+      "openMenu": "Open menu",
+      "viewDetails": "View Details",
+      "editEmployee": "Edit Employee",
+      "deleteEmployee": "Delete Employee",
+      "rowsPerPage": "Rows per page",
+      "pageOf": "Page {current} of {total}",
+      "rowsSelected": "{selected} of {total} row(s) selected.",
+      "goToFirstPage": "Go to first page",
+      "goToPreviousPage": "Go to previous page",
+      "goToNextPage": "Go to next page",
+      "goToLastPage": "Go to last page",
+      "deleteDialog": {
+        "title": "Are you sure?",
+        "description": "This will permanently delete <strong>{name}</strong> and all associated data. This action cannot be undone.",
+        "cancel": "Cancel",
+        "deleting": "Deleting...",
+        "delete": "Delete"
+      },
+      "toast": {
+        "deleted": "{name} has been deleted successfully",
+        "deleteFailed": "Failed to delete employee",
+        "deleteError": "An error occurred while deleting the employee"
+      }
+    },
+    "drawer": {
+      "description": "Employee details and management",
+      "email": "Email",
+      "position": "Position",
+      "department": "Department",
+      "company": "Company",
+      "status": "Status",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "editEmployee": "Edit Employee",
+      "viewDetails": "View Details",
+      "deleteEmployee": "Delete Employee",
+      "close": "Close"
+    },
+    "modal": {
+      "titleView": "Employee Details",
+      "titleEdit": "Edit Employee",
+      "titleCreate": "Add New Employee",
+      "descriptionView": "View detailed information about this employee.",
+      "descriptionEdit": "Update employee information. Fields marked with * are required.",
+      "descriptionCreate": "Fill in the details to add a new employee. Fields marked with * are required.",
+      "basicInfo": "Basic Information",
+      "contactInfo": "Contact Information",
+      "employmentDetails": "Employment Details",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "emailAddress": "Email Address",
+      "phoneNumber": "Phone Number",
+      "company": "Company",
+      "department": "Department",
+      "position": "Position",
+      "managerEmail": "Manager Email",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "employmentStatus": "Employment Status",
+      "selectCompany": "Select company",
+      "selectCompanyFirst": "Select company first",
+      "selectDepartment": "Select department",
+      "selectDepartmentFirst": "Select department first",
+      "selectPosition": "Select position",
+      "activeEmployee": "Active Employee",
+      "inactiveEmployee": "Inactive Employee",
+      "close": "Close",
+      "cancel": "Cancel",
+      "updateEmployee": "Update Employee",
+      "addEmployee": "Add Employee",
+      "errors": {
+        "firstNameRequired": "First name is required",
+        "lastNameRequired": "Last name is required",
+        "emailRequired": "Email is required",
+        "invalidEmail": "Invalid email format",
+        "companyRequired": "Company is required",
+        "departmentRequired": "Department is required",
+        "positionRequired": "Position is required",
+        "startDateRequired": "Start date is required",
+        "saveFailed": "Failed to save employee. Please try again."
+      }
+    },
+    "detail": {
+      "back": "Back",
+      "backToEmployees": "Back to Employees",
+      "editEmployee": "Edit Employee",
+      "employeeNotFound": "Employee not found",
+      "errors": {
+        "fetchFailed": "Failed to fetch employee details",
+        "fetchError": "Error fetching employee details"
+      },
+      "tabs": {
+        "overview": "Overview",
+        "access": "Access Permissions",
+        "requests": "Access Requests",
+        "activity": "Activity Log"
+      },
+      "personalInfo": "Personal Information",
+      "workInfo": "Work Information",
+      "labels": {
+        "employeeId": "Employee ID",
+        "email": "Email",
+        "phone": "Phone",
+        "status": "Status",
+        "company": "Company",
+        "department": "Department",
+        "position": "Position",
+        "manager": "Manager",
+        "startDate": "Start Date",
+        "endDate": "End Date"
+      },
+      "active": "Active",
+      "inactive": "Inactive",
+      "resourceAccess": {
+        "title": "Resource Access Assignments",
+        "description": "Current resource access assignments and permissions",
+        "noAssignments": "No resource assignments found.",
+        "granted": "Granted",
+        "grantedBy": "Granted By",
+        "expires": "Expires",
+        "noExpiry": "No expiry"
+      },
+      "accessRequests": {
+        "title": "Access Requests",
+        "description": "Access request history and status",
+        "noRequests": "No access requests found. This feature will show pending, approved, and rejected access requests for this employee."
+      },
+      "activityLog": {
+        "title": "Activity Log",
+        "description": "Recent activity and changes for this employee",
+        "noActivity": "No activity found.",
+        "by": "by {name} ({email})"
+      },
+      "summary": {
+        "title": "Employee Summary",
+        "resourceAssignments": "Resource Assignments",
+        "daysEmployed": "Days Employed"
+      }
+    },
+    "edit": {
+      "back": "Back",
+      "backToEmployees": "Back to Employees",
+      "title": "Edit Employee",
+      "subtitle": "Update employee information and details",
+      "cancel": "Cancel",
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "personalInfo": "Personal Information",
+      "workInfo": "Work Information",
+      "labels": {
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "email": "Email",
+        "phone": "Phone",
+        "company": "Company",
+        "department": "Department",
+        "position": "Position",
+        "manager": "Manager",
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "employmentStatus": "Employment Status",
+        "workLocation": "Work Location"
+      },
+      "placeholders": {
+        "manager": "Manager email",
+        "company": "Select company",
+        "department": "Select department",
+        "position": "Select position"
+      },
+      "employmentStatus": {
+        "fullTime": "Full-time",
+        "partTime": "Part-time",
+        "contract": "Contract",
+        "temporary": "Temporary",
+        "intern": "Intern",
+        "onLeave": "On Leave",
+        "terminated": "Terminated"
+      },
+      "workLocation": {
+        "office": "Office",
+        "remote": "Remote",
+        "hybrid": "Hybrid"
+      },
+      "errors": {
+        "fetchFailed": "Failed to fetch employee details",
+        "fetchError": "Error fetching employee details",
+        "updateFailed": "Failed to update employee",
+        "updateError": "Error updating employee"
+      },
+      "success": {
+        "updated": "Employee updated successfully!"
+      }
+    }
+  },
   "auditLogs": {
     "title": "Audit Logs",
     "subtitle": "Complete audit trail of system activities",

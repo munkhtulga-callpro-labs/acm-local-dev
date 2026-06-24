@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import {
   IconChevronDown,
   IconChevronLeft,
@@ -100,22 +101,23 @@ export const employeeSchema = z.object({
 
 export type Employee = z.infer<typeof employeeSchema>
 
-const getStatusBadge = (isActive: boolean | undefined, status: string) => {
-  // Use isActive if available, otherwise fall back to status string
+type TFunc = ReturnType<typeof useTranslations<'employees.table'>>
+
+const getStatusBadge = (isActive: boolean | undefined, status: string, t: TFunc) => {
   const active = isActive !== undefined ? isActive : status?.toLowerCase() === 'active'
 
   if (active) {
     return (
       <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
         <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400 mr-1 w-3 h-3" />
-        Active
+        {t('active')}
       </Badge>
     )
   } else {
     return (
       <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
         <IconX className="mr-1 w-3 h-3 text-red-500" />
-        Inactive
+        {t('inactive')}
       </Badge>
     )
   }
@@ -123,7 +125,8 @@ const getStatusBadge = (isActive: boolean | undefined, status: string) => {
 
 const createColumns = (
   router: ReturnType<typeof useRouter>,
-  onDelete: (id: string, name: string) => void
+  onDelete: (id: string, name: string) => void,
+  t: TFunc
 ): ColumnDef<Employee>[] => [
   {
     accessorFn: (row) => `${row.firstName} ${row.lastName}`,
@@ -134,7 +137,7 @@ const createColumns = (
           className="flex items-center gap-1 hover:text-foreground"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Employee
+          {t('employee')}
           {column.getIsSorted() === "asc" ? (
             <IconArrowUp className="h-3 w-3" />
           ) : column.getIsSorted() === "desc" ? (
@@ -166,7 +169,7 @@ const createColumns = (
           className="flex items-center gap-1 hover:text-foreground"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Position
+          {t('position')}
           {column.getIsSorted() === "asc" ? (
             <IconArrowUp className="h-3 w-3" />
           ) : column.getIsSorted() === "desc" ? (
@@ -195,7 +198,7 @@ const createColumns = (
           className="flex items-center gap-1 hover:text-foreground"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Department
+          {t('department')}
           {column.getIsSorted() === "asc" ? (
             <IconArrowUp className="h-3 w-3" />
           ) : column.getIsSorted() === "desc" ? (
@@ -222,7 +225,7 @@ const createColumns = (
           className="flex items-center gap-1 hover:text-foreground"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Company
+          {t('company')}
           {column.getIsSorted() === "asc" ? (
             <IconArrowUp className="h-3 w-3" />
           ) : column.getIsSorted() === "desc" ? (
@@ -250,7 +253,7 @@ const createColumns = (
           className="flex items-center gap-1 hover:text-foreground"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Status
+          {t('status')}
           {column.getIsSorted() === "asc" ? (
             <IconArrowUp className="h-3 w-3" />
           ) : column.getIsSorted() === "desc" ? (
@@ -262,7 +265,7 @@ const createColumns = (
       )
     },
     size: 100,
-    cell: ({ row }) => getStatusBadge(row.original.isActive, row.original.status),
+    cell: ({ row }) => getStatusBadge(row.original.isActive, row.original.status, t),
     enableSorting: true,
   },
   {
@@ -273,7 +276,7 @@ const createColumns = (
           className="flex items-center gap-1 hover:text-foreground"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Start Date
+          {t('startDate')}
           {column.getIsSorted() === "asc" ? (
             <IconArrowUp className="h-3 w-3" />
           ) : column.getIsSorted() === "desc" ? (
@@ -304,22 +307,22 @@ const createColumns = (
             size="icon"
           >
             <IconDotsVertical className="size-3" />
-            <span className="sr-only">Open menu</span>
+            <span className="sr-only">{t('openMenu')}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-32">
           <DropdownMenuItem onClick={() => router.push(`/employees/${row.original.id}`)}>
-            View Details
+            {t('viewDetails')}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => router.push(`/employees/${row.original.id}/edit`)}>
-            Edit Employee
+            {t('editEmployee')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             className="text-red-600"
             onClick={() => onDelete(row.original.id, `${row.original.firstName} ${row.original.lastName}`)}
           >
-            Delete Employee
+            {t('deleteEmployee')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -335,6 +338,7 @@ export function EmployeesDataTable({
   onAddEmployee?: () => void
 }) {
   const router = useRouter()
+  const t = useTranslations('employees.table')
   const [data, setData] = React.useState(() => initialData)
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
@@ -345,7 +349,7 @@ export function EmployeesDataTable({
   const [sorting, setSorting] = React.useState<SortingState>([
     {
       id: "name",
-      desc: false, // false = ascending (A-Z)
+      desc: false,
     }
   ])
   const [globalFilter, setGlobalFilter] = React.useState("")
@@ -357,7 +361,6 @@ export function EmployeesDataTable({
   const [employeeToDelete, setEmployeeToDelete] = React.useState<{ id: string; name: string } | null>(null)
   const [isDeleting, setIsDeleting] = React.useState(false)
 
-  // Sync internal data state with parent data changes
   React.useEffect(() => {
     setData(initialData)
   }, [initialData])
@@ -377,25 +380,25 @@ export function EmployeesDataTable({
       })
 
       if (response.ok) {
-        toast.success(`${employeeToDelete.name} has been deleted successfully`)
+        toast.success(t('toast.deleted', { name: employeeToDelete.name }))
         setData((prevData) => prevData.filter((emp) => emp.id !== employeeToDelete.id))
         setDeleteDialogOpen(false)
         setEmployeeToDelete(null)
       } else {
         const errorData = await response.json()
-        toast.error(errorData.error || 'Failed to delete employee')
+        toast.error(errorData.error || t('toast.deleteFailed'))
       }
     } catch (error) {
       console.error('Error deleting employee:', error)
-      toast.error('An error occurred while deleting the employee')
+      toast.error(t('toast.deleteError'))
     } finally {
       setIsDeleting(false)
     }
-  }, [employeeToDelete])
+  }, [employeeToDelete, t])
 
   const columns = React.useMemo(
-    () => createColumns(router, handleDeleteClick),
-    [router, handleDeleteClick]
+    () => createColumns(router, handleDeleteClick, t),
+    [router, handleDeleteClick, t]
   )
 
   const table = useReactTable({
@@ -428,31 +431,26 @@ export function EmployeesDataTable({
 
   return (
     <div className="w-full space-y-4">
-      {/* Header with search and buttons */}
       <div className="flex items-center gap-3">
-        {/* Search Input */}
         <div className="relative flex-1 max-w-sm">
           <Input
-            placeholder="Search employees..."
+            placeholder={t('searchPlaceholder')}
             value={globalFilter ?? ""}
             onChange={(e) => setGlobalFilter(e.target.value)}
             className="h-9"
           />
         </div>
 
-        {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Action buttons */}
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={onAddEmployee}>
             <IconPlus />
-            <span className="hidden lg:inline">Add Employee</span>
+            <span className="hidden lg:inline">{t('addEmployee')}</span>
           </Button>
         </div>
       </div>
 
-      {/* Table with proper alignment */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -503,7 +501,7 @@ export function EmployeesDataTable({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  {t('noResults')}
                 </TableCell>
               </TableRow>
             )}
@@ -511,16 +509,17 @@ export function EmployeesDataTable({
         </Table>
       </div>
 
-      {/* Pagination */}
       <div className="flex items-center justify-between">
         <div className="text-muted-foreground text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {t('rowsSelected', {
+            selected: table.getFilteredSelectedRowModel().rows.length,
+            total: table.getFilteredRowModel().rows.length,
+          })}
         </div>
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <Label htmlFor="rows-per-page" className="text-sm font-medium">
-              Rows per page
+              {t('rowsPerPage')}
             </Label>
             <Select
               value={`${table.getState().pagination.pageSize}`}
@@ -543,8 +542,10 @@ export function EmployeesDataTable({
             </Select>
           </div>
           <div className="text-sm font-medium">
-            Page {table.getState().pagination.pageIndex + 1} of{" "}
-            {table.getPageCount()}
+            {t('pageOf', {
+              current: table.getState().pagination.pageIndex + 1,
+              total: table.getPageCount(),
+            })}
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -553,7 +554,7 @@ export function EmployeesDataTable({
               onClick={() => table.setPageIndex(0)}
               disabled={!table.getCanPreviousPage()}
             >
-              <span className="sr-only">Go to first page</span>
+              <span className="sr-only">{t('goToFirstPage')}</span>
               <IconChevronsLeft className="h-4 w-4" />
             </Button>
             <Button
@@ -562,7 +563,7 @@ export function EmployeesDataTable({
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
-              <span className="sr-only">Go to previous page</span>
+              <span className="sr-only">{t('goToPreviousPage')}</span>
               <IconChevronLeft className="h-4 w-4" />
             </Button>
             <Button
@@ -571,7 +572,7 @@ export function EmployeesDataTable({
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >
-              <span className="sr-only">Go to next page</span>
+              <span className="sr-only">{t('goToNextPage')}</span>
               <IconChevronRight className="h-4 w-4" />
             </Button>
             <Button
@@ -580,31 +581,32 @@ export function EmployeesDataTable({
               onClick={() => table.setPageIndex(table.getPageCount() - 1)}
               disabled={!table.getCanNextPage()}
             >
-              <span className="sr-only">Go to last page</span>
+              <span className="sr-only">{t('goToLastPage')}</span>
               <IconChevronsRight className="h-4 w-4" />
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>{t('deleteDialog.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete <strong>{employeeToDelete?.name}</strong> and all associated data.
-              This action cannot be undone.
+              {t.rich('deleteDialog.description', {
+                name: employeeToDelete?.name ?? '',
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>{t('deleteDialog.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
               disabled={isDeleting}
               className="bg-red-600 hover:bg-red-700"
             >
-              {isDeleting ? 'Deleting...' : 'Delete'}
+              {isDeleting ? t('deleteDialog.deleting') : t('deleteDialog.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -624,6 +626,8 @@ function TableCellViewer({
   router: ReturnType<typeof useRouter>
   onDelete: (id: string, name: string) => void
 }) {
+  const t = useTranslations('employees.drawer')
+
   return (
     <Drawer direction="right">
       <DrawerTrigger asChild>
@@ -635,42 +639,42 @@ function TableCellViewer({
         <DrawerHeader className="gap-1">
           <DrawerTitle>{fullName}</DrawerTitle>
           <DrawerDescription>
-            Employee details and management
+            {t('description')}
           </DrawerDescription>
         </DrawerHeader>
         <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
           <div className="grid gap-2">
             <div className="flex gap-2 leading-none font-medium">
-              Email: {item.email}
+              {t('email')}: {item.email}
             </div>
             <div className="text-muted-foreground">
-              Position: {item.position}
+              {t('position')}: {item.position}
             </div>
             <div className="text-muted-foreground">
-              Department: {item.department}
+              {t('department')}: {item.department}
             </div>
             <div className="text-muted-foreground">
-              Company: {item.company}
+              {t('company')}: {item.company}
             </div>
             <div className="text-muted-foreground">
-              Status: {item.status}
+              {t('status')}: {item.status}
             </div>
             <div className="text-muted-foreground">
-              Start Date: {new Date(item.startDate).toISOString().slice(0, 10)}
+              {t('startDate')}: {new Date(item.startDate).toISOString().slice(0, 10)}
             </div>
             {item.endDate && (
               <div className="text-muted-foreground">
-                End Date: {new Date(item.endDate).toISOString().slice(0, 10)}
+                {t('endDate')}: {new Date(item.endDate).toISOString().slice(0, 10)}
               </div>
             )}
           </div>
         </div>
         <DrawerFooter>
           <Button onClick={() => router.push(`/employees/${item.id}/edit`)}>
-            Edit Employee
+            {t('editEmployee')}
           </Button>
           <Button variant="outline" onClick={() => router.push(`/employees/${item.id}`)}>
-            View Details
+            {t('viewDetails')}
           </Button>
           <Button
             variant="destructive"
@@ -678,10 +682,10 @@ function TableCellViewer({
               onDelete(item.id, fullName)
             }}
           >
-            Delete Employee
+            {t('deleteEmployee')}
           </Button>
           <DrawerClose asChild>
-            <Button variant="outline">Close</Button>
+            <Button variant="outline">{t('close')}</Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

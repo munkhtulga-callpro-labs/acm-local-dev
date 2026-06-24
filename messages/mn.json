@@ -427,6 +427,227 @@
       }
     }
   },
+  "employees": {
+    "title": "Ажилтны удирдлага",
+    "subtitle": "Ажилтны эрх болон зөвшөөрлийг удирдах",
+    "employeesCard": "Ажилтнууд ({count})",
+    "employeesCardDesc": "Ажилтны мэдээлэл болон эрхийг удирдах",
+    "noEmployees": "Ажилтан олдсонгүй",
+    "errors": {
+      "fetchFailed": "Ажилтнуудыг татахад алдаа гарлаа",
+      "fetchError": "Ажилтнуудыг татахад алдаа гарлаа",
+      "saveFailed": "Ажилтан хадгалахад алдаа гарлаа"
+    },
+    "success": {
+      "created": "Ажилтан амжилттай нэмэгдлээ!",
+      "updated": "Ажилтан амжилттай шинэчлэгдлээ!"
+    },
+    "table": {
+      "searchPlaceholder": "Ажилтан хайх...",
+      "addEmployee": "Ажилтан нэмэх",
+      "noResults": "Үр дүн олдсонгүй.",
+      "employee": "Ажилтан",
+      "position": "Албан тушаал",
+      "department": "Хэлтэс",
+      "company": "Компани",
+      "status": "Төлөв",
+      "startDate": "Эхлэх огноо",
+      "active": "Идэвхтэй",
+      "inactive": "Идэвхгүй",
+      "openMenu": "Цэс нээх",
+      "viewDetails": "Дэлгэрэнгүй харах",
+      "editEmployee": "Ажилтан засах",
+      "deleteEmployee": "Ажилтан устгах",
+      "rowsPerPage": "Хуудасны мөр",
+      "pageOf": "{current}-р хуудас / {total}",
+      "rowsSelected": "{selected} / {total} мөр сонгогдсон.",
+      "goToFirstPage": "Эхний хуудас руу",
+      "goToPreviousPage": "Өмнөх хуудас руу",
+      "goToNextPage": "Дараагийн хуудас руу",
+      "goToLastPage": "Сүүлийн хуудас руу",
+      "deleteDialog": {
+        "title": "Та итгэлтэй байна уу?",
+        "description": "<strong>{name}</strong>-г болон холбогдох бүх өгөгдлийг бүрмөсөн устгана. Энэ үйлдлийг буцаах боломжгүй.",
+        "cancel": "Цуцлах",
+        "deleting": "Устгаж байна...",
+        "delete": "Устгах"
+      },
+      "toast": {
+        "deleted": "{name} амжилттай устгагдлаа",
+        "deleteFailed": "Ажилтан устгахад алдаа гарлаа",
+        "deleteError": "Ажилтан устгах явцад алдаа гарлаа"
+      }
+    },
+    "drawer": {
+      "description": "Ажилтны дэлгэрэнгүй болон удирдлага",
+      "email": "И-мэйл",
+      "position": "Албан тушаал",
+      "department": "Хэлтэс",
+      "company": "Компани",
+      "status": "Төлөв",
+      "startDate": "Эхлэх огноо",
+      "endDate": "Дуусах огноо",
+      "editEmployee": "Ажилтан засах",
+      "viewDetails": "Дэлгэрэнгүй харах",
+      "deleteEmployee": "Ажилтан устгах",
+      "close": "Хаах"
+    },
+    "modal": {
+      "titleView": "Ажилтны дэлгэрэнгүй",
+      "titleEdit": "Ажилтан засах",
+      "titleCreate": "Шинэ ажилтан нэмэх",
+      "descriptionView": "Энэ ажилтны дэлгэрэнгүй мэдээллийг харах.",
+      "descriptionEdit": "Ажилтны мэдээллийг шинэчлэх. * тэмдэглэгдсэн талбарууд заавал шаардлагатай.",
+      "descriptionCreate": "Шинэ ажилтан нэмэхийн тулд дэлгэрэнгүйг бөглөнө үү. * тэмдэглэгдсэн талбарууд заавал шаардлагатай.",
+      "basicInfo": "Үндсэн мэдээлэл",
+      "contactInfo": "Холбоо барих мэдээлэл",
+      "employmentDetails": "Ажил эрхлэлтийн дэлгэрэнгүй",
+      "firstName": "Нэр",
+      "lastName": "Овог",
+      "emailAddress": "И-мэйл хаяг",
+      "phoneNumber": "Утасны дугаар",
+      "company": "Компани",
+      "department": "Хэлтэс",
+      "position": "Албан тушаал",
+      "managerEmail": "Менежерийн и-мэйл",
+      "startDate": "Эхлэх огноо",
+      "endDate": "Дуусах огноо",
+      "employmentStatus": "Ажил эрхлэлтийн төлөв",
+      "selectCompany": "Компани сонгох",
+      "selectCompanyFirst": "Эхлээд компани сонгоно уу",
+      "selectDepartment": "Хэлтэс сонгох",
+      "selectDepartmentFirst": "Эхлээд хэлтэс сонгоно уу",
+      "selectPosition": "Албан тушаал сонгох",
+      "activeEmployee": "Идэвхтэй ажилтан",
+      "inactiveEmployee": "Идэвхгүй ажилтан",
+      "close": "Хаах",
+      "cancel": "Цуцлах",
+      "updateEmployee": "Ажилтан шинэчлэх",
+      "addEmployee": "Ажилтан нэмэх",
+      "errors": {
+        "firstNameRequired": "Нэр заавал шаардлагатай",
+        "lastNameRequired": "Овог заавал шаардлагатай",
+        "emailRequired": "И-мэйл заавал шаардлагатай",
+        "invalidEmail": "И-мэйл хаяг буруу байна",
+        "companyRequired": "Компани заавал шаардлагатай",
+        "departmentRequired": "Хэлтэс заавал шаардлагатай",
+        "positionRequired": "Албан тушаал заавал шаардлагатай",
+        "startDateRequired": "Эхлэх огноо заавал шаардлагатай",
+        "saveFailed": "Ажилтан хадгалахад алдаа гарлаа. Дахин оролдоно уу."
+      }
+    },
+    "detail": {
+      "back": "Буцах",
+      "backToEmployees": "Ажилтнууд руу буцах",
+      "editEmployee": "Ажилтан засах",
+      "employeeNotFound": "Ажилтан олдсонгүй",
+      "errors": {
+        "fetchFailed": "Ажилтны мэдээллийг татахад алдаа гарлаа",
+        "fetchError": "Ажилтны мэдээллийг татахад алдаа гарлаа"
+      },
+      "tabs": {
+        "overview": "Тойм",
+        "access": "Хандалтын эрх",
+        "requests": "Эрхийн хүсэлт",
+        "activity": "Үйл ажиллагааны бүртгэл"
+      },
+      "personalInfo": "Хувийн мэдээлэл",
+      "workInfo": "Ажлын мэдээлэл",
+      "labels": {
+        "employeeId": "Ажилтны дугаар",
+        "email": "И-мэйл",
+        "phone": "Утас",
+        "status": "Төлөв",
+        "company": "Компани",
+        "department": "Хэлтэс",
+        "position": "Албан тушаал",
+        "manager": "Менежер",
+        "startDate": "Эхлэх огноо",
+        "endDate": "Дуусах огноо"
+      },
+      "active": "Идэвхтэй",
+      "inactive": "Идэвхгүй",
+      "resourceAccess": {
+        "title": "Нөөцийн хандалтын томилгоо",
+        "description": "Одоогийн нөөцийн хандалтын томилгоо болон эрхүүд",
+        "noAssignments": "Нөөцийн томилгоо олдсонгүй.",
+        "granted": "Олгосон",
+        "grantedBy": "Олгосон этгээд",
+        "expires": "Дуусах",
+        "noExpiry": "Хугацаагүй"
+      },
+      "accessRequests": {
+        "title": "Эрхийн хүсэлт",
+        "description": "Эрхийн хүсэлтийн түүх болон төлөв",
+        "noRequests": "Эрхийн хүсэлт олдсонгүй. Энэ функц нь ажилтны хүлээгдэж буй, зөвшөөрөгдсөн болон татгалзсан хүсэлтүүдийг харуулна."
+      },
+      "activityLog": {
+        "title": "Үйл ажиллагааны бүртгэл",
+        "description": "Энэ ажилтны сүүлийн үйл ажиллагаа болон өөрчлөлтүүд",
+        "noActivity": "Үйл ажиллагаа олдсонгүй.",
+        "by": "{name} ({email})-аас"
+      },
+      "summary": {
+        "title": "Ажилтны товч мэдээлэл",
+        "resourceAssignments": "Нөөцийн томилгоо",
+        "daysEmployed": "Ажилласан өдөр"
+      }
+    },
+    "edit": {
+      "back": "Буцах",
+      "backToEmployees": "Ажилтнууд руу буцах",
+      "title": "Ажилтан засах",
+      "subtitle": "Ажилтны мэдээлэл болон дэлгэрэнгүйг шинэчлэх",
+      "cancel": "Цуцлах",
+      "saveChanges": "Өөрчлөлт хадгалах",
+      "saving": "Хадгалж байна...",
+      "personalInfo": "Хувийн мэдээлэл",
+      "workInfo": "Ажлын мэдээлэл",
+      "labels": {
+        "firstName": "Нэр",
+        "lastName": "Овог",
+        "email": "И-мэйл",
+        "phone": "Утас",
+        "company": "Компани",
+        "department": "Хэлтэс",
+        "position": "Албан тушаал",
+        "manager": "Менежер",
+        "startDate": "Эхлэх огноо",
+        "endDate": "Дуусах огноо",
+        "employmentStatus": "Ажил эрхлэлтийн төлөв",
+        "workLocation": "Ажлын байршил"
+      },
+      "placeholders": {
+        "manager": "Менежерийн и-мэйл",
+        "company": "Компани сонгох",
+        "department": "Хэлтэс сонгох",
+        "position": "Албан тушаал сонгох"
+      },
+      "employmentStatus": {
+        "fullTime": "Бүтэн цагийн",
+        "partTime": "Хагас цагийн",
+        "contract": "Гэрээт",
+        "temporary": "Түр",
+        "intern": "Дадлагажигч",
+        "onLeave": "Чөлөөнд",
+        "terminated": "Халагдсан"
+      },
+      "workLocation": {
+        "office": "Оффис",
+        "remote": "Зайнаас",
+        "hybrid": "Хосолмол"
+      },
+      "errors": {
+        "fetchFailed": "Ажилтны мэдээллийг татахад алдаа гарлаа",
+        "fetchError": "Ажилтны мэдээллийг татахад алдаа гарлаа",
+        "updateFailed": "Ажилтан шинэчлэхэд алдаа гарлаа",
+        "updateError": "Ажилтан шинэчлэхэд алдаа гарлаа"
+      },
+      "success": {
+        "updated": "Ажилтан амжилттай шинэчлэгдлээ!"
+      }
+    }
+  },
   "auditLogs": {
     "title": "Аудитын бүртгэл",
     "subtitle": "Системийн үйл ажиллагааны бүрэн аудитын мөр",

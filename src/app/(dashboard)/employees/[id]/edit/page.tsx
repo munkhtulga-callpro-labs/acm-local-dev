@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { 
-  ArrowLeft, 
-  Save, 
-  User, 
+import {
+  ArrowLeft,
+  Save,
+  User,
   Building2,
   AlertTriangle,
   CheckCircle
@@ -38,13 +39,13 @@ interface Employee {
 export default function EditEmployeePage() {
   const params = useParams()
   const router = useRouter()
+  const t = useTranslations('employees.edit')
   const [employee, setEmployee] = useState<Employee | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  
-  // Form data
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -61,7 +62,6 @@ export default function EditEmployeePage() {
     workLocation: 'OFFICE'
   })
 
-  // Dropdown data
   const [departments, setDepartments] = useState<any[]>([])
   const [companies, setCompanies] = useState<any[]>([])
   const [positions, setPositions] = useState<any[]>([])
@@ -79,7 +79,6 @@ export default function EditEmployeePage() {
       const response = await fetch(`/api/employees/${params.id}`)
       if (response.ok) {
         const employeeData = await response.json()
-        console.log('Employee data loaded:', employeeData)
         setEmployee(employeeData)
         setFormData({
           firstName: employeeData.firstName || '',
@@ -96,18 +95,13 @@ export default function EditEmployeePage() {
           employmentStatus: employeeData.employmentStatus || 'FULL_TIME',
           workLocation: employeeData.workLocation || 'OFFICE'
         })
-        console.log('Form data set:', {
-          department: employeeData.department,
-          position: employeeData.position,
-          company: employeeData.company
-        })
       } else {
-        setError('Failed to fetch employee details')
+        setError(t('errors.fetchFailed'))
         const errorText = await response.text()
         console.error('Employee fetch error:', errorText)
       }
     } catch (error) {
-      setError('Error fetching employee details')
+      setError(t('errors.fetchError'))
       console.error('Error:', error)
     } finally {
       setLoading(false)
@@ -116,45 +110,22 @@ export default function EditEmployeePage() {
 
   const fetchDropdownData = async () => {
     try {
-      console.log('Fetching dropdown data...')
-      
-      // Fetch departments
       const deptResponse = await fetch('/api/departments')
-      console.log('Departments response:', deptResponse.status)
       if (deptResponse.ok) {
         const deptData = await deptResponse.json()
-        console.log('Departments data:', deptData)
         setDepartments(deptData.data || deptData || [])
-      } else {
-        console.error('Failed to fetch departments:', deptResponse.status)
-        const errorText = await deptResponse.text()
-        console.error('Departments error:', errorText)
       }
 
-      // Fetch companies
       const compResponse = await fetch('/api/companies')
-      console.log('Companies response:', compResponse.status)
       if (compResponse.ok) {
         const compData = await compResponse.json()
-        console.log('Companies data:', compData)
         setCompanies(compData.data || compData || [])
-      } else {
-        console.error('Failed to fetch companies:', compResponse.status)
-        const errorText = await compResponse.text()
-        console.error('Companies error:', errorText)
       }
 
-      // Fetch positions
       const posResponse = await fetch('/api/positions')
-      console.log('Positions response:', posResponse.status)
       if (posResponse.ok) {
         const posData = await posResponse.json()
-        console.log('Positions data:', posData)
         setPositions(posData.data || posData || [])
-      } else {
-        console.error('Failed to fetch positions:', posResponse.status)
-        const errorText = await posResponse.text()
-        console.error('Positions error:', errorText)
       }
     } catch (error) {
       console.error('Error fetching dropdown data:', error)
@@ -177,16 +148,16 @@ export default function EditEmployeePage() {
       })
 
       if (response.ok) {
-        setSuccess('Employee updated successfully!')
+        setSuccess(t('success.updated'))
         setTimeout(() => {
           router.push(`/employees/${params.id}`)
         }, 1500)
       } else {
         const errorData = await response.json()
-        setError(errorData.error || 'Failed to update employee')
+        setError(errorData.error || t('errors.updateFailed'))
       }
     } catch (error) {
-      setError('Error updating employee')
+      setError(t('errors.updateError'))
       console.error('Error:', error)
     } finally {
       setSaving(false)
@@ -200,26 +171,10 @@ export default function EditEmployeePage() {
     }))
   }
 
-  // Filter positions based on selected department
   const filteredPositions = positions.filter(pos => {
-    // Find the department by name to get its ID
     const selectedDept = departments.find(dept => dept.name === formData.department)
-    const matches = selectedDept && pos.departmentId === selectedDept.id
-    console.log('Position filtering:', {
-      position: pos.name,
-      department: formData.department,
-      selectedDept: selectedDept,
-      posDepartmentId: pos.departmentId,
-      selectedDeptId: selectedDept?.id,
-      matches
-    })
-    return matches
+    return selectedDept && pos.departmentId === selectedDept.id
   })
-
-  console.log('Filtered positions:', filteredPositions)
-  console.log('All positions:', positions)
-  console.log('All departments:', departments)
-  console.log('Form data department:', formData.department)
 
   if (loading) {
     return (
@@ -242,13 +197,13 @@ export default function EditEmployeePage() {
             {error}
           </AlertDescription>
         </Alert>
-        <Button 
-          onClick={() => router.push('/employees')} 
+        <Button
+          onClick={() => router.push('/employees')}
           className="mt-4"
           variant="outline"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Employees
+          {t('backToEmployees')}
         </Button>
       </div>
     )
@@ -260,27 +215,26 @@ export default function EditEmployeePage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => router.push(`/employees/${params.id}`)}
               className="flex items-center"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
+              {t('back')}
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-foreground">
-                Edit Employee
+                {t('title')}
               </h1>
               <p className="text-muted-foreground">
-                Update employee information and details
+                {t('subtitle')}
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Success/Error Messages */}
       {success && (
         <Alert className="mb-6">
           <CheckCircle className="h-4 w-4" />
@@ -295,21 +249,19 @@ export default function EditEmployeePage() {
         </Alert>
       )}
 
-      {/* Edit Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          {/* Personal Information - Takes 1/3 of the width */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
                 <User className="mr-2 h-5 w-5" />
-                Personal Information
+                {t('personalInfo')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="firstName">First Name</Label>
+                  <Label htmlFor="firstName">{t('labels.firstName')}</Label>
                   <Input
                     id="firstName"
                     value={formData.firstName}
@@ -318,7 +270,7 @@ export default function EditEmployeePage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="lastName">Last Name</Label>
+                  <Label htmlFor="lastName">{t('labels.lastName')}</Label>
                   <Input
                     id="lastName"
                     value={formData.lastName}
@@ -327,7 +279,7 @@ export default function EditEmployeePage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t('labels.email')}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -337,7 +289,7 @@ export default function EditEmployeePage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="phone">Phone</Label>
+                  <Label htmlFor="phone">{t('labels.phone')}</Label>
                   <Input
                     id="phone"
                     value={formData.phone}
@@ -348,24 +300,23 @@ export default function EditEmployeePage() {
             </CardContent>
           </Card>
 
-          {/* Work Information - Takes 2/3 of the width */}
           <Card className="xl:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Building2 className="mr-2 h-5 w-5" />
-                Work Information
+                {t('workInfo')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="company">Company</Label>
-                  <Select 
-                    value={formData.company} 
+                  <Label htmlFor="company">{t('labels.company')}</Label>
+                  <Select
+                    value={formData.company}
                     onValueChange={(value) => handleInputChange('company', value)}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select company" />
+                      <SelectValue placeholder={t('placeholders.company')} />
                     </SelectTrigger>
                     <SelectContent>
                       {companies.map((company) => (
@@ -378,13 +329,13 @@ export default function EditEmployeePage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="department">Department</Label>
-                  <Select 
-                    value={formData.department} 
+                  <Label htmlFor="department">{t('labels.department')}</Label>
+                  <Select
+                    value={formData.department}
                     onValueChange={(value) => handleInputChange('department', value)}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select department" />
+                      <SelectValue placeholder={t('placeholders.department')} />
                     </SelectTrigger>
                     <SelectContent>
                       {departments.map((dept) => (
@@ -397,13 +348,13 @@ export default function EditEmployeePage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="position">Position</Label>
-                  <Select 
-                    value={formData.position} 
+                  <Label htmlFor="position">{t('labels.position')}</Label>
+                  <Select
+                    value={formData.position}
                     onValueChange={(value) => handleInputChange('position', value)}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select position" />
+                      <SelectValue placeholder={t('placeholders.position')} />
                     </SelectTrigger>
                     <SelectContent>
                       {filteredPositions.map((pos) => (
@@ -416,18 +367,18 @@ export default function EditEmployeePage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="manager">Manager</Label>
+                  <Label htmlFor="manager">{t('labels.manager')}</Label>
                   <Input
                     id="manager"
                     value={formData.manager}
                     onChange={(e) => handleInputChange('manager', e.target.value)}
-                    placeholder="Manager email"
+                    placeholder={t('placeholders.manager')}
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="startDate">Start Date</Label>
+                    <Label htmlFor="startDate">{t('labels.startDate')}</Label>
                     <Input
                       id="startDate"
                       type="date"
@@ -437,7 +388,7 @@ export default function EditEmployeePage() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="endDate">End Date</Label>
+                    <Label htmlFor="endDate">{t('labels.endDate')}</Label>
                     <Input
                       id="endDate"
                       type="date"
@@ -449,39 +400,39 @@ export default function EditEmployeePage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="employmentStatus">Employment Status</Label>
-                    <Select 
-                      value={formData.employmentStatus} 
+                    <Label htmlFor="employmentStatus">{t('labels.employmentStatus')}</Label>
+                    <Select
+                      value={formData.employmentStatus}
                       onValueChange={(value) => handleInputChange('employmentStatus', value)}
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="FULL_TIME">Full-time</SelectItem>
-                        <SelectItem value="PART_TIME">Part-time</SelectItem>
-                        <SelectItem value="CONTRACT">Contract</SelectItem>
-                        <SelectItem value="TEMPORARY">Temporary</SelectItem>
-                        <SelectItem value="INTERN">Intern</SelectItem>
-                        <SelectItem value="ON_LEAVE">On Leave</SelectItem>
-                        <SelectItem value="TERMINATED">Terminated</SelectItem>
+                        <SelectItem value="FULL_TIME">{t('employmentStatus.fullTime')}</SelectItem>
+                        <SelectItem value="PART_TIME">{t('employmentStatus.partTime')}</SelectItem>
+                        <SelectItem value="CONTRACT">{t('employmentStatus.contract')}</SelectItem>
+                        <SelectItem value="TEMPORARY">{t('employmentStatus.temporary')}</SelectItem>
+                        <SelectItem value="INTERN">{t('employmentStatus.intern')}</SelectItem>
+                        <SelectItem value="ON_LEAVE">{t('employmentStatus.onLeave')}</SelectItem>
+                        <SelectItem value="TERMINATED">{t('employmentStatus.terminated')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div>
-                    <Label htmlFor="workLocation">Work Location</Label>
-                    <Select 
-                      value={formData.workLocation} 
+                    <Label htmlFor="workLocation">{t('labels.workLocation')}</Label>
+                    <Select
+                      value={formData.workLocation}
                       onValueChange={(value) => handleInputChange('workLocation', value)}
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="OFFICE">Office</SelectItem>
-                        <SelectItem value="REMOTE">Remote</SelectItem>
-                        <SelectItem value="HYBRID">Hybrid</SelectItem>
+                        <SelectItem value="OFFICE">{t('workLocation.office')}</SelectItem>
+                        <SelectItem value="REMOTE">{t('workLocation.remote')}</SelectItem>
+                        <SelectItem value="HYBRID">{t('workLocation.hybrid')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -491,25 +442,24 @@ export default function EditEmployeePage() {
           </Card>
         </div>
 
-        {/* Submit Button */}
         <div className="flex justify-end space-x-4">
-          <Button 
-            type="button" 
-            variant="outline" 
+          <Button
+            type="button"
+            variant="outline"
             onClick={() => router.push(`/employees/${params.id}`)}
           >
-            Cancel
+            {t('cancel')}
           </Button>
           <Button type="submit" disabled={saving}>
             {saving ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Saving...
+                {t('saving')}
               </>
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                Save Changes
+                {t('saveChanges')}
               </>
             )}
           </Button>

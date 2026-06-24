@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  ArrowLeft, 
-  Edit, 
-  User, 
-  Shield, 
-  Clock, 
+import {
+  ArrowLeft,
+  Edit,
+  User,
+  Shield,
+  Clock,
   Activity,
   Mail,
   Phone,
@@ -67,6 +68,7 @@ interface AuditLog {
 export default function EmployeeDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const t = useTranslations('employees.detail')
   const [employee, setEmployee] = useState<Employee | null>(null)
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([])
   const [resourceAssignments, setResourceAssignments] = useState<any[]>([])
@@ -82,32 +84,28 @@ export default function EmployeeDetailPage() {
   const fetchEmployeeDetails = async () => {
     try {
       setLoading(true)
-      
-      // Fetch employee details
+
       const employeeResponse = await fetch(`/api/employees/${params.id}`)
       if (employeeResponse.ok) {
         const employeeData = await employeeResponse.json()
         setEmployee(employeeData)
 
-        // Fetch resource assignments for this employee
         const assignmentsResponse = await fetch(`/api/resources/assignments?assigneeEmail=${employeeData.email}`)
         if (assignmentsResponse.ok) {
           const assignmentsData = await assignmentsResponse.json()
           setResourceAssignments(assignmentsData.data || [])
         }
       } else {
-        setError('Failed to fetch employee details')
+        setError(t('errors.fetchFailed'))
       }
 
-      // Fetch audit logs for this employee
       const logsResponse = await fetch(`/api/audit-logs?entityId=${params.id}&entityType=Employee`)
       if (logsResponse.ok) {
         const logsData = await logsResponse.json()
         setAuditLogs(logsData.data || [])
       }
-    } catch (error) {
-      setError('Error fetching employee details')
-      console.error('Error:', error)
+    } catch {
+      setError(t('errors.fetchError'))
     } finally {
       setLoading(false)
     }
@@ -115,23 +113,6 @@ export default function EmployeeDetailPage() {
 
   const handleEdit = () => {
     router.push(`/employees/${params.id}/edit`)
-  }
-
-  const handleManageAccess = () => {
-    // Navigate to access management for this employee
-    router.push(`/employees/${params.id}?tab=access`)
-  }
-
-  const handleViewSchedule = () => {
-    // Navigate to schedule view (placeholder for now)
-    alert('Schedule view feature coming soon!')
-  }
-
-  const handleSendEmail = () => {
-    // Open email client with employee's email
-    if (employee) {
-      window.open(`mailto:${employee.email}`, '_blank')
-    }
   }
 
   const getAccessLevelColor = (level: string) => {
@@ -154,8 +135,8 @@ export default function EmployeeDetailPage() {
   }
 
   const getStatusColor = (isActive: boolean) => {
-    return isActive 
-      ? 'bg-green-100 text-green-800' 
+    return isActive
+      ? 'bg-green-100 text-green-800'
       : 'bg-red-100 text-red-800'
   }
 
@@ -184,16 +165,16 @@ export default function EmployeeDetailPage() {
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            {error || 'Employee not found'}
+            {error || t('employeeNotFound')}
           </AlertDescription>
         </Alert>
-        <Button 
-          onClick={() => router.push('/employees')} 
+        <Button
+          onClick={() => router.push('/employees')}
           className="mt-4"
           variant="outline"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Employees
+          {t('backToEmployees')}
         </Button>
       </div>
     )
@@ -205,13 +186,13 @@ export default function EmployeeDetailPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => router.push('/employees')}
               className="flex items-center"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
+              {t('back')}
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-foreground">
@@ -222,7 +203,7 @@ export default function EmployeeDetailPage() {
           </div>
           <Button onClick={handleEdit} className="flex items-center">
             <Edit className="mr-2 h-4 w-4" />
-            Edit Employee
+            {t('editEmployee')}
           </Button>
         </div>
       </div>
@@ -232,10 +213,10 @@ export default function EmployeeDetailPage() {
         <div className="xl:col-span-3">
           <Tabs defaultValue="overview" className="space-y-6">
             <TabsList>
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="access">Access Permissions</TabsTrigger>
-              <TabsTrigger value="requests">Access Requests</TabsTrigger>
-              <TabsTrigger value="activity">Activity Log</TabsTrigger>
+              <TabsTrigger value="overview">{t('tabs.overview')}</TabsTrigger>
+              <TabsTrigger value="access">{t('tabs.access')}</TabsTrigger>
+              <TabsTrigger value="requests">{t('tabs.requests')}</TabsTrigger>
+              <TabsTrigger value="activity">{t('tabs.activity')}</TabsTrigger>
             </TabsList>
 
             {/* Overview Tab */}
@@ -244,17 +225,17 @@ export default function EmployeeDetailPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <User className="mr-2 h-5 w-5" />
-                    Personal Information
+                    {t('personalInfo')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Employee ID</label>
+                      <label className="text-sm font-medium text-muted-foreground">{t('labels.employeeId')}</label>
                       <p className="text-sm">{employee.employeeId}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Email</label>
+                      <label className="text-sm font-medium text-muted-foreground">{t('labels.email')}</label>
                       <p className="text-sm flex items-center">
                         <Mail className="mr-2 h-4 w-4" />
                         {employee.email}
@@ -262,7 +243,7 @@ export default function EmployeeDetailPage() {
                     </div>
                     {employee.phone && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">Phone</label>
+                        <label className="text-sm font-medium text-muted-foreground">{t('labels.phone')}</label>
                         <p className="text-sm flex items-center">
                           <Phone className="mr-2 h-4 w-4" />
                           {employee.phone}
@@ -270,10 +251,10 @@ export default function EmployeeDetailPage() {
                       </div>
                     )}
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Status</label>
+                      <label className="text-sm font-medium text-muted-foreground">{t('labels.status')}</label>
                       <div className="mt-1">
                         <Badge className={getStatusColor(employee.isActive)}>
-                          {employee.isActive ? 'Active' : 'Inactive'}
+                          {employee.isActive ? t('active') : t('inactive')}
                         </Badge>
                       </div>
                     </div>
@@ -285,31 +266,31 @@ export default function EmployeeDetailPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Building2 className="mr-2 h-5 w-5" />
-                    Work Information
+                    {t('workInfo')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Company</label>
+                      <label className="text-sm font-medium text-muted-foreground">{t('labels.company')}</label>
                       <p className="text-sm">{employee.company}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Department</label>
+                      <label className="text-sm font-medium text-muted-foreground">{t('labels.department')}</label>
                       <p className="text-sm">{employee.department}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Position</label>
+                      <label className="text-sm font-medium text-muted-foreground">{t('labels.position')}</label>
                       <p className="text-sm">{employee.position}</p>
                     </div>
                     {employee.manager && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">Manager</label>
+                        <label className="text-sm font-medium text-muted-foreground">{t('labels.manager')}</label>
                         <p className="text-sm">{employee.manager}</p>
                       </div>
                     )}
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Start Date</label>
+                      <label className="text-sm font-medium text-muted-foreground">{t('labels.startDate')}</label>
                       <p className="text-sm flex items-center">
                         <Calendar className="mr-2 h-4 w-4" />
                         {new Date(employee.startDate).toISOString().slice(0, 19).replace('T', ' ')}
@@ -317,7 +298,7 @@ export default function EmployeeDetailPage() {
                     </div>
                     {employee.endDate && (
                       <div>
-                        <label className="text-sm font-medium text-muted-foreground">End Date</label>
+                        <label className="text-sm font-medium text-muted-foreground">{t('labels.endDate')}</label>
                         <p className="text-sm flex items-center">
                           <Calendar className="mr-2 h-4 w-4" />
                           {new Date(employee.endDate).toISOString().slice(0, 19).replace('T', ' ')}
@@ -335,10 +316,10 @@ export default function EmployeeDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Shield className="mr-2 h-5 w-5" />
-                  Resource Access Assignments
+                  {t('resourceAccess.title')}
                 </CardTitle>
                 <CardDescription>
-                  Current resource access assignments and permissions
+                  {t('resourceAccess.description')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -363,20 +344,20 @@ export default function EmployeeDetailPage() {
                           </div>
                         </div>
                         <div className="mt-2 text-sm text-muted-foreground">
-                          <p>Granted: {new Date(assignment.grantedAt).toISOString().slice(0, 19).replace('T', ' ')}</p>
-                          <p>Granted By: {assignment.grantedBy}</p>
+                          <p>{t('resourceAccess.granted')}: {new Date(assignment.grantedAt).toISOString().slice(0, 19).replace('T', ' ')}</p>
+                          <p>{t('resourceAccess.grantedBy')}: {assignment.grantedBy}</p>
                           {assignment.validTo && (
-                            <p>Expires: {new Date(assignment.validTo).toISOString().slice(0, 19).replace('T', ' ')}</p>
+                            <p>{t('resourceAccess.expires')}: {new Date(assignment.validTo).toISOString().slice(0, 19).replace('T', ' ')}</p>
                           )}
                           {!assignment.validTo && (
-                            <p>Expires: No expiry</p>
+                            <p>{t('resourceAccess.expires')}: {t('resourceAccess.noExpiry')}</p>
                           )}
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-muted-foreground">No resource assignments found.</p>
+                  <p className="text-muted-foreground">{t('resourceAccess.noAssignments')}</p>
                 )}
               </CardContent>
             </Card>
@@ -388,16 +369,16 @@ export default function EmployeeDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Clock className="mr-2 h-5 w-5" />
-                  Access Requests
+                  {t('accessRequests.title')}
                 </CardTitle>
                 <CardDescription>
-                  Access request history and status
+                  {t('accessRequests.description')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="text-sm text-muted-foreground">
-                    No access requests found. This feature will show pending, approved, and rejected access requests for this employee.
+                    {t('accessRequests.noRequests')}
                   </div>
                 </div>
               </CardContent>
@@ -410,10 +391,10 @@ export default function EmployeeDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Activity className="mr-2 h-5 w-5" />
-                  Activity Log
+                  {t('activityLog.title')}
                 </CardTitle>
                 <CardDescription>
-                  Recent activity and changes for this employee
+                  {t('activityLog.description')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -425,7 +406,7 @@ export default function EmployeeDetailPage() {
                           <div>
                             <p className="font-medium">{log.action}</p>
                             <p className="text-sm text-muted-foreground">
-                              by {log.user.name} ({log.user.email})
+                              {t('activityLog.by', { name: log.user.name, email: log.user.email })}
                             </p>
                           </div>
                           <div className="text-sm text-muted-foreground">
@@ -444,7 +425,7 @@ export default function EmployeeDetailPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-muted-foreground">No activity found.</p>
+                  <p className="text-muted-foreground">{t('activityLog.noActivity')}</p>
                 )}
               </CardContent>
             </Card>
@@ -456,18 +437,18 @@ export default function EmployeeDetailPage() {
         <div className="space-y-6">
           <Card className="h-fit">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Employee Summary</CardTitle>
+              <CardTitle className="text-sm">{t('summary.title')}</CardTitle>
             </CardHeader>
             <CardContent className="pt-0 space-y-4">
               <div className="text-center">
                 <div className="text-xl font-bold">{resourceAssignments.length}</div>
-                <div className="text-xs text-muted-foreground">Resource Assignments</div>
+                <div className="text-xs text-muted-foreground">{t('summary.resourceAssignments')}</div>
               </div>
               <div className="text-center">
                 <div className="text-xl font-bold">
                   {Math.floor((Date.now() - new Date(employee.startDate).getTime()) / (1000 * 60 * 60 * 24))}
                 </div>
-                <div className="text-xs text-muted-foreground">Days Employed</div>
+                <div className="text-xs text-muted-foreground">{t('summary.daysEmployed')}</div>
               </div>
             </CardContent>
           </Card>
