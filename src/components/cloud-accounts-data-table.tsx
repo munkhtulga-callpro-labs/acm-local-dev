@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { useTranslations } from 'next-intl'
 import {
   flexRender,
   getCoreRowModel,
@@ -80,6 +81,8 @@ interface CloudAccountsDataTableProps {
   onAdd?: () => void
 }
 
+type TFunc = ReturnType<typeof useTranslations<'cloudAccounts.table'>>
+
 const getProviderIcon = (provider: string) => {
   const providerLower = provider.toLowerCase()
   if (providerLower.includes('aws') || providerLower.includes('amazon')) {
@@ -94,35 +97,35 @@ const getProviderIcon = (provider: string) => {
   return <IconCloud className="w-3 h-3 text-gray-500" />
 }
 
-const getEnvironmentBadge = (env: string) => {
+const getEnvironmentBadge = (env: string, t: TFunc) => {
   const envLower = env.toLowerCase()
   switch (envLower) {
     case 'production':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleCheckFilled className="fill-red-500 dark:fill-red-400 mr-1 w-3 h-3" />
-          Production
+          {t('envProduction')}
         </Badge>
       )
     case 'staging':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleCheckFilled className="fill-yellow-500 dark:fill-yellow-400 mr-1 w-3 h-3" />
-          Staging
+          {t('envStaging')}
         </Badge>
       )
     case 'development':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleCheckFilled className="fill-blue-500 dark:fill-blue-400 mr-1 w-3 h-3" />
-          Development
+          {t('envDevelopment')}
         </Badge>
       )
     case 'testing':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400 mr-1 w-3 h-3" />
-          Testing
+          {t('envTesting')}
         </Badge>
       )
     default:
@@ -135,7 +138,7 @@ const getEnvironmentBadge = (env: string) => {
   }
 }
 
-const getPermissionBadge = (level: string) => {
+const getPermissionBadge = (level: string, t: TFunc) => {
   const levelLower = level.toLowerCase()
   switch (levelLower) {
     case 'read':
@@ -143,28 +146,28 @@ const getPermissionBadge = (level: string) => {
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconShieldLock className="mr-1 w-3 h-3 text-green-500" />
-          Read
+          {t('permRead')}
         </Badge>
       )
     case 'write':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconShieldLock className="mr-1 w-3 h-3 text-blue-500" />
-          Write
+          {t('permWrite')}
         </Badge>
       )
     case 'admin':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconShieldLock className="mr-1 w-3 h-3 text-orange-500" />
-          Admin
+          {t('permAdmin')}
         </Badge>
       )
     case 'full':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconShieldLock className="mr-1 w-3 h-3 text-red-500" />
-          Full
+          {t('permFull')}
         </Badge>
       )
     default:
@@ -184,6 +187,8 @@ export function CloudAccountsDataTable({
   onView,
   onAdd,
 }: CloudAccountsDataTableProps) {
+  const t = useTranslations('cloudAccounts.table')
+  const tDrawer = useTranslations('cloudAccounts.drawer')
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -201,7 +206,7 @@ export function CloudAccountsDataTable({
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
             className="px-0 hover:bg-transparent"
           >
-            Account Name
+            {t('accountName')}
             <ArrowUpDown className="ml-2 h-3 w-3" />
           </Button>
         )
@@ -219,7 +224,7 @@ export function CloudAccountsDataTable({
     },
     {
       accessorKey: 'cloudProvider',
-      header: 'Provider',
+      header: t('provider'),
       cell: ({ row }) => {
         const provider = row.getValue('cloudProvider') as string
         return (
@@ -231,7 +236,7 @@ export function CloudAccountsDataTable({
     },
     {
       accessorKey: 'accountId',
-      header: 'Account ID',
+      header: t('accountId'),
       cell: ({ row }) => {
         const accountId = row.getValue('accountId') as string
         return accountId ? (
@@ -250,45 +255,45 @@ export function CloudAccountsDataTable({
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
             className="px-0 hover:bg-transparent"
           >
-            Environment
+            {t('environment')}
             <ArrowUpDown className="ml-2 h-3 w-3" />
           </Button>
         )
       },
       cell: ({ row }) => {
         const env = row.getValue('environment') as string
-        return getEnvironmentBadge(env)
+        return getEnvironmentBadge(env, t)
       },
     },
     {
       accessorKey: 'permissionLevel',
-      header: 'Permission',
+      header: t('permission'),
       cell: ({ row }) => {
         const level = row.getValue('permissionLevel') as string
-        return getPermissionBadge(level)
+        return getPermissionBadge(level, t)
       },
     },
     {
       accessorKey: 'mfaRequired',
-      header: 'MFA',
+      header: t('mfa'),
       cell: ({ row }) => {
         const mfa = row.getValue('mfaRequired') as boolean
         return mfa ? (
           <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
             <IconShieldLock className="mr-1 w-3 h-3 text-green-500" />
-            Required
+            {t('mfaRequired')}
           </Badge>
         ) : (
           <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
             <IconCircleFilled className="fill-gray-400 mr-1 w-3 h-3" />
-            Optional
+            {t('mfaOptional')}
           </Badge>
         )
       },
     },
     {
       accessorKey: 'costCenter',
-      header: 'Cost Center',
+      header: t('costCenter'),
       cell: ({ row }) => {
         const costCenter = row.getValue('costCenter') as string
         return costCenter ? (
@@ -311,24 +316,24 @@ export function CloudAccountsDataTable({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
+                <span className="sr-only">{t('openMenu')}</span>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('actionsLabel')}</DropdownMenuLabel>
               <DropdownMenuItem
                 onClick={() => {
                   setSelectedAccount(account)
                   setDrawerOpen(true)
                 }}
               >
-                View details
+                {t('viewDetails')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {onEdit && (
                 <DropdownMenuItem onClick={() => onEdit(account)}>
-                  Edit account
+                  {t('editAccount')}
                 </DropdownMenuItem>
               )}
               {onDelete && (
@@ -336,7 +341,7 @@ export function CloudAccountsDataTable({
                   onClick={() => onDelete(account.id, account.accountName)}
                   className="text-destructive"
                 >
-                  Delete account
+                  {t('deleteAccount')}
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
@@ -374,7 +379,7 @@ export function CloudAccountsDataTable({
     <div className="w-full">
       <div className="flex items-center gap-2 py-4">
         <Input
-          placeholder="Search accounts..."
+          placeholder={t('searchPlaceholder')}
           value={(table.getColumn('accountName')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
             table.getColumn('accountName')?.setFilterValue(event.target.value)
@@ -384,7 +389,7 @@ export function CloudAccountsDataTable({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
+              {t('columns')} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -409,7 +414,7 @@ export function CloudAccountsDataTable({
         </DropdownMenu>
         {onAdd && (
           <Button onClick={onAdd} size="sm">
-            Add Account
+            {t('addAccount')}
           </Button>
         )}
       </div>
@@ -456,7 +461,7 @@ export function CloudAccountsDataTable({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  {t('noResults')}
                 </TableCell>
               </TableRow>
             )}
@@ -465,7 +470,7 @@ export function CloudAccountsDataTable({
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredRowModel().rows.length} account(s) total
+          {t('accountTotal', { count: table.getFilteredRowModel().rows.length })}
         </div>
         <div className="space-x-2">
           <Button
@@ -474,7 +479,7 @@ export function CloudAccountsDataTable({
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            Previous
+            {t('previous')}
           </Button>
           <Button
             variant="outline"
@@ -482,7 +487,7 @@ export function CloudAccountsDataTable({
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            {t('next')}
           </Button>
         </div>
       </div>
@@ -496,61 +501,61 @@ export function CloudAccountsDataTable({
                 {selectedAccount && getProviderIcon(selectedAccount.cloudProvider)}
                 {selectedAccount?.accountName}
               </DrawerTitle>
-              <DrawerDescription>Cloud account details</DrawerDescription>
+              <DrawerDescription>{tDrawer('description')}</DrawerDescription>
             </DrawerHeader>
             {selectedAccount && (
               <div className="p-4 pb-0 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Provider</p>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('provider')}</p>
                     <p className="text-sm mt-1">{selectedAccount.cloudProvider}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Account ID</p>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('accountId')}</p>
                     <p className="text-sm font-mono mt-1">{selectedAccount.accountId || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Environment</p>
-                    <div className="mt-1">{getEnvironmentBadge(selectedAccount.environment)}</div>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('environment')}</p>
+                    <div className="mt-1">{getEnvironmentBadge(selectedAccount.environment, t)}</div>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Access Type</p>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('accessType')}</p>
                     <p className="text-sm mt-1">{selectedAccount.accessType}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Permission Level</p>
-                    <div className="mt-1">{getPermissionBadge(selectedAccount.permissionLevel)}</div>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('permissionLevel')}</p>
+                    <div className="mt-1">{getPermissionBadge(selectedAccount.permissionLevel, t)}</div>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">MFA Required</p>
-                    <p className="text-sm mt-1">{selectedAccount.mfaRequired ? 'Yes' : 'No'}</p>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('mfaRequired')}</p>
+                    <p className="text-sm mt-1">{selectedAccount.mfaRequired ? tDrawer('yes') : tDrawer('no')}</p>
                   </div>
                   {selectedAccount.regionAccess && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Region Access</p>
+                      <p className="text-sm font-medium text-muted-foreground">{tDrawer('regionAccess')}</p>
                       <p className="text-sm mt-1">{selectedAccount.regionAccess}</p>
                     </div>
                   )}
                   {selectedAccount.costCenter && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Cost Center</p>
+                      <p className="text-sm font-medium text-muted-foreground">{tDrawer('costCenter')}</p>
                       <p className="text-sm mt-1">{selectedAccount.costCenter}</p>
                     </div>
                   )}
                   {selectedAccount.ownerDepartment && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Owner Department</p>
+                      <p className="text-sm font-medium text-muted-foreground">{tDrawer('ownerDepartment')}</p>
                       <p className="text-sm mt-1">{selectedAccount.ownerDepartment}</p>
                     </div>
                   )}
                   {selectedAccount.servicesAccessible && (
                     <div className="col-span-2">
-                      <p className="text-sm font-medium text-muted-foreground">Services Accessible</p>
+                      <p className="text-sm font-medium text-muted-foreground">{tDrawer('servicesAccessible')}</p>
                       <p className="text-sm mt-1">{selectedAccount.servicesAccessible}</p>
                     </div>
                   )}
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Created</p>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('created')}</p>
                     <p className="text-sm mt-1">
                       {new Date(selectedAccount.createdAt).toLocaleDateString()}
                     </p>
@@ -569,7 +574,7 @@ export function CloudAccountsDataTable({
                     }}
                     className="flex-1"
                   >
-                    Edit
+                    {tDrawer('edit')}
                   </Button>
                 )}
                 {onDelete && selectedAccount && (
@@ -581,12 +586,12 @@ export function CloudAccountsDataTable({
                     }}
                     className="flex-1"
                   >
-                    Delete
+                    {tDrawer('delete')}
                   </Button>
                 )}
               </div>
               <DrawerClose asChild>
-                <Button variant="outline">Close</Button>
+                <Button variant="outline">{tDrawer('close')}</Button>
               </DrawerClose>
             </DrawerFooter>
           </div>

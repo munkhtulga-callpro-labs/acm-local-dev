@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Cloud, DollarSign, Shield, FileText, Calendar, Key, Loader2 } from 'lucide-react'
+import { Cloud, DollarSign, Shield, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ResourceOwnershipSection } from '@/components/resource-ownership-section'
 
@@ -56,6 +57,7 @@ export function CloudAccountModal({
   employees,
   departments = []
 }: CloudAccountModalProps) {
+  const t = useTranslations('cloudAccounts.modal')
   const [formData, setFormData] = useState<Partial<CloudAccountResource>>({
     cloudProvider: 'AWS',
     accountName: '',
@@ -130,11 +132,11 @@ export function CloudAccountModal({
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.cloudProvider) newErrors.cloudProvider = 'Cloud provider is required'
-    if (!formData.accountName?.trim()) newErrors.accountName = 'Account name is required'
-    if (!formData.environment) newErrors.environment = 'Environment is required'
-    if (!formData.accessType) newErrors.accessType = 'Access type is required'
-    if (!formData.permissionLevel) newErrors.permissionLevel = 'Permission level is required'
+    if (!formData.cloudProvider) newErrors.cloudProvider = t('errors.cloudProviderRequired')
+    if (!formData.accountName?.trim()) newErrors.accountName = t('errors.accountNameRequired')
+    if (!formData.environment) newErrors.environment = t('errors.environmentRequired')
+    if (!formData.accessType) newErrors.accessType = t('errors.accessTypeRequired')
+    if (!formData.permissionLevel) newErrors.permissionLevel = t('errors.permissionLevelRequired')
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -159,7 +161,7 @@ export function CloudAccountModal({
       onClose()
     } catch (error) {
       console.error('Error saving cloud account:', error)
-      setErrors({ submit: 'Failed to save cloud account. Please try again.' })
+      setErrors({ submit: t('errors.saveFailed') })
     } finally {
       setIsLoading(false)
     }
@@ -197,14 +199,14 @@ export function CloudAccountModal({
         <DialogHeader className="space-y-3 pb-6 border-b">
           <DialogTitle className="text-2xl font-semibold flex items-center gap-2">
             <Cloud className="h-6 w-6 text-primary" />
-            {mode === 'view' && 'Cloud Account Details'}
-            {mode === 'edit' && 'Edit Cloud Account'}
-            {mode === 'create' && 'Add New Cloud Account'}
+            {mode === 'view' && t('titleView')}
+            {mode === 'edit' && t('titleEdit')}
+            {mode === 'create' && t('titleCreate')}
           </DialogTitle>
           <DialogDescription className="text-base">
-            {mode === 'view' && 'View detailed information about this cloud account.'}
-            {mode === 'edit' && 'Update cloud account information. Fields marked with * are required for ISO 27001 compliance.'}
-            {mode === 'create' && 'Register a new cloud account. Fields marked with * are required for ISO 27001 compliance.'}
+            {mode === 'view' && t('descriptionView')}
+            {mode === 'edit' && t('descriptionEdit')}
+            {mode === 'create' && t('descriptionCreate')}
           </DialogDescription>
         </DialogHeader>
 
@@ -213,12 +215,12 @@ export function CloudAccountModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Cloud className="h-4 w-4" />
-              Account Information
+              {t('accountInfo')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="cloudProvider" className="text-sm font-medium">
-                  Cloud Provider {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('cloudProvider')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.cloudProvider}
@@ -226,7 +228,7 @@ export function CloudAccountModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn("h-10", errors.cloudProvider && "border-destructive")}>
-                    <SelectValue placeholder="Select provider" />
+                    <SelectValue placeholder={t('selectProvider')} />
                   </SelectTrigger>
                   <SelectContent>
                     {cloudProviders.map((provider) => (
@@ -239,7 +241,7 @@ export function CloudAccountModal({
 
               <div className="space-y-2">
                 <Label htmlFor="accountName" className="text-sm font-medium">
-                  Account Name {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('accountName')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="accountName"
@@ -254,7 +256,7 @@ export function CloudAccountModal({
 
               <div className="space-y-2">
                 <Label htmlFor="accountId" className="text-sm font-medium">
-                  Account ID
+                  {t('accountId')}
                 </Label>
                 <Input
                   id="accountId"
@@ -267,7 +269,7 @@ export function CloudAccountModal({
 
               <div className="space-y-2">
                 <Label htmlFor="environment" className="text-sm font-medium">
-                  Environment {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('environment')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.environment}
@@ -275,7 +277,7 @@ export function CloudAccountModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn("h-10", errors.environment && "border-destructive")}>
-                    <SelectValue placeholder="Select environment" />
+                    <SelectValue placeholder={t('selectEnvironment')} />
                   </SelectTrigger>
                   <SelectContent>
                     {environments.map((env) => (
@@ -290,7 +292,7 @@ export function CloudAccountModal({
 
               <div className="space-y-2">
                 <Label htmlFor="accessType" className="text-sm font-medium">
-                  Access Type {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('accessType')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.accessType}
@@ -298,7 +300,7 @@ export function CloudAccountModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn("h-10", errors.accessType && "border-destructive")}>
-                    <SelectValue placeholder="Select access type" />
+                    <SelectValue placeholder={t('selectAccessType')} />
                   </SelectTrigger>
                   <SelectContent>
                     {accessTypes.map((type) => (
@@ -311,7 +313,7 @@ export function CloudAccountModal({
 
               <div className="space-y-2">
                 <Label htmlFor="permissionLevel" className="text-sm font-medium">
-                  Permission Level {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('permissionLevel')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.permissionLevel}
@@ -319,7 +321,7 @@ export function CloudAccountModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn("h-10", errors.permissionLevel && "border-destructive")}>
-                    <SelectValue placeholder="Select permission level" />
+                    <SelectValue placeholder={t('selectPermissionLevel')} />
                   </SelectTrigger>
                   <SelectContent>
                     {permissionLevels.map((level) => (
@@ -334,7 +336,7 @@ export function CloudAccountModal({
 
               <div className="space-y-2">
                 <Label htmlFor="regionAccess" className="text-sm font-medium">
-                  Region Access
+                  {t('regionAccess')}
                 </Label>
                 <Input
                   id="regionAccess"
@@ -351,12 +353,12 @@ export function CloudAccountModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Shield className="h-4 w-4" />
-              Security & Cost
+              {t('securityCost')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="mfaRequired" className="text-sm font-medium">
-                  MFA Required
+                  {t('mfaRequired')}
                 </Label>
                 <div className="flex items-center space-x-3 pt-2">
                   <Switch
@@ -366,14 +368,14 @@ export function CloudAccountModal({
                     disabled={isViewMode}
                   />
                   <Label htmlFor="mfaRequired" className="text-sm text-muted-foreground cursor-pointer">
-                    {formData.mfaRequired ? 'MFA Enabled' : 'MFA Disabled'}
+                    {formData.mfaRequired ? t('mfaEnabled') : t('mfaDisabled')}
                   </Label>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="status" className="text-sm font-medium">
-                  Account Status
+                  {t('accountStatus')}
                 </Label>
                 <Select
                   value={formData.status}
@@ -381,19 +383,19 @@ export function CloudAccountModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Select status" />
+                    <SelectValue placeholder={t('selectStatus')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ACTIVE">Active</SelectItem>
-                    <SelectItem value="INACTIVE">Inactive</SelectItem>
-                    <SelectItem value="SUSPENDED">Suspended</SelectItem>
+                    <SelectItem value="ACTIVE">{t('statusActive')}</SelectItem>
+                    <SelectItem value="INACTIVE">{t('statusInactive')}</SelectItem>
+                    <SelectItem value="SUSPENDED">{t('statusSuspended')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="costCenter" className="text-sm font-medium">
-                  Cost Center
+                  {t('costCenter')}
                 </Label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -410,7 +412,7 @@ export function CloudAccountModal({
 
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="servicesAccessible" className="text-sm font-medium">
-                  Services Accessible
+                  {t('servicesAccessible')}
                 </Label>
                 <Input
                   id="servicesAccessible"
@@ -439,7 +441,7 @@ export function CloudAccountModal({
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="notes" className="text-sm font-medium">
-                Notes
+                {t('notes')}
               </Label>
               <Textarea
                 id="notes"
@@ -466,7 +468,7 @@ export function CloudAccountModal({
               disabled={isLoading}
               className="min-w-24"
             >
-              {isViewMode ? 'Close' : 'Cancel'}
+              {isViewMode ? t('close') : t('cancel')}
             </Button>
             {!isViewMode && (
               <Button
@@ -475,7 +477,7 @@ export function CloudAccountModal({
                 className="min-w-28"
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {mode === 'edit' ? 'Update Cloud Account' : 'Add Cloud Account'}
+                {mode === 'edit' ? t('updateAccount') : t('addAccount')}
               </Button>
             )}
           </DialogFooter>

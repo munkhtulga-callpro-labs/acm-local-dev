@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -14,6 +15,7 @@ import {
 import { CloudAccountsDataTable, type CloudAccountResource } from '@/components/cloud-accounts-data-table'
 
 export default function CloudAccountsPage() {
+  const t = useTranslations('cloudAccounts')
   const [cloudAccounts, setCloudAccounts] = useState<CloudAccountResource[]>([])
   const [employees, setEmployees] = useState<Array<{ id: string; firstName: string; lastName: string; email: string }>>([])
   const [departments, setDepartments] = useState<Array<{ id: string; name: string }>>([])
@@ -39,10 +41,10 @@ export default function CloudAccountsPage() {
         const data = await response.json()
         setCloudAccounts(data.data || [])
       } else {
-        setError('Failed to fetch cloud accounts')
+        setError(t('errors.fetchFailed'))
       }
     } catch (error) {
-      setError('Error fetching cloud accounts')
+      setError(t('errors.fetchError'))
       console.error('Error:', error)
     } finally {
       setLoading(false)
@@ -105,16 +107,16 @@ export default function CloudAccountsPage() {
 
             if (!ownersResponse.ok) {
               const ownersError = await ownersResponse.json()
-              setError(`Cloud account created but failed to save owners: ${ownersError.error || 'Unknown error'}`)
+              setError(t('errors.ownersFailed', { error: ownersError.error || 'Unknown error' }))
             }
           }
 
-          setSuccess('Cloud account added successfully')
+          setSuccess(t('success.added'))
           fetchCloudAccounts()
         } else {
           const errorData = await response.json()
-          setError(errorData.error || 'Failed to add cloud account')
-          throw new Error(errorData.error || 'Failed to add cloud account')
+          setError(errorData.error || t('errors.addFailed'))
+          throw new Error(errorData.error || t('errors.addFailed'))
         }
       } else if (modalState.mode === 'edit' && modalState.cloudAccount) {
         const response = await fetch(`/api/resources/cloud-accounts/${modalState.cloudAccount.id}`, {
@@ -142,12 +144,12 @@ export default function CloudAccountsPage() {
             })
           }
 
-          setSuccess('Cloud account updated successfully')
+          setSuccess(t('success.updated'))
           fetchCloudAccounts()
         } else {
           const errorData = await response.json()
-          setError(errorData.error || 'Failed to update cloud account')
-          throw new Error(errorData.error || 'Failed to update cloud account')
+          setError(errorData.error || t('errors.updateFailed'))
+          throw new Error(errorData.error || t('errors.updateFailed'))
         }
       }
     } catch (error) {
@@ -160,7 +162,7 @@ export default function CloudAccountsPage() {
   }
 
   const handleDeleteCloudAccount = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete ${name}?`)) return
+    if (!confirm(t('confirmDelete', { name }))) return
 
     try {
       const response = await fetch(`/api/resources/cloud-accounts/${id}`, {
@@ -168,13 +170,13 @@ export default function CloudAccountsPage() {
       })
 
       if (response.ok) {
-        setSuccess(`${name} has been deleted successfully`)
+        setSuccess(t('success.deleted', { name }))
         fetchCloudAccounts()
       } else {
-        setError('Failed to delete cloud account')
+        setError(t('errors.deleteFailed'))
       }
-    } catch (error) {
-      setError('Error deleting cloud account')
+    } catch {
+      setError(t('errors.deleteError'))
     }
   }
 
@@ -188,12 +190,12 @@ export default function CloudAccountsPage() {
       {/* Header */}
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Cloud Accounts</h1>
-          <p className="text-muted-foreground">Manage AWS, Azure, and GCP account access - ISO 27001 Compliant</p>
+          <h1 className="text-3xl font-bold text-foreground">{t('title')}</h1>
+          <p className="text-muted-foreground">{t('subtitle')}</p>
         </div>
         <Button onClick={() => setModalState({ isOpen: true, mode: 'create' })}>
           <Cloud className="mr-2 h-4 w-4" />
-          Add Account
+          {t('addAccount')}
         </Button>
       </div>
 
@@ -213,46 +215,46 @@ export default function CloudAccountsPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Accounts</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('stats.totalAccounts')}</CardTitle>
             <Cloud className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalAccounts}</div>
             <p className="text-xs text-muted-foreground">
-              {activeAccounts} active
+              {t('stats.activeCount', { count: activeAccounts })}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Production</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('stats.production')}</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{productionAccounts}</div>
             <p className="text-xs text-muted-foreground">
-              Critical environments
+              {t('stats.productionDesc')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">MFA Enabled</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('stats.mfaEnabled')}</CardTitle>
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{mfaEnabled}</div>
             <p className="text-xs text-muted-foreground">
-              Enhanced security
+              {t('stats.mfaEnabledDesc')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Cost Centers</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('stats.costCenters')}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -260,7 +262,7 @@ export default function CloudAccountsPage() {
               {cloudAccounts.filter(a => a.costCenter).length}
             </div>
             <p className="text-xs text-muted-foreground">
-              With cost tracking
+              {t('stats.costCentersDesc')}
             </p>
           </CardContent>
         </Card>
@@ -269,9 +271,9 @@ export default function CloudAccountsPage() {
       {/* Cloud Accounts Table */}
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle>Cloud Accounts</CardTitle>
+          <CardTitle>{t('cardTitle')}</CardTitle>
           <CardDescription className="mt-1.5">
-            Track and manage access to AWS, Azure, GCP, and other cloud platforms
+            {t('cardDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-0 px-6 pb-6">
@@ -281,7 +283,7 @@ export default function CloudAccountsPage() {
             </div>
           ) : cloudAccounts.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No cloud accounts found
+              {t('noAccounts')}
             </div>
           ) : (
             <CloudAccountsDataTable
