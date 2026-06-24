@@ -36,6 +36,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { signOut } from 'next-auth/react'
 import { useState } from 'react'
+import { useTheme } from 'next-themes'
 import { LocaleSwitcher } from './locale-switcher'
 
 const mainNavigation = [
