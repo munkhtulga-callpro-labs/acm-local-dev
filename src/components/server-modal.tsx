@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Server, Shield, FileText, Calendar, Key, Loader2 } from 'lucide-react'
+import { Server, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ResourceOwnershipSection } from '@/components/resource-ownership-section'
 
@@ -70,6 +71,7 @@ export function ServerModal({
   employees,
   departments = []
 }: ServerModalProps) {
+  const t = useTranslations('servers.modal')
   const [formData, setFormData] = useState<Partial<ServerResource>>({
     name: '',
     serverType: 'Virtual',
@@ -152,13 +154,13 @@ export function ServerModal({
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.name?.trim()) newErrors.name = 'Server name is required'
-    if (!formData.serverType) newErrors.serverType = 'Server type is required'
-    if (!formData.os) newErrors.os = 'Operating system is required'
-    if (!formData.ipAddress?.trim()) newErrors.ipAddress = 'IP address is required'
-    if (!formData.owner?.trim()) newErrors.owner = 'Owner is required'
-    if (!formData.environment) newErrors.environment = 'Environment is required'
-    if (!formData.accessLevel) newErrors.accessLevel = 'Access level is required'
+    if (!formData.name?.trim()) newErrors.name = t('errors.nameRequired')
+    if (!formData.serverType) newErrors.serverType = t('errors.typeRequired')
+    if (!formData.os) newErrors.os = t('errors.osRequired')
+    if (!formData.ipAddress?.trim()) newErrors.ipAddress = t('errors.ipRequired')
+    if (!formData.owner?.trim()) newErrors.owner = t('errors.ownerRequired')
+    if (!formData.environment) newErrors.environment = t('errors.environmentRequired')
+    if (!formData.accessLevel) newErrors.accessLevel = t('errors.accessLevelRequired')
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -183,7 +185,7 @@ export function ServerModal({
       onClose()
     } catch (error) {
       console.error('Error saving server:', error)
-      setErrors({ submit: 'Failed to save server. Please try again.' })
+      setErrors({ submit: t('errors.saveFailed') })
     } finally {
       setIsLoading(false)
     }
@@ -202,14 +204,14 @@ export function ServerModal({
         <DialogHeader className="space-y-3 pb-6 border-b">
           <DialogTitle className="text-2xl font-semibold flex items-center gap-2">
             <Server className="h-6 w-6 text-primary" />
-            {mode === 'view' && 'Server Resource Details'}
-            {mode === 'edit' && 'Edit Server Resource'}
-            {mode === 'create' && 'Add New Server Resource'}
+            {mode === 'view' && t('titleView')}
+            {mode === 'edit' && t('titleEdit')}
+            {mode === 'create' && t('titleCreate')}
           </DialogTitle>
           <DialogDescription className="text-base">
-            {mode === 'view' && 'View detailed information about this server resource.'}
-            {mode === 'edit' && 'Update server resource information. Fields marked with * are required for ISO 27001 compliance.'}
-            {mode === 'create' && 'Register a new server resource. Fields marked with * are required for ISO 27001 compliance.'}
+            {mode === 'view' && t('descriptionView')}
+            {mode === 'edit' && t('descriptionEdit')}
+            {mode === 'create' && t('descriptionCreate')}
           </DialogDescription>
         </DialogHeader>
 
@@ -218,12 +220,12 @@ export function ServerModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Server className="h-4 w-4" />
-              Server Configuration
+              {t('serverConfig')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-sm font-medium">
-                  Server Name {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('serverName')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="name"
@@ -238,7 +240,7 @@ export function ServerModal({
 
               <div className="space-y-2">
                 <Label htmlFor="serverType" className="text-sm font-medium">
-                  Server Type {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('serverType')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.serverType}
@@ -246,7 +248,7 @@ export function ServerModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn("h-10", errors.serverType && "border-destructive")}>
-                    <SelectValue placeholder="Select type" />
+                    <SelectValue placeholder={t('selectType')} />
                   </SelectTrigger>
                   <SelectContent>
                     {serverTypes.map((type) => (
@@ -259,7 +261,7 @@ export function ServerModal({
 
               <div className="space-y-2">
                 <Label htmlFor="os" className="text-sm font-medium">
-                  Operating System {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('operatingSystem')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.os}
@@ -267,7 +269,7 @@ export function ServerModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn("h-10", errors.os && "border-destructive")}>
-                    <SelectValue placeholder="Select OS" />
+                    <SelectValue placeholder={t('selectOs')} />
                   </SelectTrigger>
                   <SelectContent>
                     {operatingSystems.map((os) => (
@@ -280,7 +282,7 @@ export function ServerModal({
 
               <div className="space-y-2">
                 <Label htmlFor="version" className="text-sm font-medium">
-                  OS Version
+                  {t('osVersion')}
                 </Label>
                 <Input
                   id="version"
@@ -293,7 +295,7 @@ export function ServerModal({
 
               <div className="space-y-2">
                 <Label htmlFor="environment" className="text-sm font-medium">
-                  Environment {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('environment')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.environment}
@@ -301,7 +303,7 @@ export function ServerModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn("h-10", errors.environment && "border-destructive")}>
-                    <SelectValue placeholder="Select environment" />
+                    <SelectValue placeholder={t('selectEnvironment')} />
                   </SelectTrigger>
                   <SelectContent>
                     {environments.map((env) => (
@@ -316,7 +318,7 @@ export function ServerModal({
 
               <div className="space-y-2">
                 <Label htmlFor="ipAddress" className="text-sm font-medium">
-                  IP Address {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('ipAddress')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="ipAddress"
@@ -331,7 +333,7 @@ export function ServerModal({
 
               <div className="space-y-2">
                 <Label htmlFor="hostname" className="text-sm font-medium">
-                  Hostname
+                  {t('hostname')}
                 </Label>
                 <Input
                   id="hostname"
@@ -344,7 +346,7 @@ export function ServerModal({
 
               <div className="space-y-2">
                 <Label htmlFor="sshPort" className="text-sm font-medium">
-                  SSH Port
+                  {t('sshPort')}
                 </Label>
                 <Input
                   id="sshPort"
@@ -358,7 +360,7 @@ export function ServerModal({
 
               <div className="space-y-2">
                 <Label htmlFor="rdpPort" className="text-sm font-medium">
-                  RDP Port
+                  {t('rdpPort')}
                 </Label>
                 <Input
                   id="rdpPort"
@@ -372,7 +374,7 @@ export function ServerModal({
 
               <div className="space-y-2">
                 <Label htmlFor="cpu" className="text-sm font-medium">
-                  CPU
+                  {t('cpu')}
                 </Label>
                 <Input
                   id="cpu"
@@ -385,7 +387,7 @@ export function ServerModal({
 
               <div className="space-y-2">
                 <Label htmlFor="memory" className="text-sm font-medium">
-                  Memory
+                  {t('memory')}
                 </Label>
                 <Input
                   id="memory"
@@ -398,7 +400,7 @@ export function ServerModal({
 
               <div className="space-y-2">
                 <Label htmlFor="storage" className="text-sm font-medium">
-                  Storage
+                  {t('storage')}
                 </Label>
                 <Input
                   id="storage"
@@ -411,7 +413,7 @@ export function ServerModal({
 
               <div className="space-y-2">
                 <Label htmlFor="location" className="text-sm font-medium">
-                  Location
+                  {t('location')}
                 </Label>
                 <Input
                   id="location"
@@ -424,7 +426,7 @@ export function ServerModal({
 
               <div className="space-y-2">
                 <Label htmlFor="dataCenter" className="text-sm font-medium">
-                  Data Center
+                  {t('dataCenter')}
                 </Label>
                 <Input
                   id="dataCenter"
@@ -437,7 +439,7 @@ export function ServerModal({
 
               <div className="space-y-2">
                 <Label htmlFor="accessLevel" className="text-sm font-medium">
-                  Access Level {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('accessLevel')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.accessLevel}
@@ -445,7 +447,7 @@ export function ServerModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn("h-10", errors.accessLevel && "border-destructive")}>
-                    <SelectValue placeholder="Select access level" />
+                    <SelectValue placeholder={t('selectAccessLevel')} />
                   </SelectTrigger>
                   <SelectContent>
                     {accessLevels.map((level) => (
@@ -476,7 +478,7 @@ export function ServerModal({
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="description" className="text-sm font-medium">
-                Description
+                {t('description')}
               </Label>
               <Textarea
                 id="description"
@@ -491,7 +493,7 @@ export function ServerModal({
             {!isViewMode && (
               <div className="space-y-2">
                 <Label htmlFor="isActive" className="text-sm font-medium">
-                  Status
+                  {t('activeStatus')}
                 </Label>
                 <div className="flex items-center space-x-3 pt-2">
                   <Switch
@@ -500,7 +502,7 @@ export function ServerModal({
                     onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
                   />
                   <Label htmlFor="isActive" className="text-sm text-muted-foreground cursor-pointer">
-                    {formData.isActive ? 'Active' : 'Inactive'}
+                    {formData.isActive ? t('active') : t('inactive')}
                   </Label>
                 </div>
               </div>
@@ -521,7 +523,7 @@ export function ServerModal({
               disabled={isLoading}
               className="min-w-24"
             >
-              {isViewMode ? 'Close' : 'Cancel'}
+              {isViewMode ? t('close') : t('cancel')}
             </Button>
             {!isViewMode && (
               <Button
@@ -530,7 +532,7 @@ export function ServerModal({
                 className="min-w-28"
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {mode === 'edit' ? 'Update Server' : 'Add Server'}
+                {mode === 'edit' ? t('updateServer') : t('addServer')}
               </Button>
             )}
           </DialogFooter>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -14,6 +15,7 @@ import {
 import { ServersDataTable, type ServerResource } from '@/components/servers-data-table'
 
 export default function ServersPage() {
+  const t = useTranslations('servers')
   const [servers, setServers] = useState<ServerResource[]>([])
   const [employees, setEmployees] = useState<Array<{ id: string; firstName: string; lastName: string; email: string }>>([])
   const [departments, setDepartments] = useState<Array<{ id: string; name: string }>>([])
@@ -39,10 +41,10 @@ export default function ServersPage() {
         const data = await response.json()
         setServers(data.data || [])
       } else {
-        setError('Failed to fetch servers')
+        setError(t('errors.fetchFailed'))
       }
     } catch (error) {
-      setError('Error fetching servers')
+      setError(t('errors.fetchError'))
       console.error('Error:', error)
     } finally {
       setLoading(false)
@@ -105,16 +107,16 @@ export default function ServersPage() {
 
             if (!ownersResponse.ok) {
               const ownersError = await ownersResponse.json()
-              setError(`Server created but failed to save owners: ${ownersError.error || 'Unknown error'}`)
+              setError(t('errors.ownersFailed', { error: ownersError.error || 'Unknown error' }))
             }
           }
 
-          setSuccess('Server added successfully')
+          setSuccess(t('success.added'))
           fetchServers()
         } else {
           const errorData = await response.json()
-          setError(errorData.error || 'Failed to add server')
-          throw new Error(errorData.error || 'Failed to add server')
+          setError(errorData.error || t('errors.addFailed'))
+          throw new Error(errorData.error || t('errors.addFailed'))
         }
       } else if (modalState.mode === 'edit' && modalState.server) {
         const response = await fetch(`/api/resources/servers/${modalState.server.id}`, {
@@ -142,12 +144,12 @@ export default function ServersPage() {
             })
           }
 
-          setSuccess('Server updated successfully')
+          setSuccess(t('success.updated'))
           fetchServers()
         } else {
           const errorData = await response.json()
-          setError(errorData.error || 'Failed to update server')
-          throw new Error(errorData.error || 'Failed to update server')
+          setError(errorData.error || t('errors.updateFailed'))
+          throw new Error(errorData.error || t('errors.updateFailed'))
         }
       }
     } catch (error) {
@@ -160,7 +162,7 @@ export default function ServersPage() {
   }
 
   const handleDeleteServer = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete ${name}?`)) return
+    if (!confirm(t('confirmDelete', { name }))) return
 
     try {
       const response = await fetch(`/api/resources/servers/${id}`, {
@@ -168,13 +170,13 @@ export default function ServersPage() {
       })
 
       if (response.ok) {
-        setSuccess(`${name} has been deleted successfully`)
+        setSuccess(t('success.deleted', { name }))
         fetchServers()
       } else {
-        setError('Failed to delete server')
+        setError(t('errors.deleteFailed'))
       }
-    } catch (error) {
-      setError('Error deleting server')
+    } catch {
+      setError(t('errors.deleteError'))
     }
   }
 
@@ -188,12 +190,12 @@ export default function ServersPage() {
       {/* Header */}
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Server Resources</h1>
-          <p className="text-muted-foreground">Manage server access and SSH/RDP credentials - ISO 27001 Compliant</p>
+          <h1 className="text-3xl font-bold text-foreground">{t('title')}</h1>
+          <p className="text-muted-foreground">{t('subtitle')}</p>
         </div>
         <Button onClick={() => setModalState({ isOpen: true, mode: 'create' })}>
           <Server className="mr-2 h-4 w-4" />
-          Add Server
+          {t('addServer')}
         </Button>
       </div>
 
@@ -213,52 +215,52 @@ export default function ServersPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Servers</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('stats.totalServers')}</CardTitle>
             <Server className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalServers}</div>
             <p className="text-xs text-muted-foreground">
-              {activeServers} active
+              {t('stats.activeServers', { count: activeServers })}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Production</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('stats.production')}</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{productionServers}</div>
             <p className="text-xs text-muted-foreground">
-              Critical infrastructure
+              {t('stats.productionDesc')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Admin Access</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('stats.adminAccess')}</CardTitle>
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{adminAccessServers}</div>
             <p className="text-xs text-muted-foreground">
-              Elevated privileges
+              {t('stats.adminAccessDesc')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Inactive</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('stats.inactive')}</CardTitle>
             <HardDrive className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalServers - activeServers}</div>
             <p className="text-xs text-muted-foreground">
-              Not in use
+              {t('stats.inactiveDesc')}
             </p>
           </CardContent>
         </Card>
@@ -267,9 +269,9 @@ export default function ServersPage() {
       {/* Servers Table */}
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle>Servers</CardTitle>
+          <CardTitle>{t('serversCard')}</CardTitle>
           <CardDescription className="mt-1.5">
-            Track and manage access to physical, virtual, and cloud servers
+            {t('serversCardDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-0 px-6 pb-6">
@@ -279,7 +281,7 @@ export default function ServersPage() {
             </div>
           ) : servers.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No servers found
+              {t('noServers')}
             </div>
           ) : (
             <ServersDataTable
