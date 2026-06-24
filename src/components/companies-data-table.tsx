@@ -32,6 +32,7 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table"
+import { useTranslations } from "next-intl"
 import { z } from "zod"
 
 import { Badge } from "@/components/ui/badge"
@@ -101,6 +102,7 @@ interface CompaniesDataTableProps {
 }
 
 export function CompaniesDataTable({ data, onEdit, onDelete }: CompaniesDataTableProps) {
+  const t = useTranslations('companies.table')
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -132,7 +134,7 @@ export function CompaniesDataTable({ data, onEdit, onDelete }: CompaniesDataTabl
             className="-ml-4 h-auto p-1 hover:bg-transparent data-[state=open]:bg-transparent"
           >
             <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Company
+              {t('company')}
             </span>
             {column.getIsSorted() === "asc" ? (
               <IconArrowUp className="ml-2 size-3.5 text-muted-foreground/70" />
@@ -173,7 +175,7 @@ export function CompaniesDataTable({ data, onEdit, onDelete }: CompaniesDataTabl
             className="-ml-4 h-auto p-1 hover:bg-transparent"
           >
             <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Contact
+              {t('contact')}
             </span>
             {column.getIsSorted() === "asc" ? (
               <IconArrowUp className="ml-2 size-3.5 text-muted-foreground/70" />
@@ -202,7 +204,7 @@ export function CompaniesDataTable({ data, onEdit, onDelete }: CompaniesDataTabl
       header: ({ column }) => {
         return (
           <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Employees
+            {t('employees')}
           </div>
         )
       },
@@ -221,7 +223,7 @@ export function CompaniesDataTable({ data, onEdit, onDelete }: CompaniesDataTabl
       header: ({ column }) => {
         return (
           <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Departments
+            {t('departments')}
           </div>
         )
       },
@@ -245,7 +247,7 @@ export function CompaniesDataTable({ data, onEdit, onDelete }: CompaniesDataTabl
             className="-ml-4 h-auto p-1 hover:bg-transparent"
           >
             <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Status
+              {t('status')}
             </span>
             {column.getIsSorted() === "asc" ? (
               <IconArrowUp className="ml-2 size-3.5 text-muted-foreground/70" />
@@ -271,7 +273,7 @@ export function CompaniesDataTable({ data, onEdit, onDelete }: CompaniesDataTabl
             <IconCircleCheckFilled
               className={`mr-1 size-3 ${isActive ? "text-emerald-500" : "text-gray-400"}`}
             />
-            {isActive ? "Active" : "Inactive"}
+            {isActive ? t('active') : t('inactive')}
           </Badge>
         )
       },
@@ -292,18 +294,18 @@ export function CompaniesDataTable({ data, onEdit, onDelete }: CompaniesDataTabl
                 className="flex size-8 p-0 data-[state=open]:bg-muted"
               >
                 <IconDotsVertical className="size-4" />
-                <span className="sr-only">Open menu</span>
+                <span className="sr-only">{t('openMenu')}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
               <DropdownMenuItem onClick={() => onEdit(company)}>
-                Edit
+                {t('edit')}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => handleDelete(company.id, company.name)}
                 className="text-destructive focus:text-destructive"
               >
-                Delete
+                {t('delete')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -338,7 +340,7 @@ export function CompaniesDataTable({ data, onEdit, onDelete }: CompaniesDataTabl
       {/* Search and Filters */}
       <div className="flex items-center justify-between gap-2">
         <Input
-          placeholder="Search companies..."
+          placeholder={t('searchPlaceholder')}
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
@@ -357,9 +359,9 @@ export function CompaniesDataTable({ data, onEdit, onDelete }: CompaniesDataTabl
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="true">Active</SelectItem>
-              <SelectItem value="false">Inactive</SelectItem>
+              <SelectItem value="all">{t('allStatus')}</SelectItem>
+              <SelectItem value="true">{t('active')}</SelectItem>
+              <SelectItem value="false">{t('inactive')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -410,7 +412,7 @@ export function CompaniesDataTable({ data, onEdit, onDelete }: CompaniesDataTabl
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  {t('noResults')}
                 </TableCell>
               </TableRow>
             )}
@@ -421,11 +423,11 @@ export function CompaniesDataTable({ data, onEdit, onDelete }: CompaniesDataTabl
       {/* Pagination */}
       <div className="flex items-center justify-between px-2">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredRowModel().rows.length} row(s) total.
+          {t('rowsTotal', { count: table.getFilteredRowModel().rows.length })}
         </div>
         <div className="flex items-center gap-6 lg:gap-8">
           <div className="flex items-center gap-2">
-            <p className="text-sm font-medium">Rows per page</p>
+            <p className="text-sm font-medium">{t('rowsPerPage')}</p>
             <Select
               value={`${table.getState().pagination.pageSize}`}
               onValueChange={(value) => {
@@ -445,8 +447,10 @@ export function CompaniesDataTable({ data, onEdit, onDelete }: CompaniesDataTabl
             </Select>
           </div>
           <div className="flex items-center justify-center text-sm font-medium">
-            Page {table.getState().pagination.pageIndex + 1} of{" "}
-            {table.getPageCount()}
+            {t('pageOf', {
+              current: table.getState().pagination.pageIndex + 1,
+              total: table.getPageCount(),
+            })}
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -455,7 +459,7 @@ export function CompaniesDataTable({ data, onEdit, onDelete }: CompaniesDataTabl
               onClick={() => table.setPageIndex(0)}
               disabled={!table.getCanPreviousPage()}
             >
-              <span className="sr-only">Go to first page</span>
+              <span className="sr-only">{t('goToFirstPage')}</span>
               <IconChevronsLeft className="size-4" />
             </Button>
             <Button
@@ -464,7 +468,7 @@ export function CompaniesDataTable({ data, onEdit, onDelete }: CompaniesDataTabl
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
-              <span className="sr-only">Go to previous page</span>
+              <span className="sr-only">{t('goToPreviousPage')}</span>
               <IconChevronLeft className="size-4" />
             </Button>
             <Button
@@ -473,7 +477,7 @@ export function CompaniesDataTable({ data, onEdit, onDelete }: CompaniesDataTabl
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >
-              <span className="sr-only">Go to next page</span>
+              <span className="sr-only">{t('goToNextPage')}</span>
               <IconChevronRight className="size-4" />
             </Button>
             <Button
@@ -482,7 +486,7 @@ export function CompaniesDataTable({ data, onEdit, onDelete }: CompaniesDataTabl
               onClick={() => table.setPageIndex(table.getPageCount() - 1)}
               disabled={!table.getCanNextPage()}
             >
-              <span className="sr-only">Go to last page</span>
+              <span className="sr-only">{t('goToLastPage')}</span>
               <IconChevronsRight className="size-4" />
             </Button>
           </div>
@@ -493,16 +497,18 @@ export function CompaniesDataTable({ data, onEdit, onDelete }: CompaniesDataTabl
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>{t('deleteDialog.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete <strong>{selectedCompany?.name}</strong> and all related data.
-              This action cannot be undone.
+              {t.rich('deleteDialog.description', {
+                name: selectedCompany?.name ?? '',
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('deleteDialog.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
+              {t('deleteDialog.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

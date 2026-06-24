@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -9,6 +10,7 @@ import { CompanyModal } from '@/components/company-modal'
 import { CompaniesDataTable, type Company } from '@/components/companies-data-table'
 
 export default function CompaniesPage() {
+  const t = useTranslations('companies')
   const [companies, setCompanies] = useState<Company[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -30,10 +32,10 @@ export default function CompaniesPage() {
         const data = await response.json()
         setCompanies(data.data || data)
       } else {
-        setError('Failed to fetch companies')
+        setError(t('errors.fetchFailed'))
       }
-    } catch (error) {
-      setError('Error fetching companies')
+    } catch {
+      setError(t('errors.fetchError'))
     } finally {
       setLoading(false)
     }
@@ -49,12 +51,12 @@ export default function CompaniesPage() {
         })
 
         if (response.ok) {
-          setSuccess('Company added successfully')
+          setSuccess(t('success.added'))
           fetchCompanies()
         } else {
           const errorData = await response.json()
-          setError(errorData.error || 'Failed to add company')
-          throw new Error(errorData.error || 'Failed to add company')
+          setError(errorData.error || t('errors.addFailed'))
+          throw new Error(errorData.error || t('errors.addFailed'))
         }
       } else if (modalState.mode === 'edit' && modalState.company) {
         const response = await fetch(`/api/companies/${modalState.company.id}`, {
@@ -64,12 +66,12 @@ export default function CompaniesPage() {
         })
 
         if (response.ok) {
-          setSuccess('Company updated successfully')
+          setSuccess(t('success.updated'))
           fetchCompanies()
         } else {
           const errorData = await response.json()
-          setError(errorData.error || 'Failed to update company')
-          throw new Error(errorData.error || 'Failed to update company')
+          setError(errorData.error || t('errors.updateFailed'))
+          throw new Error(errorData.error || t('errors.updateFailed'))
         }
       }
     } catch (error) {
@@ -84,13 +86,13 @@ export default function CompaniesPage() {
       })
 
       if (response.ok) {
-        setSuccess(`Company "${name}" deleted successfully`)
+        setSuccess(t('success.deleted', { name }))
         fetchCompanies()
       } else {
-        setError('Failed to delete company')
+        setError(t('errors.deleteFailed'))
       }
-    } catch (error) {
-      setError('Error deleting company')
+    } catch {
+      setError(t('errors.deleteError'))
     }
   }
 
@@ -101,15 +103,15 @@ export default function CompaniesPage() {
         <div>
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
             <Building className="h-8 w-8" />
-            Company Management
+            {t('title')}
           </h1>
           <p className="text-muted-foreground mt-2">
-            Manage companies and organizational structure
+            {t('subtitle')}
           </p>
         </div>
         <Button onClick={() => setModalState({ isOpen: true, mode: 'create' })}>
           <Plus className="mr-2 h-4 w-4" />
-          Add Company
+          {t('addCompany')}
         </Button>
       </div>
 
@@ -129,7 +131,7 @@ export default function CompaniesPage() {
       {/* Companies Table */}
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle>Companies</CardTitle>
+          <CardTitle>{t('companiesCard')}</CardTitle>
         </CardHeader>
         <CardContent className="pt-0 px-6 pb-6">
           {loading ? (
