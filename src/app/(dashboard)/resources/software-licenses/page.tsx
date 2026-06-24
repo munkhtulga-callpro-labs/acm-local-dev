@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -51,6 +52,7 @@ interface SoftwareLicense {
 }
 
 export default function SoftwareLicensesPage() {
+  const t = useTranslations('softwareLicenses')
   const [licenses, setLicenses] = useState<SoftwareLicense[]>([])
   const [employees, setEmployees] = useState<Array<{ id: string; firstName: string; lastName: string; email: string }>>([])
   const [departments, setDepartments] = useState<Array<{ id: string; name: string }>>([])
@@ -79,10 +81,10 @@ export default function SoftwareLicensesPage() {
         const data = await response.json()
         setLicenses(data.data || [])
       } else {
-        setError('Failed to fetch software licenses')
+        setError(t('errors.fetchFailed'))
       }
     } catch (error) {
-      setError('Error fetching software licenses')
+      setError(t('errors.fetchError'))
       console.error('Error:', error)
     } finally {
       setLoading(false)
@@ -145,16 +147,16 @@ export default function SoftwareLicensesPage() {
 
             if (!ownersResponse.ok) {
               const ownersError = await ownersResponse.json()
-              setError(`Software license created but failed to save owners: ${ownersError.error || 'Unknown error'}`)
+              setError(t('errors.ownersFailed', { error: ownersError.error || 'Unknown error' }))
             }
           }
 
-          setSuccess('Software license added successfully')
+          setSuccess(t('success.added'))
           fetchLicenses()
         } else {
           const errorData = await response.json()
-          setError(errorData.error || 'Failed to add software license')
-          throw new Error(errorData.error || 'Failed to add software license')
+          setError(errorData.error || t('errors.addFailed'))
+          throw new Error(errorData.error || t('errors.addFailed'))
         }
       } else if (modalState.mode === 'edit' && modalState.license) {
         const response = await fetch(`/api/resources/software-licenses/${modalState.license.id}`, {
@@ -182,12 +184,12 @@ export default function SoftwareLicensesPage() {
             })
           }
 
-          setSuccess('Software license updated successfully')
+          setSuccess(t('success.updated'))
           fetchLicenses()
         } else {
           const errorData = await response.json()
-          setError(errorData.error || 'Failed to update software license')
-          throw new Error(errorData.error || 'Failed to update software license')
+          setError(errorData.error || t('errors.updateFailed'))
+          throw new Error(errorData.error || t('errors.updateFailed'))
         }
       }
     } catch (error) {
@@ -196,7 +198,7 @@ export default function SoftwareLicensesPage() {
   }
 
   const handleDeleteLicense = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this software license?')) return
+    if (!confirm(t('confirmDelete'))) return
 
     try {
       const response = await fetch(`/api/resources/software-licenses/${id}`, {
@@ -204,13 +206,13 @@ export default function SoftwareLicensesPage() {
       })
 
       if (response.ok) {
-        setSuccess('Software license deleted successfully')
+        setSuccess(t('success.deleted'))
         fetchLicenses()
       } else {
-        setError('Failed to delete software license')
+        setError(t('errors.deleteFailed'))
       }
-    } catch (error) {
-      setError('Error deleting software license')
+    } catch {
+      setError(t('errors.deleteError'))
     }
   }
 
@@ -266,10 +268,10 @@ export default function SoftwareLicensesPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground flex items-center">
           <Package className="mr-3 h-8 w-8" />
-          Software Licenses
+          {t('title')}
         </h1>
         <p className="text-muted-foreground mt-2">
-          Track software licenses and seat allocations - ISO 27001 Compliant
+          {t('subtitle')}
         </p>
       </div>
 
@@ -291,7 +293,7 @@ export default function SoftwareLicensesPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder="Search licenses..."
+              placeholder={t('searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -301,7 +303,7 @@ export default function SoftwareLicensesPage() {
         <div className="flex gap-2">
           <Button onClick={() => setModalState({ isOpen: true, mode: 'create' })}>
             <Plus className="mr-2 h-4 w-4" />
-            Add License
+            {t('addLicense')}
           </Button>
         </div>
       </div>
@@ -309,9 +311,9 @@ export default function SoftwareLicensesPage() {
       {/* License Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Software Licenses ({filteredLicenses.length})</CardTitle>
+          <CardTitle>{t('cardTitle', { count: filteredLicenses.length })}</CardTitle>
           <CardDescription>
-            Manage software licenses, track seat allocations, and monitor renewal dates
+            {t('cardDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -323,29 +325,29 @@ export default function SoftwareLicensesPage() {
             <div className="text-center py-12">
               <Package className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">
-                No Software Licenses Found
+                {t('noLicenses')}
               </h3>
               <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-4">
-                Get started by adding your first software license
+                {t('noLicensesDesc')}
               </p>
               <Button onClick={() => setModalState({ isOpen: true, mode: 'create' })}>
                 <Plus className="mr-2 h-4 w-4" />
-                Add License
+                {t('addLicense')}
               </Button>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Software Name</TableHead>
-                  <TableHead>Vendor</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Seats</TableHead>
-                  <TableHead>Utilization</TableHead>
-                  <TableHead>Cost</TableHead>
-                  <TableHead>Auto Renew</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
+                  <TableHead>{t('table.softwareName')}</TableHead>
+                  <TableHead>{t('table.vendor')}</TableHead>
+                  <TableHead>{t('table.type')}</TableHead>
+                  <TableHead>{t('table.seats')}</TableHead>
+                  <TableHead>{t('table.utilization')}</TableHead>
+                  <TableHead>{t('table.cost')}</TableHead>
+                  <TableHead>{t('table.autoRenew')}</TableHead>
+                  <TableHead>{t('table.status')}</TableHead>
+                  <TableHead className="w-[100px]">{t('table.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -372,12 +374,16 @@ export default function SoftwareLicensesPage() {
                     </TableCell>
                     <TableCell>
                       <Badge variant={license.autoRenewal ? 'default' : 'secondary'}>
-                        {license.autoRenewal ? 'Yes' : 'No'}
+                        {license.autoRenewal ? t('table.yes') : t('table.no')}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <Badge className={getStatusBadge(license.status)}>
-                        {license.status}
+                        {license.status === 'ACTIVE' ? t('table.statusActive')
+                          : license.status === 'EXPIRED' ? t('table.statusExpired')
+                          : license.status === 'EXPIRING_SOON' ? t('table.statusExpiringSoon')
+                          : license.status === 'INACTIVE' ? t('table.statusInactive')
+                          : license.status}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -390,18 +396,18 @@ export default function SoftwareLicensesPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => setModalState({ isOpen: true, mode: 'view', license })}>
                             <Eye className="mr-2 h-4 w-4" />
-                            View
+                            {t('table.view')}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setModalState({ isOpen: true, mode: 'edit', license })}>
                             <Edit className="mr-2 h-4 w-4" />
-                            Edit
+                            {t('table.edit')}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleDeleteLicense(license.id)}
                             className="text-destructive"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
+                            {t('table.delete')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
