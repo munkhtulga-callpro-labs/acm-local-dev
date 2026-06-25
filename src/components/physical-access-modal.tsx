@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { physicalAccessBaseSchema, type PhysicalAccessFormData } from '@/lib/schemas/physical-access'
@@ -54,6 +55,7 @@ const defaultValues: PhysicalAccessFormData = {
 }
 
 export function PhysicalAccessModal({ isOpen, onClose, physicalAccess, mode, onSave }: PhysicalAccessModalProps) {
+  const t = useTranslations('physicalAccess.modal')
   const {
     register,
     handleSubmit,
@@ -99,13 +101,13 @@ export function PhysicalAccessModal({ isOpen, onClose, physicalAccess, mode, onS
         <DialogHeader className="space-y-3 pb-6 border-b">
           <DialogTitle className="text-2xl font-semibold flex items-center gap-2">
             <DoorOpen className="h-6 w-6 text-primary" />
-            {mode === 'view' && 'Physical Access Details'}
-            {mode === 'edit' && 'Edit Physical Access'}
-            {mode === 'create' && 'Add Physical Access'}
+            {mode === 'view' && t('titleView')}
+            {mode === 'edit' && t('titleEdit')}
+            {mode === 'create' && t('titleCreate')}
           </DialogTitle>
           <DialogDescription className="text-base">
-            {mode === 'view' && 'View detailed information about this physical access record.'}
-            {mode !== 'view' && 'Fields marked with * are required.'}
+            {mode === 'view' && t('descriptionView')}
+            {mode !== 'view' && t('descriptionEditCreate')}
           </DialogDescription>
         </DialogHeader>
 
@@ -117,18 +119,18 @@ export function PhysicalAccessModal({ isOpen, onClose, physicalAccess, mode, onS
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <DoorOpen className="h-4 w-4" />
-              Access Information
+              {t('sectionAccessInfo')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="location" className="text-sm font-medium">
-                  Location {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('location')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="location"
                   {...register('location')}
                   disabled={isViewMode}
-                  placeholder="e.g. HQ Building A, Floor 3, Server Room"
+                  placeholder={t('locationPlaceholder')}
                   className={cn(errors.location && 'border-destructive')}
                 />
                 {errors.location && <p className="text-xs text-destructive">{errors.location.message}</p>}
@@ -136,7 +138,7 @@ export function PhysicalAccessModal({ isOpen, onClose, physicalAccess, mode, onS
 
               <div className="space-y-2">
                 <Label htmlFor="accessType" className="text-sm font-medium">
-                  Access Type {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('accessType')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Controller
                   name="accessType"
@@ -144,14 +146,14 @@ export function PhysicalAccessModal({ isOpen, onClose, physicalAccess, mode, onS
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange} disabled={isViewMode}>
                       <SelectTrigger className={cn('h-10', errors.accessType && 'border-destructive')}>
-                        <SelectValue placeholder="Select access type" />
+                        <SelectValue placeholder={t('selectAccessType')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Badge">Badge</SelectItem>
-                        <SelectItem value="Key">Key</SelectItem>
-                        <SelectItem value="Biometric">Biometric</SelectItem>
-                        <SelectItem value="PIN">PIN</SelectItem>
-                        <SelectItem value="Badge + PIN">Badge + PIN</SelectItem>
+                        <SelectItem value="Badge">{t('typeBadge')}</SelectItem>
+                        <SelectItem value="Key">{t('typeKey')}</SelectItem>
+                        <SelectItem value="Biometric">{t('typeBiometric')}</SelectItem>
+                        <SelectItem value="PIN">{t('typePin')}</SelectItem>
+                        <SelectItem value="Badge + PIN">{t('typeBadgePin')}</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
@@ -160,12 +162,12 @@ export function PhysicalAccessModal({ isOpen, onClose, physicalAccess, mode, onS
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="badgeCardNumber" className="text-sm font-medium">Badge / Card Number</Label>
+                <Label htmlFor="badgeCardNumber" className="text-sm font-medium">{t('badgeCardNumber')}</Label>
                 <Input
                   id="badgeCardNumber"
                   {...register('badgeCardNumber')}
                   disabled={isViewMode}
-                  placeholder="e.g. B-00123"
+                  placeholder={t('badgeCardNumberPlaceholder')}
                   className={cn('font-mono text-sm', errors.badgeCardNumber && 'border-destructive')}
                 />
                 {errors.badgeCardNumber && <p className="text-xs text-destructive">{errors.badgeCardNumber.message}</p>}
@@ -173,7 +175,7 @@ export function PhysicalAccessModal({ isOpen, onClose, physicalAccess, mode, onS
 
               <div className="space-y-2">
                 <Label htmlFor="accessSchedule" className="text-sm font-medium">
-                  Access Schedule {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('accessSchedule')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Controller
                   name="accessSchedule"
@@ -181,13 +183,13 @@ export function PhysicalAccessModal({ isOpen, onClose, physicalAccess, mode, onS
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange} disabled={isViewMode}>
                       <SelectTrigger className={cn('h-10', errors.accessSchedule && 'border-destructive')}>
-                        <SelectValue placeholder="Select schedule" />
+                        <SelectValue placeholder={t('selectSchedule')} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="24/7">24/7</SelectItem>
-                        <SelectItem value="Business Hours">Business Hours</SelectItem>
-                        <SelectItem value="Weekdays Only">Weekdays Only</SelectItem>
-                        <SelectItem value="Custom">Custom</SelectItem>
+                        <SelectItem value="Business Hours">{t('scheduleBusinessHours')}</SelectItem>
+                        <SelectItem value="Weekdays Only">{t('scheduleWeekdaysOnly')}</SelectItem>
+                        <SelectItem value="Custom">{t('scheduleCustom')}</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
@@ -197,38 +199,38 @@ export function PhysicalAccessModal({ isOpen, onClose, physicalAccess, mode, onS
 
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="accessZones" className="text-sm font-medium">
-                  Access Zones {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('accessZones')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="accessZones"
                   {...register('accessZones')}
                   disabled={isViewMode}
-                  placeholder="e.g. Lobby, Office Floor, Server Room"
+                  placeholder={t('accessZonesPlaceholder')}
                   className={cn(errors.accessZones && 'border-destructive')}
                 />
                 {errors.accessZones && <p className="text-xs text-destructive">{errors.accessZones.message}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="assignedTo" className="text-sm font-medium">Assigned To</Label>
+                <Label htmlFor="assignedTo" className="text-sm font-medium">{t('assignedTo')}</Label>
                 <Input
                   id="assignedTo"
                   type="email"
                   {...register('assignedTo')}
                   disabled={isViewMode}
-                  placeholder="employee@company.mn"
+                  placeholder={t('assignedToPlaceholder')}
                   className={cn(errors.assignedTo && 'border-destructive')}
                 />
                 {errors.assignedTo && <p className="text-xs text-destructive">{errors.assignedTo.message}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="authorizationLevel" className="text-sm font-medium">Authorization Level</Label>
+                <Label htmlFor="authorizationLevel" className="text-sm font-medium">{t('authorizationLevel')}</Label>
                 <Input
                   id="authorizationLevel"
                   {...register('authorizationLevel')}
                   disabled={isViewMode}
-                  placeholder="e.g. Level 1, Restricted"
+                  placeholder={t('authorizationLevelPlaceholder')}
                   className={cn(errors.authorizationLevel && 'border-destructive')}
                 />
                 {errors.authorizationLevel && <p className="text-xs text-destructive">{errors.authorizationLevel.message}</p>}
@@ -240,12 +242,12 @@ export function PhysicalAccessModal({ isOpen, onClose, physicalAccess, mode, onS
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Shield className="h-4 w-4" />
-              Validity & Security
+              {t('sectionValiditySecurity')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="validFrom" className="text-sm font-medium">
-                  Valid From {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('validFrom')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="validFrom"
@@ -258,7 +260,7 @@ export function PhysicalAccessModal({ isOpen, onClose, physicalAccess, mode, onS
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="validTo" className="text-sm font-medium">Valid Until</Label>
+                <Label htmlFor="validTo" className="text-sm font-medium">{t('validUntil')}</Label>
                 <Input
                   id="validTo"
                   type="date"
@@ -270,20 +272,20 @@ export function PhysicalAccessModal({ isOpen, onClose, physicalAccess, mode, onS
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="status" className="text-sm font-medium">Status</Label>
+                <Label htmlFor="status" className="text-sm font-medium">{t('status')}</Label>
                 <Controller
                   name="status"
                   control={control}
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange} disabled={isViewMode}>
                       <SelectTrigger className="h-10">
-                        <SelectValue placeholder="Select status" />
+                        <SelectValue placeholder={t('selectStatus')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="ACTIVE">Active</SelectItem>
-                        <SelectItem value="INACTIVE">Inactive</SelectItem>
-                        <SelectItem value="SUSPENDED">Suspended</SelectItem>
-                        <SelectItem value="EXPIRED">Expired</SelectItem>
+                        <SelectItem value="ACTIVE">{t('statusActive')}</SelectItem>
+                        <SelectItem value="INACTIVE">{t('statusInactive')}</SelectItem>
+                        <SelectItem value="SUSPENDED">{t('statusSuspended')}</SelectItem>
+                        <SelectItem value="EXPIRED">{t('statusExpired')}</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
@@ -291,7 +293,7 @@ export function PhysicalAccessModal({ isOpen, onClose, physicalAccess, mode, onS
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="escortRequired" className="text-sm font-medium">Escort Required</Label>
+                <Label htmlFor="escortRequired" className="text-sm font-medium">{t('escortRequired')}</Label>
                 <Controller
                   name="escortRequired"
                   control={control}
@@ -304,7 +306,7 @@ export function PhysicalAccessModal({ isOpen, onClose, physicalAccess, mode, onS
                         disabled={isViewMode}
                       />
                       <Label htmlFor="escortRequired" className="text-sm text-muted-foreground cursor-pointer">
-                        {field.value ? 'Escort required' : 'No escort needed'}
+                        {field.value ? t('escortRequiredOn') : t('escortRequiredOff')}
                       </Label>
                     </div>
                   )}
@@ -312,13 +314,13 @@ export function PhysicalAccessModal({ isOpen, onClose, physicalAccess, mode, onS
               </div>
 
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="notes" className="text-sm font-medium">Notes</Label>
+                <Label htmlFor="notes" className="text-sm font-medium">{t('notes')}</Label>
                 <Textarea
                   id="notes"
                   {...register('notes')}
                   disabled={isViewMode}
                   className={cn('min-h-[80px] resize-none', errors.notes && 'border-destructive')}
-                  placeholder="Additional notes..."
+                  placeholder={t('notesPlaceholder')}
                 />
                 {errors.notes && <p className="text-xs text-destructive">{errors.notes.message}</p>}
               </div>
@@ -327,12 +329,12 @@ export function PhysicalAccessModal({ isOpen, onClose, physicalAccess, mode, onS
 
           <DialogFooter className="gap-2 pt-6 border-t">
             <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="min-w-24">
-              {isViewMode ? 'Close' : 'Cancel'}
+              {isViewMode ? t('close') : t('cancel')}
             </Button>
             {!isViewMode && (
               <Button type="submit" disabled={isSubmitting} className="min-w-28">
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {mode === 'edit' ? 'Update Access' : 'Add Access'}
+                {mode === 'edit' ? t('updateAccess') : t('addAccess')}
               </Button>
             )}
           </DialogFooter>

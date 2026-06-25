@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { useTranslations } from 'next-intl'
 import {
   flexRender,
   getCoreRowModel,
@@ -75,27 +76,29 @@ interface PhysicalAccessDataTableProps {
   onDelete?: (id: string, name: string) => void
 }
 
-const getStatusBadge = (status: string) => {
+type TFunc = ReturnType<typeof useTranslations<'physicalAccess.table'>>
+
+const getStatusBadge = (status: string, t: TFunc) => {
   switch (status.toUpperCase()) {
     case 'ACTIVE':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400 mr-1 w-3 h-3" />
-          Active
+          {t('statusActive')}
         </Badge>
       )
     case 'EXPIRED':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleFilled className="fill-red-500 dark:fill-red-400 mr-1 w-3 h-3" />
-          Expired
+          {t('statusExpired')}
         </Badge>
       )
     case 'SUSPENDED':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleFilled className="fill-yellow-500 dark:fill-yellow-400 mr-1 w-3 h-3" />
-          Suspended
+          {t('statusSuspended')}
         </Badge>
       )
     default:
@@ -108,27 +111,27 @@ const getStatusBadge = (status: string) => {
   }
 }
 
-const getAccessTypeBadge = (type: string) => {
+const getAccessTypeBadge = (type: string, t: TFunc) => {
   switch (type.toLowerCase()) {
     case 'biometric':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconShieldLock className="mr-1 w-3 h-3 text-blue-500" />
-          Biometric
+          {t('typeBiometric')}
         </Badge>
       )
     case 'badge':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconUserCheck className="mr-1 w-3 h-3 text-green-500" />
-          Badge
+          {t('typeBadge')}
         </Badge>
       )
     case 'key':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconShieldLock className="mr-1 w-3 h-3 text-yellow-500" />
-          Key
+          {t('typeKey')}
         </Badge>
       )
     default:
@@ -141,6 +144,7 @@ const getAccessTypeBadge = (type: string) => {
 }
 
 export function PhysicalAccessDataTable({ data, onEdit, onDelete }: PhysicalAccessDataTableProps) {
+  const t = useTranslations('physicalAccess.table')
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -157,7 +161,7 @@ export function PhysicalAccessDataTable({ data, onEdit, onDelete }: PhysicalAcce
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           className="px-0 hover:bg-transparent"
         >
-          Location
+          {t('location')}
           <ArrowUpDown className="ml-2 h-3 w-3" />
         </Button>
       ),
@@ -170,12 +174,12 @@ export function PhysicalAccessDataTable({ data, onEdit, onDelete }: PhysicalAcce
     },
     {
       accessorKey: 'accessType',
-      header: 'Access Type',
-      cell: ({ row }) => getAccessTypeBadge(row.getValue('accessType')),
+      header: t('accessType'),
+      cell: ({ row }) => getAccessTypeBadge(row.getValue('accessType'), t),
     },
     {
       accessorKey: 'accessZones',
-      header: 'Zones',
+      header: t('zones'),
       cell: ({ row }) => (
         <span className="text-sm text-muted-foreground truncate max-w-[160px] block">
           {row.getValue('accessZones')}
@@ -184,7 +188,7 @@ export function PhysicalAccessDataTable({ data, onEdit, onDelete }: PhysicalAcce
     },
     {
       accessorKey: 'assignedTo',
-      header: 'Assigned To',
+      header: t('assignedTo'),
       cell: ({ row }) => {
         const val = row.getValue('assignedTo') as string | null
         return val
@@ -194,10 +198,10 @@ export function PhysicalAccessDataTable({ data, onEdit, onDelete }: PhysicalAcce
     },
     {
       accessorKey: 'validTo',
-      header: 'Valid Until',
+      header: t('validUntil'),
       cell: ({ row }) => {
         const val = row.getValue('validTo') as string | null
-        if (!val) return <span className="text-sm text-muted-foreground">No expiry</span>
+        if (!val) return <span className="text-sm text-muted-foreground">{t('noExpiry')}</span>
         const date = new Date(val)
         const isExpired = date < new Date()
         const isSoon = !isExpired && date < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
@@ -210,13 +214,13 @@ export function PhysicalAccessDataTable({ data, onEdit, onDelete }: PhysicalAcce
     },
     {
       accessorKey: 'escortRequired',
-      header: 'Escort',
+      header: t('escort'),
       cell: ({ row }) => {
         const required = row.getValue('escortRequired') as boolean
         return required ? (
           <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
             <IconUserCheck className="mr-1 w-3 h-3 text-orange-500" />
-            Required
+            {t('required')}
           </Badge>
         ) : (
           <span className="text-sm text-muted-foreground">—</span>
@@ -225,8 +229,8 @@ export function PhysicalAccessDataTable({ data, onEdit, onDelete }: PhysicalAcce
     },
     {
       accessorKey: 'status',
-      header: 'Status',
-      cell: ({ row }) => getStatusBadge(row.getValue('status')),
+      header: t('status'),
+      cell: ({ row }) => getStatusBadge(row.getValue('status'), t),
     },
     {
       id: 'actions',
@@ -237,25 +241,25 @@ export function PhysicalAccessDataTable({ data, onEdit, onDelete }: PhysicalAcce
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
+                <span className="sr-only">{t('openMenu')}</span>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
               <DropdownMenuItem onClick={() => { setSelectedItem(item); setDrawerOpen(true) }}>
-                View details
+                {t('viewDetails')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {onEdit && (
-                <DropdownMenuItem onClick={() => onEdit(item)}>Edit access</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onEdit(item)}>{t('editAccess')}</DropdownMenuItem>
               )}
               {onDelete && (
                 <DropdownMenuItem
                   onClick={() => onDelete(item.id, item.location)}
                   className="text-destructive"
                 >
-                  Delete access
+                  {t('deleteAccess')}
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
@@ -284,7 +288,7 @@ export function PhysicalAccessDataTable({ data, onEdit, onDelete }: PhysicalAcce
     <div className="w-full">
       <div className="flex items-center gap-2 py-4">
         <Input
-          placeholder="Search by location..."
+          placeholder={t('searchPlaceholder')}
           value={(table.getColumn('location')?.getFilterValue() as string) ?? ''}
           onChange={(e) => table.getColumn('location')?.setFilterValue(e.target.value)}
           className="max-w-sm"
@@ -292,7 +296,7 @@ export function PhysicalAccessDataTable({ data, onEdit, onDelete }: PhysicalAcce
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
+              {t('columns')} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -337,7 +341,7 @@ export function PhysicalAccessDataTable({ data, onEdit, onDelete }: PhysicalAcce
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
+                  {t('noResults')}
                 </TableCell>
               </TableRow>
             )}
@@ -347,14 +351,14 @@ export function PhysicalAccessDataTable({ data, onEdit, onDelete }: PhysicalAcce
 
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredRowModel().rows.length} record(s) total
+          {t('recordsTotal', { count: table.getFilteredRowModel().rows.length })}
         </div>
         <div className="space-x-2">
           <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
-            Previous
+            {t('previous')}
           </Button>
           <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
-            Next
+            {t('next')}
           </Button>
         </div>
       </div>
@@ -367,62 +371,62 @@ export function PhysicalAccessDataTable({ data, onEdit, onDelete }: PhysicalAcce
                 <IconBuilding className="w-4 h-4" />
                 {selectedItem?.location}
               </DrawerTitle>
-              <DrawerDescription>Physical access details</DrawerDescription>
+              <DrawerDescription>{t('drawer.description')}</DrawerDescription>
             </DrawerHeader>
             {selectedItem && (
               <div className="p-4 pb-0">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Access Type</p>
-                    <div className="mt-1">{getAccessTypeBadge(selectedItem.accessType)}</div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('drawer.accessType')}</p>
+                    <div className="mt-1">{getAccessTypeBadge(selectedItem.accessType, t)}</div>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Status</p>
-                    <div className="mt-1">{getStatusBadge(selectedItem.status)}</div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('drawer.status')}</p>
+                    <div className="mt-1">{getStatusBadge(selectedItem.status, t)}</div>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-sm font-medium text-muted-foreground">Access Zones</p>
+                    <p className="text-sm font-medium text-muted-foreground">{t('drawer.accessZones')}</p>
                     <p className="text-sm mt-1">{selectedItem.accessZones}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Schedule</p>
+                    <p className="text-sm font-medium text-muted-foreground">{t('drawer.schedule')}</p>
                     <p className="text-sm mt-1">{selectedItem.accessSchedule}</p>
                   </div>
                   {selectedItem.badgeCardNumber && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Badge / Card No.</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t('drawer.badgeCardNumber')}</p>
                       <p className="text-sm mt-1 font-mono">{selectedItem.badgeCardNumber}</p>
                     </div>
                   )}
                   {selectedItem.assignedTo && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Assigned To</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t('drawer.assignedTo')}</p>
                       <p className="text-sm mt-1">{selectedItem.assignedTo}</p>
                     </div>
                   )}
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Valid From</p>
+                    <p className="text-sm font-medium text-muted-foreground">{t('drawer.validFrom')}</p>
                     <p className="text-sm mt-1">{new Date(selectedItem.validFrom).toLocaleDateString()}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Valid Until</p>
+                    <p className="text-sm font-medium text-muted-foreground">{t('drawer.validUntil')}</p>
                     <p className="text-sm mt-1">
-                      {selectedItem.validTo ? new Date(selectedItem.validTo).toLocaleDateString() : 'No expiry'}
+                      {selectedItem.validTo ? new Date(selectedItem.validTo).toLocaleDateString() : t('drawer.noExpiry')}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Escort Required</p>
-                    <p className="text-sm mt-1">{selectedItem.escortRequired ? 'Yes' : 'No'}</p>
+                    <p className="text-sm font-medium text-muted-foreground">{t('drawer.escortRequired')}</p>
+                    <p className="text-sm mt-1">{selectedItem.escortRequired ? t('drawer.yes') : t('drawer.no')}</p>
                   </div>
                   {selectedItem.authorizationLevel && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Authorization Level</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t('drawer.authorizationLevel')}</p>
                       <p className="text-sm mt-1">{selectedItem.authorizationLevel}</p>
                     </div>
                   )}
                   {selectedItem.notes && (
                     <div className="col-span-2">
-                      <p className="text-sm font-medium text-muted-foreground">Notes</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t('drawer.notes')}</p>
                       <p className="text-sm mt-1">{selectedItem.notes}</p>
                     </div>
                   )}
@@ -433,17 +437,17 @@ export function PhysicalAccessDataTable({ data, onEdit, onDelete }: PhysicalAcce
               <div className="flex gap-2 w-full">
                 {onEdit && selectedItem && (
                   <Button variant="outline" onClick={() => { setDrawerOpen(false); onEdit(selectedItem) }} className="flex-1">
-                    Edit
+                    {t('drawer.edit')}
                   </Button>
                 )}
                 {onDelete && selectedItem && (
                   <Button variant="destructive" onClick={() => { setDrawerOpen(false); onDelete(selectedItem.id, selectedItem.location) }} className="flex-1">
-                    Delete
+                    {t('drawer.delete')}
                   </Button>
                 )}
               </div>
               <DrawerClose asChild>
-                <Button variant="outline">Close</Button>
+                <Button variant="outline">{t('drawer.close')}</Button>
               </DrawerClose>
             </DrawerFooter>
           </div>
