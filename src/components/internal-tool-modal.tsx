@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Wrench, Link2, FileText, Calendar, Loader2, Shield } from 'lucide-react'
+import { Wrench, Link2, Loader2, Shield } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ResourceOwnershipSection } from '@/components/resource-ownership-section'
 
@@ -54,6 +55,7 @@ export function InternalToolModal({
   employees,
   departments
 }: InternalToolModalProps) {
+  const t = useTranslations('internalTools.modal')
   const [formData, setFormData] = useState<Partial<InternalTool>>({
     toolName: '',
     url: '',
@@ -121,13 +123,13 @@ export function InternalToolModal({
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.toolName?.trim()) newErrors.toolName = 'Tool name is required'
-    if (!formData.url?.trim()) newErrors.url = 'URL is required'
-    if (!formData.purposeCategory) newErrors.purposeCategory = 'Purpose category is required'
-    if (!formData.accessLevel) newErrors.accessLevel = 'Access level is required'
-    if (!formData.authenticationMethod) newErrors.authenticationMethod = 'Authentication method is required'
-    if (!formData.networkAccess) newErrors.networkAccess = 'Network access is required'
-    if (!formData.owner?.trim()) newErrors.owner = 'Primary owner is required'
+    if (!formData.toolName?.trim()) newErrors.toolName = t('errors.toolNameRequired')
+    if (!formData.url?.trim()) newErrors.url = t('errors.urlRequired')
+    if (!formData.purposeCategory) newErrors.purposeCategory = t('errors.purposeCategoryRequired')
+    if (!formData.accessLevel) newErrors.accessLevel = t('errors.accessLevelRequired')
+    if (!formData.authenticationMethod) newErrors.authenticationMethod = t('errors.authenticationMethodRequired')
+    if (!formData.networkAccess) newErrors.networkAccess = t('errors.networkAccessRequired')
+    if (!formData.owner?.trim()) newErrors.owner = t('errors.ownerRequired')
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -152,7 +154,7 @@ export function InternalToolModal({
       onClose()
     } catch (error) {
       console.error('Error saving internal tool:', error)
-      setErrors({ submit: 'Failed to save internal tool. Please try again.' })
+      setErrors({ submit: t('errors.saveFailed') })
     } finally {
       setIsLoading(false)
     }
@@ -171,14 +173,14 @@ export function InternalToolModal({
         <DialogHeader className="space-y-3 pb-6 border-b">
           <DialogTitle className="text-2xl font-semibold flex items-center gap-2">
             <Wrench className="h-6 w-6 text-primary" />
-            {mode === 'view' && 'Internal Tool Details'}
-            {mode === 'edit' && 'Edit Internal Tool'}
-            {mode === 'create' && 'Add New Internal Tool'}
+            {mode === 'view' && t('titleView')}
+            {mode === 'edit' && t('titleEdit')}
+            {mode === 'create' && t('titleCreate')}
           </DialogTitle>
           <DialogDescription className="text-base">
-            {mode === 'view' && 'View detailed information about this internal tool.'}
-            {mode === 'edit' && 'Update internal tool information. Fields marked with * are required.'}
-            {mode === 'create' && 'Register a new internal tool. Fields marked with * are required.'}
+            {mode === 'view' && t('descriptionView')}
+            {mode === 'edit' && t('descriptionEdit')}
+            {mode === 'create' && t('descriptionCreate')}
           </DialogDescription>
         </DialogHeader>
 
@@ -187,12 +189,12 @@ export function InternalToolModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Wrench className="h-4 w-4" />
-              Tool Information
+              {t('toolInfo')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="toolName" className="text-sm font-medium">
-                  Tool Name {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('toolName')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="toolName"
@@ -207,7 +209,7 @@ export function InternalToolModal({
 
               <div className="space-y-2">
                 <Label htmlFor="url" className="text-sm font-medium">
-                  URL {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('url')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <div className="relative">
                   <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -225,7 +227,7 @@ export function InternalToolModal({
 
               <div className="space-y-2">
                 <Label htmlFor="purposeCategory" className="text-sm font-medium">
-                  Purpose Category {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('purposeCategory')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.purposeCategory}
@@ -233,7 +235,7 @@ export function InternalToolModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn("h-10", errors.purposeCategory && "border-destructive")}>
-                    <SelectValue placeholder="Select category" />
+                    <SelectValue placeholder={t('selectCategory')} />
                   </SelectTrigger>
                   <SelectContent>
                     {purposeCategories.map((category) => (
@@ -246,7 +248,7 @@ export function InternalToolModal({
 
               <div className="space-y-2">
                 <Label htmlFor="ownerDepartment" className="text-sm font-medium">
-                  Owner Department
+                  {t('ownerDepartment')}
                 </Label>
                 <Input
                   id="ownerDepartment"
@@ -259,7 +261,7 @@ export function InternalToolModal({
 
               <div className="space-y-2">
                 <Label htmlFor="userGroups" className="text-sm font-medium">
-                  User Groups
+                  {t('userGroups')}
                 </Label>
                 <Input
                   id="userGroups"
@@ -272,7 +274,7 @@ export function InternalToolModal({
 
               <div className="space-y-2">
                 <Label htmlFor="documentationLink" className="text-sm font-medium">
-                  Documentation Link
+                  {t('documentationLink')}
                 </Label>
                 <div className="relative">
                   <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -289,7 +291,7 @@ export function InternalToolModal({
 
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="notes" className="text-sm font-medium">
-                  Notes
+                  {t('notes')}
                 </Label>
                 <Textarea
                   id="notes"
@@ -307,12 +309,12 @@ export function InternalToolModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Shield className="h-4 w-4" />
-              Access & Integration
+              {t('accessIntegration')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="accessLevel" className="text-sm font-medium">
-                  Access Level {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('accessLevel')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.accessLevel}
@@ -320,7 +322,7 @@ export function InternalToolModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn("h-10", errors.accessLevel && "border-destructive")}>
-                    <SelectValue placeholder="Select access level" />
+                    <SelectValue placeholder={t('selectAccessLevel')} />
                   </SelectTrigger>
                   <SelectContent>
                     {accessLevels.map((level) => (
@@ -333,7 +335,7 @@ export function InternalToolModal({
 
               <div className="space-y-2">
                 <Label htmlFor="authenticationMethod" className="text-sm font-medium">
-                  Authentication Method {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('authenticationMethod')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.authenticationMethod}
@@ -341,7 +343,7 @@ export function InternalToolModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn("h-10", errors.authenticationMethod && "border-destructive")}>
-                    <SelectValue placeholder="Select authentication" />
+                    <SelectValue placeholder={t('selectAuthentication')} />
                   </SelectTrigger>
                   <SelectContent>
                     {authenticationMethods.map((method) => (
@@ -354,7 +356,7 @@ export function InternalToolModal({
 
               <div className="space-y-2">
                 <Label htmlFor="networkAccess" className="text-sm font-medium">
-                  Network Access {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('networkAccess')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.networkAccess}
@@ -362,7 +364,7 @@ export function InternalToolModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn("h-10", errors.networkAccess && "border-destructive")}>
-                    <SelectValue placeholder="Select network access" />
+                    <SelectValue placeholder={t('selectNetworkAccess')} />
                   </SelectTrigger>
                   <SelectContent>
                     {networkAccessOptions.map((option) => (
@@ -375,7 +377,7 @@ export function InternalToolModal({
 
               <div className="space-y-2">
                 <Label htmlFor="status" className="text-sm font-medium">
-                  Status
+                  {t('status')}
                 </Label>
                 <Select
                   value={formData.status}
@@ -383,20 +385,20 @@ export function InternalToolModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Select status" />
+                    <SelectValue placeholder={t('selectStatus')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ACTIVE">Active</SelectItem>
-                    <SelectItem value="INACTIVE">Inactive</SelectItem>
-                    <SelectItem value="MAINTENANCE">Maintenance</SelectItem>
-                    <SelectItem value="DEPRECATED">Deprecated</SelectItem>
+                    <SelectItem value="ACTIVE">{t('statusActive')}</SelectItem>
+                    <SelectItem value="INACTIVE">{t('statusInactive')}</SelectItem>
+                    <SelectItem value="MAINTENANCE">{t('statusMaintenance')}</SelectItem>
+                    <SelectItem value="DEPRECATED">{t('statusDeprecated')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="integrationSystems" className="text-sm font-medium">
-                  Integration Systems
+                  {t('integrationSystems')}
                 </Label>
                 <Input
                   id="integrationSystems"
@@ -435,7 +437,7 @@ export function InternalToolModal({
               disabled={isLoading}
               className="min-w-24"
             >
-              {isViewMode ? 'Close' : 'Cancel'}
+              {isViewMode ? t('close') : t('cancel')}
             </Button>
             {!isViewMode && (
               <Button
@@ -444,7 +446,7 @@ export function InternalToolModal({
                 className="min-w-28"
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {mode === 'edit' ? 'Update Tool' : 'Add Tool'}
+                {mode === 'edit' ? t('updateTool') : t('addTool')}
               </Button>
             )}
           </DialogFooter>

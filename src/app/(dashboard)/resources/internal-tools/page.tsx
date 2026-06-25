@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -47,6 +48,7 @@ interface InternalTool {
 }
 
 export default function InternalToolsPage() {
+  const t = useTranslations('internalTools')
   const [tools, setTools] = useState<InternalTool[]>([])
   const [employees, setEmployees] = useState<Array<{ id: string; firstName: string; lastName: string; email: string }>>([])
   const [departments, setDepartments] = useState<Array<{ id: string; name: string }>>([])
@@ -75,10 +77,10 @@ export default function InternalToolsPage() {
         const data = await response.json()
         setTools(data.data || [])
       } else {
-        setError('Failed to fetch internal tools')
+        setError(t('errors.fetchFailed'))
       }
     } catch (error) {
-      setError('Error fetching internal tools')
+      setError(t('errors.fetchError'))
       console.error('Error:', error)
     } finally {
       setLoading(false)
@@ -140,12 +142,12 @@ export default function InternalToolsPage() {
             })
           }
 
-          setSuccess('Internal tool added successfully')
+          setSuccess(t('success.added'))
           fetchTools()
         } else {
           const errorData = await response.json()
-          setError(errorData.error || 'Failed to add internal tool')
-          throw new Error(errorData.error || 'Failed to add internal tool')
+          setError(errorData.error || t('errors.addFailed'))
+          throw new Error(errorData.error || t('errors.addFailed'))
         }
       } else if (modalState.mode === 'edit' && modalState.tool) {
         const response = await fetch(`/api/resources/internal-tools/${modalState.tool.id}`, {
@@ -173,12 +175,12 @@ export default function InternalToolsPage() {
             })
           }
 
-          setSuccess('Internal tool updated successfully')
+          setSuccess(t('success.updated'))
           fetchTools()
         } else {
           const errorData = await response.json()
-          setError(errorData.error || 'Failed to update internal tool')
-          throw new Error(errorData.error || 'Failed to update internal tool')
+          setError(errorData.error || t('errors.updateFailed'))
+          throw new Error(errorData.error || t('errors.updateFailed'))
         }
       }
     } catch (error) {
@@ -187,7 +189,7 @@ export default function InternalToolsPage() {
   }
 
   const handleDeleteTool = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this internal tool?')) return
+    if (!confirm(t('confirmDelete'))) return
 
     try {
       const response = await fetch(`/api/resources/internal-tools/${id}`, {
@@ -195,13 +197,13 @@ export default function InternalToolsPage() {
       })
 
       if (response.ok) {
-        setSuccess('Internal tool deleted successfully')
+        setSuccess(t('success.deleted'))
         fetchTools()
       } else {
-        setError('Failed to delete internal tool')
+        setError(t('errors.deleteFailed'))
       }
-    } catch (error) {
-      setError('Error deleting internal tool')
+    } catch {
+      setError(t('errors.deleteError'))
     }
   }
 
@@ -252,10 +254,10 @@ export default function InternalToolsPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground flex items-center">
           <Wrench className="mr-3 h-8 w-8" />
-          Internal Tools
+          {t('title')}
         </h1>
         <p className="text-muted-foreground mt-2">
-          Manage internal applications and tools access - ISO 27001 Compliant
+          {t('subtitle')}
         </p>
       </div>
 
@@ -277,7 +279,7 @@ export default function InternalToolsPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder="Search internal tools..."
+              placeholder={t('searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -287,7 +289,7 @@ export default function InternalToolsPage() {
         <div className="flex gap-2">
           <Button onClick={() => setModalState({ isOpen: true, mode: 'create' })}>
             <Plus className="mr-2 h-4 w-4" />
-            Add Internal Tool
+            {t('addTool')}
           </Button>
         </div>
       </div>
@@ -295,9 +297,9 @@ export default function InternalToolsPage() {
       {/* Tools Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Internal Tools ({filteredTools.length})</CardTitle>
+          <CardTitle>{t('cardTitle', { count: filteredTools.length })}</CardTitle>
           <CardDescription>
-            Manage internal tools, control access, and track integrations
+            {t('cardDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -309,28 +311,28 @@ export default function InternalToolsPage() {
             <div className="text-center py-12">
               <Wrench className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">
-                No Internal Tools Found
+                {t('noTools')}
               </h3>
               <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-4">
-                Get started by adding your first internal tool
+                {t('noToolsDesc')}
               </p>
               <Button onClick={() => setModalState({ isOpen: true, mode: 'create' })}>
                 <Plus className="mr-2 h-4 w-4" />
-                Add Internal Tool
+                {t('addTool')}
               </Button>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Tool Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Access Level</TableHead>
-                  <TableHead>Network</TableHead>
-                  <TableHead>Owner</TableHead>
-                  <TableHead>Authentication</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
+                  <TableHead>{t('table.toolName')}</TableHead>
+                  <TableHead>{t('table.category')}</TableHead>
+                  <TableHead>{t('table.accessLevel')}</TableHead>
+                  <TableHead>{t('table.network')}</TableHead>
+                  <TableHead>{t('table.owner')}</TableHead>
+                  <TableHead>{t('table.authentication')}</TableHead>
+                  <TableHead>{t('table.status')}</TableHead>
+                  <TableHead className="w-[100px]">{t('table.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -382,18 +384,18 @@ export default function InternalToolsPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => setModalState({ isOpen: true, mode: 'view', tool })}>
                             <Eye className="mr-2 h-4 w-4" />
-                            View
+                            {t('table.view')}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setModalState({ isOpen: true, mode: 'edit', tool })}>
                             <Edit className="mr-2 h-4 w-4" />
-                            Edit
+                            {t('table.edit')}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleDeleteTool(tool.id)}
                             className="text-destructive"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
+                            {t('table.delete')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
