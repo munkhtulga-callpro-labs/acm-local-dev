@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -50,6 +51,7 @@ interface CodeRepositoryResource {
 }
 
 export default function CodeRepositoriesPage() {
+  const t = useTranslations('codeRepositories')
   const [codeRepositories, setCodeRepositories] = useState<CodeRepositoryResource[]>([])
   const [employees, setEmployees] = useState<Array<{ id: string; firstName: string; lastName: string; email: string }>>([])
   const [departments, setDepartments] = useState<Array<{ id: string; name: string }>>([])
@@ -76,10 +78,10 @@ export default function CodeRepositoriesPage() {
         const data = await response.json()
         setCodeRepositories(data.data || [])
       } else {
-        setError('Failed to fetch code repositories')
+        setError(t('errors.fetchFailed'))
       }
     } catch (error) {
-      setError('Error fetching code repositories')
+      setError(t('errors.fetchError'))
       console.error('Error:', error)
     } finally {
       setLoading(false)
@@ -142,16 +144,16 @@ export default function CodeRepositoriesPage() {
 
             if (!ownersResponse.ok) {
               const ownersError = await ownersResponse.json()
-              setError(`Code repository created but failed to save owners: ${ownersError.error || 'Unknown error'}`)
+              setError(t('errors.ownersFailed', { error: ownersError.error || 'Unknown error' }))
             }
           }
 
-          setSuccess('Code repository added successfully')
+          setSuccess(t('success.added'))
           fetchCodeRepositories()
         } else {
           const errorData = await response.json()
-          setError(errorData.error || 'Failed to add code repository')
-          throw new Error(errorData.error || 'Failed to add code repository')
+          setError(errorData.error || t('errors.addFailed'))
+          throw new Error(errorData.error || t('errors.addFailed'))
         }
       } else if (modalState.mode === 'edit' && modalState.codeRepository) {
         const response = await fetch(`/api/resources/code-repositories/${modalState.codeRepository.id}`, {
@@ -179,12 +181,12 @@ export default function CodeRepositoriesPage() {
             })
           }
 
-          setSuccess('Code repository updated successfully')
+          setSuccess(t('success.updated'))
           fetchCodeRepositories()
         } else {
           const errorData = await response.json()
-          setError(errorData.error || 'Failed to update code repository')
-          throw new Error(errorData.error || 'Failed to update code repository')
+          setError(errorData.error || t('errors.updateFailed'))
+          throw new Error(errorData.error || t('errors.updateFailed'))
         }
       }
     } catch (error) {
@@ -193,7 +195,7 @@ export default function CodeRepositoriesPage() {
   }
 
   const handleDeleteCodeRepository = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this code repository?')) return
+    if (!confirm(t('confirmDelete'))) return
 
     try {
       const response = await fetch(`/api/resources/code-repositories/${id}`, {
@@ -201,13 +203,13 @@ export default function CodeRepositoriesPage() {
       })
 
       if (response.ok) {
-        setSuccess('Code repository deleted successfully')
+        setSuccess(t('success.deleted'))
         fetchCodeRepositories()
       } else {
-        setError('Failed to delete code repository')
+        setError(t('errors.deleteFailed'))
       }
-    } catch (error) {
-      setError('Error deleting code repository')
+    } catch {
+      setError(t('errors.deleteError'))
     }
   }
 
@@ -247,10 +249,10 @@ export default function CodeRepositoriesPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground flex items-center">
           <GitBranch className="mr-3 h-8 w-8" />
-          Code Repositories
+          {t('title')}
         </h1>
         <p className="text-muted-foreground mt-2">
-          Manage GitHub, GitLab, and Bitbucket repository access - ISO 27001 Compliant
+          {t('subtitle')}
         </p>
       </div>
 
@@ -272,7 +274,7 @@ export default function CodeRepositoriesPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder="Search code repositories..."
+              placeholder={t('searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -282,7 +284,7 @@ export default function CodeRepositoriesPage() {
         <div className="flex gap-2">
           <Button onClick={() => setModalState({ isOpen: true, mode: 'create' })}>
             <Plus className="mr-2 h-4 w-4" />
-            Add Repository
+            {t('addRepo')}
           </Button>
         </div>
       </div>
@@ -290,9 +292,9 @@ export default function CodeRepositoriesPage() {
       {/* Code Repositories Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Code Repositories ({filteredCodeRepositories.length})</CardTitle>
+          <CardTitle>{t('cardTitle', { count: filteredCodeRepositories.length })}</CardTitle>
           <CardDescription>
-            Track and manage access to source code repositories across platforms
+            {t('cardDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -304,30 +306,30 @@ export default function CodeRepositoriesPage() {
             <div className="text-center py-12">
               <GitBranch className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">
-                No Code Repositories Found
+                {t('noRepos')}
               </h3>
               <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-4">
-                Get started by adding your first code repository
+                {t('noReposDesc')}
               </p>
               <Button onClick={() => setModalState({ isOpen: true, mode: 'create' })}>
                 <Plus className="mr-2 h-4 w-4" />
-                Add Repository
+                {t('addRepo')}
               </Button>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Repository Name</TableHead>
-                  <TableHead>Platform</TableHead>
-                  <TableHead>Organization/Team</TableHead>
-                  <TableHead>Access Level</TableHead>
-                  <TableHead>Branch Restrictions</TableHead>
-                  <TableHead>Features</TableHead>
-                  <TableHead>Assigned To</TableHead>
-                  <TableHead>Department</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
+                  <TableHead>{t('table.repositoryName')}</TableHead>
+                  <TableHead>{t('table.platform')}</TableHead>
+                  <TableHead>{t('table.orgTeam')}</TableHead>
+                  <TableHead>{t('table.accessLevel')}</TableHead>
+                  <TableHead>{t('table.branchRestrictions')}</TableHead>
+                  <TableHead>{t('table.features')}</TableHead>
+                  <TableHead>{t('table.assignedTo')}</TableHead>
+                  <TableHead>{t('table.department')}</TableHead>
+                  <TableHead>{t('table.status')}</TableHead>
+                  <TableHead className="w-[100px]">{t('table.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -387,18 +389,18 @@ export default function CodeRepositoriesPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => setModalState({ isOpen: true, mode: 'view', codeRepository: repo })}>
                             <Eye className="mr-2 h-4 w-4" />
-                            View
+                            {t('table.view')}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setModalState({ isOpen: true, mode: 'edit', codeRepository: repo })}>
                             <Edit className="mr-2 h-4 w-4" />
-                            Edit
+                            {t('table.edit')}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleDeleteCodeRepository(repo.id)}
                             className="text-destructive"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
+                            {t('table.delete')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

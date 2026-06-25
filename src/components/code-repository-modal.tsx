@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { GitBranch, Building2, FileText, Calendar, Key, Loader2 } from 'lucide-react'
+import { GitBranch, Building2, Key, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ResourceOwnershipSection } from '@/components/resource-ownership-section'
 
@@ -54,6 +55,7 @@ export function CodeRepositoryModal({
   employees,
   departments = []
 }: CodeRepositoryModalProps) {
+  const t = useTranslations('codeRepositories.modal')
   const [formData, setFormData] = useState<Partial<CodeRepositoryResource>>({
     platform: 'GitHub',
     repositoryName: '',
@@ -124,11 +126,11 @@ export function CodeRepositoryModal({
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.platform) newErrors.platform = 'Platform is required'
-    if (!formData.repositoryName?.trim()) newErrors.repositoryName = 'Repository name is required'
-    if (!formData.organizationTeam?.trim()) newErrors.organizationTeam = 'Organization/Team is required'
-    if (!formData.accessLevel) newErrors.accessLevel = 'Access level is required'
-    if (!formData.owner?.trim()) newErrors.owner = 'Primary owner is required'
+    if (!formData.platform) newErrors.platform = t('errors.platformRequired')
+    if (!formData.repositoryName?.trim()) newErrors.repositoryName = t('errors.repositoryNameRequired')
+    if (!formData.organizationTeam?.trim()) newErrors.organizationTeam = t('errors.organizationTeamRequired')
+    if (!formData.accessLevel) newErrors.accessLevel = t('errors.accessLevelRequired')
+    if (!formData.owner?.trim()) newErrors.owner = t('errors.ownerRequired')
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -153,7 +155,7 @@ export function CodeRepositoryModal({
       onClose()
     } catch (error) {
       console.error('Error saving code repository:', error)
-      setErrors({ submit: 'Failed to save code repository. Please try again.' })
+      setErrors({ submit: t('errors.saveFailed') })
     } finally {
       setIsLoading(false)
     }
@@ -170,14 +172,14 @@ export function CodeRepositoryModal({
         <DialogHeader className="space-y-3 pb-6 border-b">
           <DialogTitle className="text-2xl font-semibold flex items-center gap-2">
             <GitBranch className="h-6 w-6 text-primary" />
-            {mode === 'view' && 'Code Repository Details'}
-            {mode === 'edit' && 'Edit Code Repository'}
-            {mode === 'create' && 'Add New Code Repository'}
+            {mode === 'view' && t('titleView')}
+            {mode === 'edit' && t('titleEdit')}
+            {mode === 'create' && t('titleCreate')}
           </DialogTitle>
           <DialogDescription className="text-base">
-            {mode === 'view' && 'View detailed information about this code repository access.'}
-            {mode === 'edit' && 'Update code repository access information. Fields marked with * are required for ISO 27001 compliance.'}
-            {mode === 'create' && 'Register a new code repository access. Fields marked with * are required for ISO 27001 compliance.'}
+            {mode === 'view' && t('descriptionView')}
+            {mode === 'edit' && t('descriptionEdit')}
+            {mode === 'create' && t('descriptionCreate')}
           </DialogDescription>
         </DialogHeader>
 
@@ -186,12 +188,12 @@ export function CodeRepositoryModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <GitBranch className="h-4 w-4" />
-              Repository Information
+              {t('repoInfo')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="platform" className="text-sm font-medium">
-                  Platform {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('platform')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.platform}
@@ -199,7 +201,7 @@ export function CodeRepositoryModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn("h-10", errors.platform && "border-destructive")}>
-                    <SelectValue placeholder="Select platform" />
+                    <SelectValue placeholder={t('selectPlatform')} />
                   </SelectTrigger>
                   <SelectContent>
                     {platforms.map((platform) => (
@@ -212,7 +214,7 @@ export function CodeRepositoryModal({
 
               <div className="space-y-2">
                 <Label htmlFor="repositoryName" className="text-sm font-medium">
-                  Repository Name {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('repositoryName')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="repositoryName"
@@ -227,7 +229,7 @@ export function CodeRepositoryModal({
 
               <div className="space-y-2">
                 <Label htmlFor="organizationTeam" className="text-sm font-medium">
-                  Organization/Team {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('organizationTeam')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="organizationTeam"
@@ -242,7 +244,7 @@ export function CodeRepositoryModal({
 
               <div className="space-y-2">
                 <Label htmlFor="accessLevel" className="text-sm font-medium">
-                  Access Level {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('accessLevel')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.accessLevel}
@@ -250,7 +252,7 @@ export function CodeRepositoryModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn("h-10", errors.accessLevel && "border-destructive")}>
-                    <SelectValue placeholder="Select access level" />
+                    <SelectValue placeholder={t('selectAccessLevel')} />
                   </SelectTrigger>
                   <SelectContent>
                     {accessLevels.map((level) => (
@@ -263,7 +265,7 @@ export function CodeRepositoryModal({
 
               <div className="space-y-2">
                 <Label htmlFor="branchRestrictions" className="text-sm font-medium">
-                  Branch Restrictions
+                  {t('branchRestrictions')}
                 </Label>
                 <Input
                   id="branchRestrictions"
@@ -276,7 +278,7 @@ export function CodeRepositoryModal({
 
               <div className="space-y-2">
                 <Label htmlFor="assignedTo" className="text-sm font-medium">
-                  Assigned To
+                  {t('assignedTo')}
                 </Label>
                 <Input
                   id="assignedTo"
@@ -289,7 +291,7 @@ export function CodeRepositoryModal({
 
               <div className="space-y-2">
                 <Label htmlFor="ownerDepartment" className="text-sm font-medium">
-                  Owner Department
+                  {t('ownerDepartment')}
                 </Label>
                 <div className="relative">
                   <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -306,7 +308,7 @@ export function CodeRepositoryModal({
 
               <div className="space-y-2">
                 <Label htmlFor="status" className="text-sm font-medium">
-                  Status
+                  {t('status')}
                 </Label>
                 <Select
                   value={formData.status}
@@ -314,12 +316,12 @@ export function CodeRepositoryModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Select status" />
+                    <SelectValue placeholder={t('selectStatus')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ACTIVE">Active</SelectItem>
-                    <SelectItem value="INACTIVE">Inactive</SelectItem>
-                    <SelectItem value="SUSPENDED">Suspended</SelectItem>
+                    <SelectItem value="ACTIVE">{t('statusActive')}</SelectItem>
+                    <SelectItem value="INACTIVE">{t('statusInactive')}</SelectItem>
+                    <SelectItem value="SUSPENDED">{t('statusSuspended')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -330,12 +332,12 @@ export function CodeRepositoryModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Key className="h-4 w-4" />
-              Access Control
+              {t('accessControl')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="webhookAccess" className="text-sm font-medium">
-                  Webhook Access
+                  {t('webhookAccess')}
                 </Label>
                 <div className="flex items-center space-x-3 pt-2">
                   <Switch
@@ -345,14 +347,14 @@ export function CodeRepositoryModal({
                     disabled={isViewMode}
                   />
                   <Label htmlFor="webhookAccess" className="text-sm text-muted-foreground cursor-pointer">
-                    {formData.webhookAccess ? 'Webhook Enabled' : 'Webhook Disabled'}
+                    {formData.webhookAccess ? t('webhookEnabled') : t('webhookDisabled')}
                   </Label>
                 </div>
               </div>
 
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="deploymentKeys" className="text-sm font-medium">
-                  Deployment Keys
+                  {t('deploymentKeys')}
                 </Label>
                 <Textarea
                   id="deploymentKeys"
@@ -382,7 +384,7 @@ export function CodeRepositoryModal({
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="notes" className="text-sm font-medium">
-                Notes
+                {t('notes')}
               </Label>
               <Textarea
                 id="notes"
@@ -409,7 +411,7 @@ export function CodeRepositoryModal({
               disabled={isLoading}
               className="min-w-24"
             >
-              {isViewMode ? 'Close' : 'Cancel'}
+              {isViewMode ? t('close') : t('cancel')}
             </Button>
             {!isViewMode && (
               <Button
@@ -418,7 +420,7 @@ export function CodeRepositoryModal({
                 className="min-w-28"
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {mode === 'edit' ? 'Update Repository' : 'Add Repository'}
+                {mode === 'edit' ? t('updateRepo') : t('addRepo')}
               </Button>
             )}
           </DialogFooter>
