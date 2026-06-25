@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard,
@@ -40,35 +41,36 @@ import { useTheme } from 'next-themes'
 import { LocaleSwitcher } from './locale-switcher'
 
 const mainNavigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Request Access', href: '/access/request', icon: PlusCircle },
-  { name: 'Access Control', href: '/access', icon: Shield },
-  { name: 'Approvals', href: '/approvals', icon: Clock },
-  { name: 'Audit Logs', href: '/audit-logs', icon: Activity },
+  { key: 'dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { key: 'requestAccess', href: '/access/request', icon: PlusCircle },
+  { key: 'accessControl', href: '/access', icon: Shield },
+  { key: 'approvals', href: '/approvals', icon: Clock },
+  { key: 'auditLogs', href: '/audit-logs', icon: Activity },
 ]
 
 const directoryNavigation = [
-  { name: 'Companies', href: '/companies', icon: Building },
-  { name: 'Departments', href: '/departments', icon: Building2 },
-  { name: 'Employees', href: '/employees', icon: Users },
+  { key: 'companies', href: '/companies', icon: Building },
+  { key: 'departments', href: '/departments', icon: Building2 },
+  { key: 'employees', href: '/employees', icon: Users },
 ]
 
 const resourcesNavigation = [
-  { name: 'Databases', href: '/resources/databases', icon: Database },
-  { name: 'Servers', href: '/resources/servers', icon: Server },
-  { name: 'Software Licenses', href: '/resources/software-licenses', icon: Key },
-  { name: 'SaaS Subscriptions', href: '/resources/saas-subscriptions', icon: Cloud },
-  { name: 'Devices', href: '/resources/devices', icon: Laptop },
-  { name: 'Cloud Accounts', href: '/resources/cloud-accounts', icon: Globe },
-  { name: 'Internal Tools', href: '/resources/internal-tools', icon: Boxes },
-  { name: 'VPN/Network Access', href: '/resources/vpn-network', icon: Lock },
-  { name: 'Code Repositories', href: '/resources/code-repositories', icon: Code },
-  { name: 'API Keys', href: '/resources/api-keys', icon: FolderKey },
-  { name: 'File Storage', href: '/resources/file-storage', icon: HardDrive },
-  { name: 'Physical Access', href: '/resources/physical-access', icon: DoorOpen },
+  { key: 'databases', href: '/resources/databases', icon: Database },
+  { key: 'servers', href: '/resources/servers', icon: Server },
+  { key: 'softwareLicenses', href: '/resources/software-licenses', icon: Key },
+  { key: 'saasSubscriptions', href: '/resources/saas-subscriptions', icon: Cloud },
+  { key: 'devices', href: '/resources/devices', icon: Laptop },
+  { key: 'cloudAccounts', href: '/resources/cloud-accounts', icon: Globe },
+  { key: 'internalTools', href: '/resources/internal-tools', icon: Boxes },
+  { key: 'vpnNetwork', href: '/resources/vpn-network', icon: Lock },
+  { key: 'codeRepositories', href: '/resources/code-repositories', icon: Code },
+  { key: 'apiKeys', href: '/resources/api-keys', icon: FolderKey },
+  { key: 'fileStorage', href: '/resources/file-storage', icon: HardDrive },
+  { key: 'physicalAccess', href: '/resources/physical-access', icon: DoorOpen },
 ]
 
 export function Navigation() {
+  const t = useTranslations('navigation')
   const pathname = usePathname()
   const [isDirectoryOpen, setIsDirectoryOpen] = useState(false)
   const [isResourcesOpen, setIsResourcesOpen] = useState(false)
@@ -91,7 +93,7 @@ export function Navigation() {
         const isActive = pathname === item.href
         return (
           <Link
-            key={item.name}
+            key={item.key}
             href={item.href}
             className={cn(
               'flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors',
@@ -101,7 +103,7 @@ export function Navigation() {
             )}
           >
             <item.icon className="mr-3 h-4 w-4" />
-            {item.name}
+            {t(item.key)}
           </Link>
         )
       })}
@@ -114,7 +116,7 @@ export function Navigation() {
           onClick={() => setIsDirectoryOpen(!isDirectoryOpen)}
         >
           <FolderOpen className="mr-3 h-4 w-4" />
-          Directory
+          {t('directory')}
           {isDirectoryOpen ? (
             <ChevronDown className="ml-auto h-4 w-4" />
           ) : (
@@ -128,7 +130,7 @@ export function Navigation() {
               const isActive = pathname === item.href
               return (
                 <Link
-                  key={item.name}
+                  key={item.key}
                   href={item.href}
                   className={cn(
                     'flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors',
@@ -138,7 +140,7 @@ export function Navigation() {
                   )}
                 >
                   <item.icon className="mr-3 h-4 w-4" />
-                  {item.name}
+                  {t(item.key)}
                 </Link>
               )
             })}
@@ -154,7 +156,7 @@ export function Navigation() {
           onClick={() => setIsResourcesOpen(!isResourcesOpen)}
         >
           <Monitor className="mr-3 h-4 w-4" />
-          Resources
+          {t('resources')}
           {isResourcesOpen ? (
             <ChevronDown className="ml-auto h-4 w-4" />
           ) : (
@@ -168,7 +170,7 @@ export function Navigation() {
               const isActive = pathname === item.href
               return (
                 <Link
-                  key={item.name}
+                  key={item.key}
                   href={item.href}
                   className={cn(
                     'flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors',
@@ -178,7 +180,7 @@ export function Navigation() {
                   )}
                 >
                   <item.icon className="mr-3 h-4 w-4" />
-                  {item.name}
+                  {t(item.key)}
                 </Link>
               )
             })}
@@ -197,7 +199,7 @@ export function Navigation() {
         )}
       >
         <Settings className="mr-3 h-4 w-4" />
-        Settings
+        {t('settings')}
       </Link>
       
       <div className="pt-4 mt-4 border-t border-border space-y-1">
@@ -211,7 +213,7 @@ export function Navigation() {
           ) : (
             <Moon className="mr-3 h-4 w-4" />
           )}
-          {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+          {theme === 'dark' ? t('lightMode') : t('darkMode')}
         </Button>
         <LocaleSwitcher />
         <Button
@@ -220,7 +222,7 @@ export function Navigation() {
           onClick={() => signOut()}
         >
           <LogOut className="mr-3 h-4 w-4" />
-          Sign Out
+          {t('signOut')}
         </Button>
       </div>
     </nav>
