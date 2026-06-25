@@ -7,6 +7,9 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
   serverExternalPackages: ['@prisma/client'],
+  experimental: {
+    cacheComponents: true,
+  },
 }
 
 module.exports = withNextIntl(nextConfig)

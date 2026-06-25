@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { fileStorageBaseSchema, type FileStorageFormData } from '@/lib/schemas/file-storage'
@@ -53,6 +54,7 @@ const defaultValues: FileStorageFormData = {
 }
 
 export function FileStorageModal({ isOpen, onClose, fileStorage, mode, onSave }: FileStorageModalProps) {
+  const t = useTranslations('fileStorage.modal')
   const {
     register,
     handleSubmit,
@@ -98,13 +100,13 @@ export function FileStorageModal({ isOpen, onClose, fileStorage, mode, onSave }:
         <DialogHeader className="space-y-3 pb-6 border-b">
           <DialogTitle className="text-2xl font-semibold flex items-center gap-2">
             <HardDrive className="h-6 w-6 text-primary" />
-            {mode === 'view' && 'File Storage Details'}
-            {mode === 'edit' && 'Edit File Storage'}
-            {mode === 'create' && 'Add File Storage'}
+            {mode === 'view' && t('titleView')}
+            {mode === 'edit' && t('titleEdit')}
+            {mode === 'create' && t('titleCreate')}
           </DialogTitle>
           <DialogDescription className="text-base">
-            {mode === 'view' && 'View detailed information about this file storage entry.'}
-            {mode !== 'view' && 'Fields marked with * are required.'}
+            {mode === 'view' && t('descriptionView')}
+            {mode !== 'view' && t('descriptionEditCreate')}
           </DialogDescription>
         </DialogHeader>
 
@@ -116,12 +118,12 @@ export function FileStorageModal({ isOpen, onClose, fileStorage, mode, onSave }:
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <HardDrive className="h-4 w-4" />
-              Storage Information
+              {t('sectionStorageInfo')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="storageType" className="text-sm font-medium">
-                  Storage Type {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('storageType')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Controller
                   name="storageType"
@@ -129,7 +131,7 @@ export function FileStorageModal({ isOpen, onClose, fileStorage, mode, onSave }:
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange} disabled={isViewMode}>
                       <SelectTrigger className={cn('h-10', errors.storageType && 'border-destructive')}>
-                        <SelectValue placeholder="Select storage type" />
+                        <SelectValue placeholder={t('selectStorageType')} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Network Share">Network Share</SelectItem>
@@ -148,7 +150,7 @@ export function FileStorageModal({ isOpen, onClose, fileStorage, mode, onSave }:
 
               <div className="space-y-2">
                 <Label htmlFor="permissionLevel" className="text-sm font-medium">
-                  Permission Level {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('permissionLevel')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Controller
                   name="permissionLevel"
@@ -156,12 +158,12 @@ export function FileStorageModal({ isOpen, onClose, fileStorage, mode, onSave }:
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange} disabled={isViewMode}>
                       <SelectTrigger className={cn('h-10', errors.permissionLevel && 'border-destructive')}>
-                        <SelectValue placeholder="Select permission" />
+                        <SelectValue placeholder={t('selectPermission')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Read">Read</SelectItem>
-                        <SelectItem value="Write">Write</SelectItem>
-                        <SelectItem value="Full Control">Full Control</SelectItem>
+                        <SelectItem value="Read">{t('permRead')}</SelectItem>
+                        <SelectItem value="Write">{t('permWrite')}</SelectItem>
+                        <SelectItem value="Full Control">{t('permFullControl')}</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
@@ -171,7 +173,7 @@ export function FileStorageModal({ isOpen, onClose, fileStorage, mode, onSave }:
 
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="pathLocation" className="text-sm font-medium">
-                  Path / Location {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('pathLocation')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="pathLocation"
@@ -184,56 +186,56 @@ export function FileStorageModal({ isOpen, onClose, fileStorage, mode, onSave }:
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="quotaLimit" className="text-sm font-medium">Quota Limit</Label>
+                <Label htmlFor="quotaLimit" className="text-sm font-medium">{t('quotaLimit')}</Label>
                 <Input
                   id="quotaLimit"
                   {...register('quotaLimit')}
                   disabled={isViewMode}
-                  placeholder="e.g. 50GB"
+                  placeholder={t('quotaPlaceholder')}
                   className={cn(errors.quotaLimit && 'border-destructive')}
                 />
                 {errors.quotaLimit && <p className="text-xs text-destructive">{errors.quotaLimit.message}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="assignedTo" className="text-sm font-medium">Assigned To</Label>
+                <Label htmlFor="assignedTo" className="text-sm font-medium">{t('assignedTo')}</Label>
                 <Input
                   id="assignedTo"
                   type="email"
                   {...register('assignedTo')}
                   disabled={isViewMode}
-                  placeholder="employee@company.mn"
+                  placeholder={t('assignedToPlaceholder')}
                   className={cn(errors.assignedTo && 'border-destructive')}
                 />
                 {errors.assignedTo && <p className="text-xs text-destructive">{errors.assignedTo.message}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="ownerDepartment" className="text-sm font-medium">Owner Department</Label>
+                <Label htmlFor="ownerDepartment" className="text-sm font-medium">{t('ownerDepartment')}</Label>
                 <Input
                   id="ownerDepartment"
                   {...register('ownerDepartment')}
                   disabled={isViewMode}
-                  placeholder="e.g. IT, Finance"
+                  placeholder={t('ownerDepartmentPlaceholder')}
                   className={cn(errors.ownerDepartment && 'border-destructive')}
                 />
                 {errors.ownerDepartment && <p className="text-xs text-destructive">{errors.ownerDepartment.message}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="status" className="text-sm font-medium">Status</Label>
+                <Label htmlFor="status" className="text-sm font-medium">{t('status')}</Label>
                 <Controller
                   name="status"
                   control={control}
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange} disabled={isViewMode}>
                       <SelectTrigger className="h-10">
-                        <SelectValue placeholder="Select status" />
+                        <SelectValue placeholder={t('selectStatus')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="ACTIVE">Active</SelectItem>
-                        <SelectItem value="INACTIVE">Inactive</SelectItem>
-                        <SelectItem value="ARCHIVED">Archived</SelectItem>
+                        <SelectItem value="ACTIVE">{t('statusActive')}</SelectItem>
+                        <SelectItem value="INACTIVE">{t('statusInactive')}</SelectItem>
+                        <SelectItem value="ARCHIVED">{t('statusArchived')}</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
@@ -246,23 +248,23 @@ export function FileStorageModal({ isOpen, onClose, fileStorage, mode, onSave }:
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Shield className="h-4 w-4" />
-              Security & Policy
+              {t('sectionSecurityPolicy')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="encryptionStatus" className="text-sm font-medium">Encryption Status</Label>
+                <Label htmlFor="encryptionStatus" className="text-sm font-medium">{t('encryptionStatus')}</Label>
                 <Input
                   id="encryptionStatus"
                   {...register('encryptionStatus')}
                   disabled={isViewMode}
-                  placeholder="e.g. AES-256, None"
+                  placeholder={t('encryptionPlaceholder')}
                   className={cn(errors.encryptionStatus && 'border-destructive')}
                 />
                 {errors.encryptionStatus && <p className="text-xs text-destructive">{errors.encryptionStatus.message}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="expiryDate" className="text-sm font-medium">Expiry Date</Label>
+                <Label htmlFor="expiryDate" className="text-sm font-medium">{t('expiryDate')}</Label>
                 <Input
                   id="expiryDate"
                   type="date"
@@ -274,37 +276,37 @@ export function FileStorageModal({ isOpen, onClose, fileStorage, mode, onSave }:
               </div>
 
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="sharingSettings" className="text-sm font-medium">Sharing Settings</Label>
+                <Label htmlFor="sharingSettings" className="text-sm font-medium">{t('sharingSettings')}</Label>
                 <Input
                   id="sharingSettings"
                   {...register('sharingSettings')}
                   disabled={isViewMode}
-                  placeholder="e.g. Internal only, Team access"
+                  placeholder={t('sharingPlaceholder')}
                   className={cn(errors.sharingSettings && 'border-destructive')}
                 />
                 {errors.sharingSettings && <p className="text-xs text-destructive">{errors.sharingSettings.message}</p>}
               </div>
 
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="retentionPolicy" className="text-sm font-medium">Retention Policy</Label>
+                <Label htmlFor="retentionPolicy" className="text-sm font-medium">{t('retentionPolicy')}</Label>
                 <Input
                   id="retentionPolicy"
                   {...register('retentionPolicy')}
                   disabled={isViewMode}
-                  placeholder="e.g. 7 years, Delete after 90 days"
+                  placeholder={t('retentionPlaceholder')}
                   className={cn(errors.retentionPolicy && 'border-destructive')}
                 />
                 {errors.retentionPolicy && <p className="text-xs text-destructive">{errors.retentionPolicy.message}</p>}
               </div>
 
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="notes" className="text-sm font-medium">Notes</Label>
+                <Label htmlFor="notes" className="text-sm font-medium">{t('notes')}</Label>
                 <Textarea
                   id="notes"
                   {...register('notes')}
                   disabled={isViewMode}
                   className={cn('min-h-[80px] resize-none', errors.notes && 'border-destructive')}
-                  placeholder="Additional notes..."
+                  placeholder={t('notesPlaceholder')}
                 />
                 {errors.notes && <p className="text-xs text-destructive">{errors.notes.message}</p>}
               </div>
@@ -313,12 +315,12 @@ export function FileStorageModal({ isOpen, onClose, fileStorage, mode, onSave }:
 
           <DialogFooter className="gap-2 pt-6 border-t">
             <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="min-w-24">
-              {isViewMode ? 'Close' : 'Cancel'}
+              {isViewMode ? t('close') : t('cancel')}
             </Button>
             {!isViewMode && (
               <Button type="submit" disabled={isSubmitting} className="min-w-28">
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {mode === 'edit' ? 'Update Storage' : 'Add Storage'}
+                {mode === 'edit' ? t('updateStorage') : t('addStorage')}
               </Button>
             )}
           </DialogFooter>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,6 +18,7 @@ interface FileStorageClientProps {
 }
 
 export function FileStorageClient({ initialData }: FileStorageClientProps) {
+  const t = useTranslations('fileStorage')
   const router = useRouter()
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
   const [modalState, setModalState] = useState<{
@@ -36,19 +38,19 @@ export function FileStorageClient({ initialData }: FileStorageClientProps) {
       if (result?.error) {
         if (typeof result.error === 'string') {
           toast.error(result.error === 'Forbidden'
-            ? 'You don\'t have permission to manage file storage'
-            : 'Session expired, please log in again')
+            ? t('errors.forbidden')
+            : t('errors.sessionExpired'))
         } else {
-          toast.error('Please fix the form errors and try again')
+          toast.error(t('errors.formErrors'))
         }
         return false
       }
 
-      toast.success(mode === 'edit' ? 'File storage updated successfully' : 'File storage added successfully')
+      toast.success(mode === 'edit' ? t('success.updated') : t('success.added'))
       router.refresh()
       return true
     } catch {
-      toast.error('Something went wrong. Please try again.')
+      toast.error(t('errors.saveFailed'))
       return false
     }
   }
@@ -63,14 +65,14 @@ export function FileStorageClient({ initialData }: FileStorageClientProps) {
       const result = await deleteFileStorage(deleteTarget.id)
       if (result?.error) {
         toast.error(result.error === 'Forbidden'
-          ? 'You don\'t have permission to delete file storage'
-          : 'Session expired, please log in again')
+          ? t('errors.deleteForbidden')
+          : t('errors.sessionExpired'))
         return
       }
-      toast.success(`"${deleteTarget.name}" deleted successfully`)
+      toast.success(t('success.deleted', { name: deleteTarget.name }))
       router.refresh()
     } catch {
-      toast.error('Error deleting file storage')
+      toast.error(t('errors.deleteError'))
     } finally {
       setDeleteTarget(null)
     }
@@ -85,66 +87,66 @@ export function FileStorageClient({ initialData }: FileStorageClientProps) {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">File Storage</h1>
-          <p className="text-muted-foreground">Control access to network drives and cloud storage — ISO 27001 Compliant</p>
+          <h1 className="text-3xl font-bold text-foreground">{t('title')}</h1>
+          <p className="text-muted-foreground">{t('subtitle')}</p>
         </div>
         <Button onClick={() => setModalState({ isOpen: true, mode: 'create' })}>
           <HardDrive className="mr-2 h-4 w-4" />
-          Add Storage
+          {t('addStorage')}
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Records</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('stats.totalRecords')}</CardTitle>
             <Database className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalRecords}</div>
-            <p className="text-xs text-muted-foreground">{activeRecords} active</p>
+            <p className="text-xs text-muted-foreground">{t('stats.activeCount', { count: activeRecords })}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('stats.active')}</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeRecords}</div>
-            <p className="text-xs text-muted-foreground">Currently in use</p>
+            <p className="text-xs text-muted-foreground">{t('stats.activeDesc')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Encrypted</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('stats.encrypted')}</CardTitle>
             <Lock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{encryptedRecords}</div>
-            <p className="text-xs text-muted-foreground">Encryption enabled</p>
+            <p className="text-xs text-muted-foreground">{t('stats.encryptedDesc')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">With Quota</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('stats.withQuota')}</CardTitle>
             <HardDrive className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{withQuota}</div>
-            <p className="text-xs text-muted-foreground">Quota limits set</p>
+            <p className="text-xs text-muted-foreground">{t('stats.withQuotaDesc')}</p>
           </CardContent>
         </Card>
       </div>
 
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle>File Storage</CardTitle>
+          <CardTitle>{t('cardTitle')}</CardTitle>
           <CardDescription className="mt-1.5">
-            Track and manage access to network drives, cloud storage, and shared folders
+            {t('cardDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-0 px-6 pb-6">
@@ -167,10 +169,10 @@ export function FileStorageClient({ initialData }: FileStorageClientProps) {
       <ConfirmDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Delete File Storage"
-        description={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
+        title={t('deleteDialog.title')}
+        description={t('deleteDialog.description', { name: deleteTarget?.name ?? '' })}
         onConfirm={confirmDelete}
-        confirmLabel="Delete"
+        confirmLabel={t('deleteDialog.confirm')}
       />
     </div>
   )
