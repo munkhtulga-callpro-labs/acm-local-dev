@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -55,6 +56,7 @@ interface VPNNetworkResource {
 }
 
 export default function VPNNetworkPage() {
+  const t = useTranslations('vpnNetwork')
   const [vpnNetworks, setVpnNetworks] = useState<VPNNetworkResource[]>([])
   const [employees, setEmployees] = useState<Array<{ id: string; firstName: string; lastName: string; email: string }>>([])
   const [departments, setDepartments] = useState<Array<{ id: string; name: string }>>([])
@@ -81,10 +83,10 @@ export default function VPNNetworkPage() {
         const data = await response.json()
         setVpnNetworks(data.data || [])
       } else {
-        setError('Failed to fetch VPN/Network Access resources')
+        setError(t('errors.fetchFailed'))
       }
     } catch (error) {
-      setError('Error fetching VPN/Network Access resources')
+      setError(t('errors.fetchError'))
       console.error('Error:', error)
     } finally {
       setLoading(false)
@@ -146,12 +148,12 @@ export default function VPNNetworkPage() {
             })
           }
 
-          setSuccess('VPN/Network Access added successfully')
+          setSuccess(t('success.added'))
           fetchVPNNetworks()
         } else {
           const errorData = await response.json()
-          setError(errorData.error || 'Failed to add VPN/Network Access')
-          throw new Error(errorData.error || 'Failed to add VPN/Network Access')
+          setError(errorData.error || t('errors.addFailed'))
+          throw new Error(errorData.error || t('errors.addFailed'))
         }
       } else if (modalState.mode === 'edit' && modalState.vpnNetwork) {
         const response = await fetch(`/api/resources/vpn-network-access/${modalState.vpnNetwork.id}`, {
@@ -179,12 +181,12 @@ export default function VPNNetworkPage() {
             })
           }
 
-          setSuccess('VPN/Network Access updated successfully')
+          setSuccess(t('success.updated'))
           fetchVPNNetworks()
         } else {
           const errorData = await response.json()
-          setError(errorData.error || 'Failed to update VPN/Network Access')
-          throw new Error(errorData.error || 'Failed to update VPN/Network Access')
+          setError(errorData.error || t('errors.updateFailed'))
+          throw new Error(errorData.error || t('errors.updateFailed'))
         }
       }
     } catch (error) {
@@ -193,7 +195,7 @@ export default function VPNNetworkPage() {
   }
 
   const handleDeleteVPNNetwork = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this VPN/Network Access resource?')) return
+    if (!confirm(t('confirmDelete'))) return
 
     try {
       const response = await fetch(`/api/resources/vpn-network-access/${id}`, {
@@ -201,13 +203,13 @@ export default function VPNNetworkPage() {
       })
 
       if (response.ok) {
-        setSuccess('VPN/Network Access deleted successfully')
+        setSuccess(t('success.deleted'))
         fetchVPNNetworks()
       } else {
-        setError('Failed to delete VPN/Network Access')
+        setError(t('errors.deleteFailed'))
       }
-    } catch (error) {
-      setError('Error deleting VPN/Network Access')
+    } catch {
+      setError(t('errors.deleteError'))
     }
   }
 
@@ -268,10 +270,10 @@ export default function VPNNetworkPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground flex items-center">
           <Shield className="mr-3 h-8 w-8" />
-          VPN & Network Access
+          {t('title')}
         </h1>
         <p className="text-muted-foreground mt-2">
-          Manage VPN profiles and network access permissions - ISO 27001 Compliant
+          {t('subtitle')}
         </p>
       </div>
 
@@ -293,7 +295,7 @@ export default function VPNNetworkPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder="Search VPN/Network Access..."
+              placeholder={t('searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -303,7 +305,7 @@ export default function VPNNetworkPage() {
         <div className="flex gap-2">
           <Button onClick={() => setModalState({ isOpen: true, mode: 'create' })}>
             <Plus className="mr-2 h-4 w-4" />
-            Add VPN Access
+            {t('addAccess')}
           </Button>
         </div>
       </div>
@@ -311,9 +313,9 @@ export default function VPNNetworkPage() {
       {/* VPN Network Table */}
       <Card>
         <CardHeader>
-          <CardTitle>VPN & Network Access ({filteredVPNNetworks.length})</CardTitle>
+          <CardTitle>{t('cardTitle', { count: filteredVPNNetworks.length })}</CardTitle>
           <CardDescription>
-            Track and manage VPN profiles, network segments, and remote access configurations
+            {t('cardDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -325,28 +327,28 @@ export default function VPNNetworkPage() {
             <div className="text-center py-12">
               <Shield className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">
-                No VPN/Network Access Found
+                {t('noAccess')}
               </h3>
               <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-4">
-                Get started by adding your first VPN/Network Access resource
+                {t('noAccessDesc')}
               </p>
               <Button onClick={() => setModalState({ isOpen: true, mode: 'create' })}>
                 <Plus className="mr-2 h-4 w-4" />
-                Add VPN Access
+                {t('addAccess')}
               </Button>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Profile Name</TableHead>
-                  <TableHead>VPN Type</TableHead>
-                  <TableHead>Access Level</TableHead>
-                  <TableHead>Network Segments</TableHead>
-                  <TableHead>Assigned To</TableHead>
-                  <TableHead>Valid Period</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
+                  <TableHead>{t('table.profileName')}</TableHead>
+                  <TableHead>{t('table.vpnType')}</TableHead>
+                  <TableHead>{t('table.accessLevel')}</TableHead>
+                  <TableHead>{t('table.networkSegments')}</TableHead>
+                  <TableHead>{t('table.assignedTo')}</TableHead>
+                  <TableHead>{t('table.validPeriod')}</TableHead>
+                  <TableHead>{t('table.status')}</TableHead>
+                  <TableHead className="w-[100px]">{t('table.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -358,7 +360,7 @@ export default function VPNNetworkPage() {
                         <div>
                           <div>{vpn.profileName}</div>
                           {vpn.splitTunnel && (
-                            <div className="text-xs text-muted-foreground">Split Tunnel</div>
+                            <div className="text-xs text-muted-foreground">{t('splitTunnel')}</div>
                           )}
                         </div>
                       </div>
@@ -388,7 +390,7 @@ export default function VPNNetworkPage() {
                           {vpn.assignedTo}
                         </div>
                       ) : (
-                        <span className="text-muted-foreground text-sm">Unassigned</span>
+                        <span className="text-muted-foreground text-sm">{t('unassigned')}</span>
                       )}
                     </TableCell>
                     <TableCell>
@@ -397,7 +399,7 @@ export default function VPNNetworkPage() {
                         <div>
                           <div>{formatDate(vpn.validFrom)}</div>
                           {vpn.validTo && (
-                            <div className="text-xs text-muted-foreground">to {formatDate(vpn.validTo)}</div>
+                            <div className="text-xs text-muted-foreground">{t('validTo', { date: formatDate(vpn.validTo) })}</div>
                           )}
                         </div>
                       </div>
@@ -417,18 +419,18 @@ export default function VPNNetworkPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => setModalState({ isOpen: true, mode: 'view', vpnNetwork: vpn })}>
                             <Eye className="mr-2 h-4 w-4" />
-                            View
+                            {t('table.view')}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setModalState({ isOpen: true, mode: 'edit', vpnNetwork: vpn })}>
                             <Edit className="mr-2 h-4 w-4" />
-                            Edit
+                            {t('table.edit')}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleDeleteVPNNetwork(vpn.id)}
                             className="text-destructive"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
+                            {t('table.delete')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

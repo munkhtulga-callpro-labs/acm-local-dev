@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Shield, Network, FileText, Calendar, Key, User, Loader2 } from 'lucide-react'
+import { Shield, Network, Calendar, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ResourceOwnershipSection } from '@/components/resource-ownership-section'
 
@@ -59,6 +60,7 @@ export function VPNNetworkModal({
   employees,
   departments
 }: VPNNetworkModalProps) {
+  const t = useTranslations('vpnNetwork.modal')
   const [formData, setFormData] = useState<Partial<VPNNetworkResource>>({
     profileName: '',
     vpnType: 'Site-to-Site',
@@ -133,12 +135,12 @@ export function VPNNetworkModal({
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.profileName?.trim()) newErrors.profileName = 'Profile name is required'
-    if (!formData.vpnType) newErrors.vpnType = 'VPN type is required'
-    if (!formData.networkSegments?.trim()) newErrors.networkSegments = 'Network segments is required'
-    if (!formData.accessLevel) newErrors.accessLevel = 'Access level is required'
-    if (!formData.validFrom) newErrors.validFrom = 'Valid from date is required'
-    if (!formData.owner?.trim()) newErrors.owner = 'Primary owner is required'
+    if (!formData.profileName?.trim()) newErrors.profileName = t('errors.profileNameRequired')
+    if (!formData.vpnType) newErrors.vpnType = t('errors.vpnTypeRequired')
+    if (!formData.networkSegments?.trim()) newErrors.networkSegments = t('errors.networkSegmentsRequired')
+    if (!formData.accessLevel) newErrors.accessLevel = t('errors.accessLevelRequired')
+    if (!formData.validFrom) newErrors.validFrom = t('errors.validFromRequired')
+    if (!formData.owner?.trim()) newErrors.owner = t('errors.ownerRequired')
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -163,7 +165,7 @@ export function VPNNetworkModal({
       onClose()
     } catch (error) {
       console.error('Error saving VPN/Network Access:', error)
-      setErrors({ submit: 'Failed to save VPN/Network Access. Please try again.' })
+      setErrors({ submit: t('errors.saveFailed') })
     } finally {
       setIsLoading(false)
     }
@@ -173,7 +175,6 @@ export function VPNNetworkModal({
 
   const vpnTypes = ['Site-to-Site', 'Remote Access', 'Client VPN', 'SSL VPN', 'IPSec VPN', 'MPLS', 'Other']
   const accessLevels = ['Standard', 'Elevated', 'Privileged', 'Admin', 'Full Access']
-  const statuses = ['ACTIVE', 'INACTIVE', 'PENDING', 'EXPIRED', 'SUSPENDED']
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -181,14 +182,14 @@ export function VPNNetworkModal({
         <DialogHeader className="space-y-3 pb-6 border-b">
           <DialogTitle className="text-2xl font-semibold flex items-center gap-2">
             <Shield className="h-6 w-6 text-primary" />
-            {mode === 'view' && 'VPN/Network Access Details'}
-            {mode === 'edit' && 'Edit VPN/Network Access'}
-            {mode === 'create' && 'Add New VPN/Network Access'}
+            {mode === 'view' && t('titleView')}
+            {mode === 'edit' && t('titleEdit')}
+            {mode === 'create' && t('titleCreate')}
           </DialogTitle>
           <DialogDescription className="text-base">
-            {mode === 'view' && 'View detailed information about this VPN/Network Access resource.'}
-            {mode === 'edit' && 'Update VPN/Network Access information. Fields marked with * are required.'}
-            {mode === 'create' && 'Register a new VPN/Network Access resource. Fields marked with * are required.'}
+            {mode === 'view' && t('descriptionView')}
+            {mode === 'edit' && t('descriptionEdit')}
+            {mode === 'create' && t('descriptionCreate')}
           </DialogDescription>
         </DialogHeader>
 
@@ -197,12 +198,12 @@ export function VPNNetworkModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Shield className="h-4 w-4" />
-              VPN Information
+              {t('vpnInfo')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="profileName" className="text-sm font-medium">
-                  Profile/Connection Name {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('profileName')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="profileName"
@@ -217,7 +218,7 @@ export function VPNNetworkModal({
 
               <div className="space-y-2">
                 <Label htmlFor="vpnType" className="text-sm font-medium">
-                  VPN Type {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('vpnType')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.vpnType}
@@ -225,7 +226,7 @@ export function VPNNetworkModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn("h-10", errors.vpnType && "border-destructive")}>
-                    <SelectValue placeholder="Select VPN type" />
+                    <SelectValue placeholder={t('selectVpnType')} />
                   </SelectTrigger>
                   <SelectContent>
                     {vpnTypes.map((type) => (
@@ -238,7 +239,7 @@ export function VPNNetworkModal({
 
               <div className="space-y-2">
                 <Label htmlFor="accessLevel" className="text-sm font-medium">
-                  Access Level {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('accessLevel')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.accessLevel}
@@ -246,7 +247,7 @@ export function VPNNetworkModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn("h-10", errors.accessLevel && "border-destructive")}>
-                    <SelectValue placeholder="Select access level" />
+                    <SelectValue placeholder={t('selectAccessLevel')} />
                   </SelectTrigger>
                   <SelectContent>
                     {accessLevels.map((level) => (
@@ -259,7 +260,7 @@ export function VPNNetworkModal({
 
               <div className="space-y-2">
                 <Label htmlFor="status" className="text-sm font-medium">
-                  Status {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('status')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.status}
@@ -267,19 +268,21 @@ export function VPNNetworkModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Select status" />
+                    <SelectValue placeholder={t('selectStatus')} />
                   </SelectTrigger>
                   <SelectContent>
-                    {statuses.map((status) => (
-                      <SelectItem key={status} value={status}>{status}</SelectItem>
-                    ))}
+                    <SelectItem value="ACTIVE">{t('statusActive')}</SelectItem>
+                    <SelectItem value="INACTIVE">{t('statusInactive')}</SelectItem>
+                    <SelectItem value="PENDING">{t('statusPending')}</SelectItem>
+                    <SelectItem value="EXPIRED">{t('statusExpired')}</SelectItem>
+                    <SelectItem value="SUSPENDED">{t('statusSuspended')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="assignedTo" className="text-sm font-medium">
-                  Assigned To
+                  {t('assignedTo')}
                 </Label>
                 <Select
                   value={formData.assignedTo || ''}
@@ -287,7 +290,7 @@ export function VPNNetworkModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Select user" />
+                    <SelectValue placeholder={t('selectUser')} />
                   </SelectTrigger>
                   <SelectContent>
                     {employees.map((emp) => (
@@ -301,7 +304,7 @@ export function VPNNetworkModal({
 
               <div className="space-y-2">
                 <Label htmlFor="validFrom" className="text-sm font-medium">
-                  Valid From {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('validFrom')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -319,7 +322,7 @@ export function VPNNetworkModal({
 
               <div className="space-y-2">
                 <Label htmlFor="validTo" className="text-sm font-medium">
-                  Valid To
+                  {t('validTo')}
                 </Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -340,12 +343,12 @@ export function VPNNetworkModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Network className="h-4 w-4" />
-              Network Configuration
+              {t('networkConfig')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="networkSegments" className="text-sm font-medium">
-                  Network Segments {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('networkSegments')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="networkSegments"
@@ -356,12 +359,12 @@ export function VPNNetworkModal({
                   placeholder="10.0.0.0/8, 192.168.0.0/16"
                 />
                 {errors.networkSegments && <p className="text-xs text-destructive">{errors.networkSegments}</p>}
-                <p className="text-xs text-muted-foreground">Comma-separated network ranges or segments</p>
+                <p className="text-xs text-muted-foreground">{t('networkSegmentsHint')}</p>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="ipWhitelist" className="text-sm font-medium">
-                  IP Whitelist
+                  {t('ipWhitelist')}
                 </Label>
                 <Input
                   id="ipWhitelist"
@@ -370,12 +373,12 @@ export function VPNNetworkModal({
                   disabled={isViewMode}
                   placeholder="203.0.113.0/24, 198.51.100.0/24"
                 />
-                <p className="text-xs text-muted-foreground">Comma-separated allowed IP addresses/ranges</p>
+                <p className="text-xs text-muted-foreground">{t('ipWhitelistHint')}</p>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="deviceRestrictions" className="text-sm font-medium">
-                  Device Restrictions
+                  {t('deviceRestrictions')}
                 </Label>
                 <Input
                   id="deviceRestrictions"
@@ -388,7 +391,7 @@ export function VPNNetworkModal({
 
               <div className="space-y-2">
                 <Label htmlFor="splitTunnel" className="text-sm font-medium">
-                  Split Tunnel
+                  {t('splitTunnel')}
                 </Label>
                 <div className="flex items-center space-x-3 pt-2">
                   <Switch
@@ -398,14 +401,14 @@ export function VPNNetworkModal({
                     disabled={isViewMode}
                   />
                   <Label htmlFor="splitTunnel" className="text-sm text-muted-foreground cursor-pointer">
-                    {formData.splitTunnel ? 'Enabled' : 'Disabled'}
+                    {formData.splitTunnel ? t('splitTunnelEnabled') : t('splitTunnelDisabled')}
                   </Label>
                 </div>
               </div>
 
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="notes" className="text-sm font-medium">
-                  Notes
+                  {t('notes')}
                 </Label>
                 <Textarea
                   id="notes"
@@ -445,7 +448,7 @@ export function VPNNetworkModal({
               disabled={isLoading}
               className="min-w-24"
             >
-              {isViewMode ? 'Close' : 'Cancel'}
+              {isViewMode ? t('close') : t('cancel')}
             </Button>
             {!isViewMode && (
               <Button
@@ -454,7 +457,7 @@ export function VPNNetworkModal({
                 className="min-w-28"
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {mode === 'edit' ? 'Update VPN Access' : 'Add VPN Access'}
+                {mode === 'edit' ? t('updateAccess') : t('addAccess')}
               </Button>
             )}
           </DialogFooter>
