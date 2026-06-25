@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { useTranslations } from 'next-intl'
 import {
   flexRender,
   getCoreRowModel,
@@ -72,20 +73,22 @@ interface APIKeysDataTableProps {
   onDelete?: (id: string, name: string) => void
 }
 
-const getStatusBadge = (status: string) => {
+type TFunc = ReturnType<typeof useTranslations<'apiKeys.table'>>
+
+const getStatusBadge = (status: string, t: TFunc) => {
   switch (status.toUpperCase()) {
     case 'ACTIVE':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400 mr-1 w-3 h-3" />
-          Active
+          {t('statusActive')}
         </Badge>
       )
     case 'REVOKED':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleFilled className="fill-red-500 dark:fill-red-400 mr-1 w-3 h-3" />
-          Revoked
+          {t('statusRevoked')}
         </Badge>
       )
     default:
@@ -98,27 +101,27 @@ const getStatusBadge = (status: string) => {
   }
 }
 
-const getKeyTypeBadge = (keyType: string) => {
+const getKeyTypeBadge = (keyType: string, t: TFunc) => {
   switch (keyType.toLowerCase()) {
     case 'production':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconShieldLock className="mr-1 w-3 h-3 text-red-500" />
-          Production
+          {t('keyTypeProduction')}
         </Badge>
       )
     case 'sandbox':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconShieldLock className="mr-1 w-3 h-3 text-yellow-500" />
-          Sandbox
+          {t('keyTypeSandbox')}
         </Badge>
       )
     case 'development':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconShieldLock className="mr-1 w-3 h-3 text-blue-500" />
-          Development
+          {t('keyTypeDevelopment')}
         </Badge>
       )
     default:
@@ -131,6 +134,7 @@ const getKeyTypeBadge = (keyType: string) => {
 }
 
 export function APIKeysDataTable({ data, onEdit, onDelete }: APIKeysDataTableProps) {
+  const t = useTranslations('apiKeys.table')
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -147,7 +151,7 @@ export function APIKeysDataTable({ data, onEdit, onDelete }: APIKeysDataTablePro
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           className="px-0 hover:bg-transparent"
         >
-          Service Name
+          {t('serviceName')}
           <ArrowUpDown className="ml-2 h-3 w-3" />
         </Button>
       ),
@@ -160,12 +164,12 @@ export function APIKeysDataTable({ data, onEdit, onDelete }: APIKeysDataTablePro
     },
     {
       accessorKey: 'keyType',
-      header: 'Key Type',
-      cell: ({ row }) => getKeyTypeBadge(row.getValue('keyType')),
+      header: t('keyType'),
+      cell: ({ row }) => getKeyTypeBadge(row.getValue('keyType'), t),
     },
     {
       accessorKey: 'scopePermissions',
-      header: 'Scope',
+      header: t('scope'),
       cell: ({ row }) => (
         <span className="text-sm text-muted-foreground truncate max-w-[200px] block">
           {row.getValue('scopePermissions')}
@@ -174,7 +178,7 @@ export function APIKeysDataTable({ data, onEdit, onDelete }: APIKeysDataTablePro
     },
     {
       accessorKey: 'assignedTo',
-      header: 'Assigned To',
+      header: t('assignedTo'),
       cell: ({ row }) => {
         const val = row.getValue('assignedTo') as string | null
         return val
@@ -184,10 +188,10 @@ export function APIKeysDataTable({ data, onEdit, onDelete }: APIKeysDataTablePro
     },
     {
       accessorKey: 'expiryDate',
-      header: 'Expires',
+      header: t('expires'),
       cell: ({ row }) => {
         const val = row.getValue('expiryDate') as string | null
-        if (!val) return <span className="text-sm text-muted-foreground">Never</span>
+        if (!val) return <span className="text-sm text-muted-foreground">{t('never')}</span>
         const date = new Date(val)
         const isExpired = date < new Date()
         const isSoon = !isExpired && date < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
@@ -200,8 +204,8 @@ export function APIKeysDataTable({ data, onEdit, onDelete }: APIKeysDataTablePro
     },
     {
       accessorKey: 'status',
-      header: 'Status',
-      cell: ({ row }) => getStatusBadge(row.getValue('status')),
+      header: t('status'),
+      cell: ({ row }) => getStatusBadge(row.getValue('status'), t),
     },
     {
       id: 'actions',
@@ -217,20 +221,20 @@ export function APIKeysDataTable({ data, onEdit, onDelete }: APIKeysDataTablePro
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
               <DropdownMenuItem onClick={() => { setSelectedKey(apiKey); setDrawerOpen(true) }}>
-                View details
+                {t('viewDetails')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {onEdit && (
-                <DropdownMenuItem onClick={() => onEdit(apiKey)}>Edit key</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onEdit(apiKey)}>{t('editKey')}</DropdownMenuItem>
               )}
               {onDelete && (
                 <DropdownMenuItem
                   onClick={() => onDelete(apiKey.id, apiKey.serviceName)}
                   className="text-destructive"
                 >
-                  Delete key
+                  {t('deleteKey')}
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
@@ -259,7 +263,7 @@ export function APIKeysDataTable({ data, onEdit, onDelete }: APIKeysDataTablePro
     <div className="w-full">
       <div className="flex items-center gap-2 py-4">
         <Input
-          placeholder="Search by service name..."
+          placeholder={t('searchPlaceholder')}
           value={(table.getColumn('serviceName')?.getFilterValue() as string) ?? ''}
           onChange={(e) => table.getColumn('serviceName')?.setFilterValue(e.target.value)}
           className="max-w-sm"
@@ -267,7 +271,7 @@ export function APIKeysDataTable({ data, onEdit, onDelete }: APIKeysDataTablePro
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
+              {t('columns')} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -312,7 +316,7 @@ export function APIKeysDataTable({ data, onEdit, onDelete }: APIKeysDataTablePro
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
+                  {t('noResults')}
                 </TableCell>
               </TableRow>
             )}
@@ -322,14 +326,14 @@ export function APIKeysDataTable({ data, onEdit, onDelete }: APIKeysDataTablePro
 
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredRowModel().rows.length} key(s) total
+          {t('keysTotal', { count: table.getFilteredRowModel().rows.length })}
         </div>
         <div className="space-x-2">
           <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
-            Previous
+            {t('previous')}
           </Button>
           <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
-            Next
+            {t('next')}
           </Button>
         </div>
       </div>
@@ -342,61 +346,61 @@ export function APIKeysDataTable({ data, onEdit, onDelete }: APIKeysDataTablePro
                 <IconKey className="w-4 h-4" />
                 {selectedKey?.serviceName}
               </DrawerTitle>
-              <DrawerDescription>API key details</DrawerDescription>
+              <DrawerDescription>{t('drawer.description')}</DrawerDescription>
             </DrawerHeader>
             {selectedKey && (
               <div className="p-4 pb-0">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Key Type</p>
-                    <div className="mt-1">{getKeyTypeBadge(selectedKey.keyType)}</div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('drawer.keyType')}</p>
+                    <div className="mt-1">{getKeyTypeBadge(selectedKey.keyType, t)}</div>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Status</p>
-                    <div className="mt-1">{getStatusBadge(selectedKey.status)}</div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('drawer.status')}</p>
+                    <div className="mt-1">{getStatusBadge(selectedKey.status, t)}</div>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-sm font-medium text-muted-foreground">Scope / Permissions</p>
+                    <p className="text-sm font-medium text-muted-foreground">{t('drawer.scope')}</p>
                     <p className="text-sm mt-1">{selectedKey.scopePermissions}</p>
                   </div>
                   {selectedKey.assignedTo && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Assigned To</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t('drawer.assignedTo')}</p>
                       <p className="text-sm mt-1">{selectedKey.assignedTo}</p>
                     </div>
                   )}
                   {selectedKey.rateLimit && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Rate Limit</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t('drawer.rateLimit')}</p>
                       <p className="text-sm mt-1">{selectedKey.rateLimit}</p>
                     </div>
                   )}
                   {selectedKey.expiryDate && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Expiry Date</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t('drawer.expiryDate')}</p>
                       <p className="text-sm mt-1">{new Date(selectedKey.expiryDate).toLocaleDateString()}</p>
                     </div>
                   )}
                   {selectedKey.ipRestrictions && (
                     <div className="col-span-2">
-                      <p className="text-sm font-medium text-muted-foreground">IP Restrictions</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t('drawer.ipRestrictions')}</p>
                       <p className="text-sm mt-1 font-mono">{selectedKey.ipRestrictions}</p>
                     </div>
                   )}
                   {selectedKey.webhookUrls && (
                     <div className="col-span-2">
-                      <p className="text-sm font-medium text-muted-foreground">Webhook URLs</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t('drawer.webhookUrls')}</p>
                       <p className="text-sm mt-1">{selectedKey.webhookUrls}</p>
                     </div>
                   )}
                   {selectedKey.notes && (
                     <div className="col-span-2">
-                      <p className="text-sm font-medium text-muted-foreground">Notes</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t('drawer.notes')}</p>
                       <p className="text-sm mt-1">{selectedKey.notes}</p>
                     </div>
                   )}
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Created</p>
+                    <p className="text-sm font-medium text-muted-foreground">{t('drawer.created')}</p>
                     <p className="text-sm mt-1">{new Date(selectedKey.createdDate).toLocaleDateString()}</p>
                   </div>
                 </div>
@@ -406,17 +410,17 @@ export function APIKeysDataTable({ data, onEdit, onDelete }: APIKeysDataTablePro
               <div className="flex gap-2 w-full">
                 {onEdit && selectedKey && (
                   <Button variant="outline" onClick={() => { setDrawerOpen(false); onEdit(selectedKey) }} className="flex-1">
-                    Edit
+                    {t('drawer.edit')}
                   </Button>
                 )}
                 {onDelete && selectedKey && (
                   <Button variant="destructive" onClick={() => { setDrawerOpen(false); onDelete(selectedKey.id, selectedKey.serviceName) }} className="flex-1">
-                    Delete
+                    {t('drawer.delete')}
                   </Button>
                 )}
               </div>
               <DrawerClose asChild>
-                <Button variant="outline">Close</Button>
+                <Button variant="outline">{t('drawer.close')}</Button>
               </DrawerClose>
             </DrawerFooter>
           </div>

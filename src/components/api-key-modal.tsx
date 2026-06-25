@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { useForm, Controller } from 'react-hook-form'
 import { toast } from 'sonner'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -59,6 +60,7 @@ const defaultValues: APIKeyFormData = {
 }
 
 export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave, onRevealToken }: APIKeyModalProps) {
+  const t = useTranslations('apiKeys.modal')
   const [revealedToken, setRevealedToken] = useState<string | null>(null)
   const [tokenVisible, setTokenVisible] = useState(false)
   const [isFetchingToken, setIsFetchingToken] = useState(false)
@@ -93,15 +95,15 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave, onRevealTok
       const result = await onRevealToken(apiKey.id)
       if ('error' in result) {
         toast.error(result.error === 'Forbidden'
-          ? 'You don\'t have permission to view this token'
-          : 'Failed to fetch token')
+          ? t('errors.tokenForbidden')
+          : t('errors.tokenFetchFailed'))
         return
       }
       setRevealedToken(result.token)
       setTokenVisible(true)
       if (mode === 'edit') setValue('apiKeyToken', result.token)
     } catch {
-      toast.error('Failed to fetch token')
+      toast.error(t('errors.tokenFetchFailed'))
     } finally {
       setIsFetchingToken(false)
     }
@@ -129,14 +131,14 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave, onRevealTok
 
   const onSubmit = async (data: APIKeyFormData) => {
     if (mode === 'create' && !data.apiKeyToken) {
-      toast.error('API key token is required')
+      toast.error(t('errors.tokenRequired'))
       return
     }
     try {
       await onSave(data)
       onClose()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to save API key. Please try again.')
+      toast.error(err instanceof Error ? err.message : t('errors.saveFailed'))
     }
   }
 
@@ -148,13 +150,13 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave, onRevealTok
         <DialogHeader className="space-y-3 pb-6 border-b">
           <DialogTitle className="text-2xl font-semibold flex items-center gap-2">
             <Key className="h-6 w-6 text-primary" />
-            {mode === 'view' && 'API Key Details'}
-            {mode === 'edit' && 'Edit API Key'}
-            {mode === 'create' && 'Add New API Key'}
+            {mode === 'view' && t('titleView')}
+            {mode === 'edit' && t('titleEdit')}
+            {mode === 'create' && t('titleCreate')}
           </DialogTitle>
           <DialogDescription className="text-base">
-            {mode === 'view' && 'View detailed information about this API key.'}
-            {mode !== 'view' && 'Fields marked with * are required.'}
+            {mode === 'view' && t('descriptionView')}
+            {mode !== 'view' && t('descriptionEditCreate')}
           </DialogDescription>
         </DialogHeader>
 
@@ -166,12 +168,12 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave, onRevealTok
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Key className="h-4 w-4" />
-              Key Information
+              {t('sectionKeyInfo')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="serviceName" className="text-sm font-medium">
-                  Service Name {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('serviceName')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="serviceName"
@@ -185,7 +187,7 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave, onRevealTok
 
               <div className="space-y-2">
                 <Label htmlFor="keyType" className="text-sm font-medium">
-                  Key Type {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('keyType')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Controller
                   name="keyType"
@@ -193,12 +195,12 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave, onRevealTok
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange} disabled={isViewMode}>
                       <SelectTrigger className={cn('h-10', errors.keyType && 'border-destructive')}>
-                        <SelectValue placeholder="Select key type" />
+                        <SelectValue placeholder={t('selectKeyType')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Production">Production</SelectItem>
-                        <SelectItem value="Sandbox">Sandbox</SelectItem>
-                        <SelectItem value="Development">Development</SelectItem>
+                        <SelectItem value="Production">{t('keyTypeProduction')}</SelectItem>
+                        <SelectItem value="Sandbox">{t('keyTypeSandbox')}</SelectItem>
+                        <SelectItem value="Development">{t('keyTypeDevelopment')}</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
@@ -208,7 +210,7 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave, onRevealTok
 
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="apiKeyToken" className="text-sm font-medium">
-                  API Key / Token {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('apiKeyToken')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 {mode === 'create' ? (
                   <>
@@ -235,7 +237,7 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave, onRevealTok
                           id="apiKeyToken"
                           {...register('apiKeyToken')}
                           type={tokenVisible ? 'text' : 'password'}
-                          placeholder="Leave blank to keep current token"
+                          placeholder={t('tokenPlaceholder')}
                           className={cn('flex-1 font-mono text-sm', errors.apiKeyToken && 'border-destructive')}
                         />
                       )}
@@ -246,7 +248,7 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave, onRevealTok
                         className="shrink-0 self-start"
                         onClick={handleRevealToken}
                         disabled={isFetchingToken}
-                        title={tokenVisible ? 'Hide token' : 'Reveal token'}
+                        title={tokenVisible ? t('hideToken') : t('revealToken')}
                       >
                         {isFetchingToken
                           ? <Loader2 className="h-4 w-4 animate-spin" />
@@ -263,7 +265,7 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave, onRevealTok
 
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="scopePermissions" className="text-sm font-medium">
-                  Scope / Permissions {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('scopePermissions')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="scopePermissions"
@@ -281,11 +283,11 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave, onRevealTok
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Shield className="h-4 w-4" />
-              Access & Restrictions
+              {t('sectionAccess')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="assignedTo" className="text-sm font-medium">Assigned To</Label>
+                <Label htmlFor="assignedTo" className="text-sm font-medium">{t('assignedTo')}</Label>
                 <Input
                   id="assignedTo"
                   {...register('assignedTo')}
@@ -297,7 +299,7 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave, onRevealTok
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="rateLimit" className="text-sm font-medium">Rate Limit</Label>
+                <Label htmlFor="rateLimit" className="text-sm font-medium">{t('rateLimit')}</Label>
                 <Input
                   id="rateLimit"
                   {...register('rateLimit')}
@@ -309,7 +311,7 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave, onRevealTok
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Expiry Date</Label>
+                <Label className="text-sm font-medium">{t('expiryDate')}</Label>
                 <Controller
                   name="expiryDate"
                   control={control}
@@ -327,7 +329,7 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave, onRevealTok
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
-                          {field.value ? format(parseISO(field.value), 'PPP') : 'Pick a date'}
+                          {field.value ? format(parseISO(field.value), 'PPP') : t('pickDate')}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
@@ -346,19 +348,19 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave, onRevealTok
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="status" className="text-sm font-medium">Status</Label>
+                <Label htmlFor="status" className="text-sm font-medium">{t('status')}</Label>
                 <Controller
                   name="status"
                   control={control}
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange} disabled={isViewMode}>
                       <SelectTrigger className="h-10">
-                        <SelectValue placeholder="Select status" />
+                        <SelectValue placeholder={t('selectStatus')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="ACTIVE">Active</SelectItem>
-                        <SelectItem value="INACTIVE">Inactive</SelectItem>
-                        <SelectItem value="REVOKED">Revoked</SelectItem>
+                        <SelectItem value="ACTIVE">{t('statusActive')}</SelectItem>
+                        <SelectItem value="INACTIVE">{t('statusInactive')}</SelectItem>
+                        <SelectItem value="REVOKED">{t('statusRevoked')}</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
@@ -366,7 +368,7 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave, onRevealTok
               </div>
 
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="ipRestrictions" className="text-sm font-medium">IP Restrictions</Label>
+                <Label htmlFor="ipRestrictions" className="text-sm font-medium">{t('ipRestrictions')}</Label>
                 <Input
                   id="ipRestrictions"
                   {...register('ipRestrictions')}
@@ -378,7 +380,7 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave, onRevealTok
               </div>
 
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="webhookUrls" className="text-sm font-medium">Webhook URLs</Label>
+                <Label htmlFor="webhookUrls" className="text-sm font-medium">{t('webhookUrls')}</Label>
                 <Input
                   id="webhookUrls"
                   {...register('webhookUrls')}
@@ -390,7 +392,7 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave, onRevealTok
               </div>
 
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="notes" className="text-sm font-medium">Notes</Label>
+                <Label htmlFor="notes" className="text-sm font-medium">{t('notes')}</Label>
                 <Textarea
                   id="notes"
                   {...register('notes')}
@@ -405,12 +407,12 @@ export function APIKeyModal({ isOpen, onClose, apiKey, mode, onSave, onRevealTok
 
           <DialogFooter className="gap-2 pt-6 border-t">
             <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="min-w-24">
-              {isViewMode ? 'Close' : 'Cancel'}
+              {isViewMode ? t('close') : t('cancel')}
             </Button>
             {!isViewMode && (
               <Button type="submit" disabled={isSubmitting} className="min-w-28">
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {mode === 'edit' ? 'Update API Key' : 'Add API Key'}
+                {mode === 'edit' ? t('updateApiKey') : t('addApiKey')}
               </Button>
             )}
           </DialogFooter>
