@@ -22,7 +22,9 @@
   "fileStorage": "File Storage",
   "physicalAccess": "Physical Access",
   "settings": "Settings",
+  "theme": "Theme",
   "lightMode": "Light Mode",
   "darkMode": "Dark Mode",
+  "language": "Language",
   "signOut": "Sign Out"
 }

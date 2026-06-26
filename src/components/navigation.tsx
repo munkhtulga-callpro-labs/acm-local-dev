@@ -31,14 +31,12 @@ import {
   HardDrive,
   DoorOpen,
   PlusCircle,
-  Sun,
-  Moon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { signOut } from 'next-auth/react'
 import { useState } from 'react'
-import { useTheme } from 'next-themes'
 import { LocaleSwitcher } from './locale-switcher'
+import { ThemeSwitcher } from './theme-switcher'
 
 const mainNavigation = [
   { key: 'dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -74,7 +72,6 @@ export function Navigation() {
   const pathname = usePathname()
   const [isDirectoryOpen, setIsDirectoryOpen] = useState(false)
   const [isResourcesOpen, setIsResourcesOpen] = useState(false)
-  const { theme, setTheme } = useTheme()
 
   return (
     <nav className="flex flex-col space-y-1 p-4">
@@ -202,23 +199,14 @@ export function Navigation() {
         {t('settings')}
       </Link>
       
-      <div className="pt-4 mt-4 border-t border-border space-y-1">
+      <div className="pt-4 mt-4 border-t border-border space-y-2">
+        <div className="flex items-center gap-2">
+          <ThemeSwitcher />
+          <LocaleSwitcher />
+        </div>
         <Button
           variant="ghost"
-          className="w-full justify-start text-muted-foreground hover:text-foreground"
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-        >
-          {theme === 'dark' ? (
-            <Sun className="mr-3 h-4 w-4" />
-          ) : (
-            <Moon className="mr-3 h-4 w-4" />
-          )}
-          {theme === 'dark' ? t('lightMode') : t('darkMode')}
-        </Button>
-        <LocaleSwitcher />
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-muted-foreground hover:text-foreground"
+          className="w-full justify-start text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
           onClick={() => signOut()}
         >
           <LogOut className="mr-3 h-4 w-4" />

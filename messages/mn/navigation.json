@@ -22,7 +22,9 @@
   "fileStorage": "Файл хадгалалт",
   "physicalAccess": "Биет хандалт",
   "settings": "Тохиргоо",
+  "theme": "Загвар",
   "lightMode": "Цайвар горим",
   "darkMode": "Бараан горим",
+  "language": "Хэл",
   "signOut": "Гарах"
 }
