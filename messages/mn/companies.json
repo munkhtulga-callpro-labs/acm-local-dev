@@ -1,0 +1,80 @@
+{
+  "title": "Компанийн удирдлага",
+  "subtitle": "Компани болон байгууллагын бүтцийг удирдах",
+  "addCompany": "Компани нэмэх",
+  "companiesCard": "Компаниуд",
+  "errors": {
+    "fetchFailed": "Компаниудыг татахад алдаа гарлаа",
+    "fetchError": "Компаниудыг татахад алдаа гарлаа",
+    "addFailed": "Компани нэмэхэд алдаа гарлаа",
+    "updateFailed": "Компани шинэчлэхэд алдаа гарлаа",
+    "deleteFailed": "Компани устгахад алдаа гарлаа",
+    "deleteError": "Компани устгахад алдаа гарлаа"
+  },
+  "success": {
+    "added": "Компани амжилттай нэмэгдлээ",
+    "updated": "Компани амжилттай шинэчлэгдлээ",
+    "deleted": "\"{name}\" компани амжилттай устгагдлаа"
+  },
+  "table": {
+    "searchPlaceholder": "Компани хайх...",
+    "noResults": "Үр дүн олдсонгүй.",
+    "rowsTotal": "Нийт {count} мөр.",
+    "company": "Компани",
+    "contact": "Холбоо барих",
+    "employees": "Ажилтан",
+    "departments": "Хэлтэс",
+    "status": "Төлөв",
+    "active": "Идэвхтэй",
+    "inactive": "Идэвхгүй",
+    "allStatus": "Бүх төлөв",
+    "openMenu": "Цэс нээх",
+    "edit": "Засах",
+    "delete": "Устгах",
+    "rowsPerPage": "Хуудасны мөр",
+    "pageOf": "{current}-р хуудас / {total}",
+    "goToFirstPage": "Эхний хуудас руу",
+    "goToPreviousPage": "Өмнөх хуудас руу",
+    "goToNextPage": "Дараагийн хуудас руу",
+    "goToLastPage": "Сүүлийн хуудас руу",
+    "deleteDialog": {
+      "title": "Та итгэлтэй байна уу?",
+      "description": "<strong>{name}</strong> болон холбогдох бүх өгөгдлийг бүрмөсөн устгана. Энэ үйлдлийг буцаах боломжгүй.",
+      "cancel": "Цуцлах",
+      "confirm": "Устгах"
+    }
+  },
+  "modal": {
+    "titleView": "Компанийн дэлгэрэнгүй",
+    "titleEdit": "Компани засах",
+    "titleCreate": "Шинэ компани нэмэх",
+    "descriptionView": "Энэ компанийн дэлгэрэнгүй мэдээллийг харах.",
+    "descriptionEdit": "Компанийн мэдээллийг шинэчлэх. * тэмдэглэгдсэн талбарууд заавал шаардлагатай.",
+    "descriptionCreate": "Шинэ компани нэмэхийн тулд дэлгэрэнгүйг бөглөнө үү. * тэмдэглэгдсэн талбарууд заавал шаардлагатай.",
+    "basicInfo": "Үндсэн мэдээлэл",
+    "contactInfo": "Холбоо барих мэдээлэл",
+    "additionalInfo": "Нэмэлт мэдээлэл",
+    "companyName": "Компанийн нэр",
+    "email": "И-мэйл хаяг",
+    "phone": "Утасны дугаар",
+    "website": "Вэбсайт",
+    "address": "Хаяг",
+    "description": "Тайлбар",
+    "companyNamePlaceholder": "Acme Corporation",
+    "emailPlaceholder": "contact@acmecorp.com",
+    "phonePlaceholder": "+976 (99) 123-456",
+    "websitePlaceholder": "https://www.acmecorp.com",
+    "addressPlaceholder": "Улаанбаатар хот, ...",
+    "descriptionPlaceholder": "Компанийн товч тайлбар...",
+    "close": "Хаах",
+    "cancel": "Цуцлах",
+    "updateCompany": "Компани шинэчлэх",
+    "addCompany": "Компани нэмэх",
+    "errors": {
+      "nameRequired": "Компанийн нэр заавал шаардлагатай",
+      "invalidEmail": "И-мэйл хаяг буруу байна",
+      "invalidWebsite": "Вэбсайтын URL буруу байна",
+      "saveFailed": "Компани хадгалахад алдаа гарлаа. Дахин оролдоно уу."
+    }
+  }
+}

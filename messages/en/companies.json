@@ -1,0 +1,80 @@
+{
+  "title": "Company Management",
+  "subtitle": "Manage companies and organizational structure",
+  "addCompany": "Add Company",
+  "companiesCard": "Companies",
+  "errors": {
+    "fetchFailed": "Failed to fetch companies",
+    "fetchError": "Error fetching companies",
+    "addFailed": "Failed to add company",
+    "updateFailed": "Failed to update company",
+    "deleteFailed": "Failed to delete company",
+    "deleteError": "Error deleting company"
+  },
+  "success": {
+    "added": "Company added successfully",
+    "updated": "Company updated successfully",
+    "deleted": "Company \"{name}\" deleted successfully"
+  },
+  "table": {
+    "searchPlaceholder": "Search companies...",
+    "noResults": "No results.",
+    "rowsTotal": "{count} row(s) total.",
+    "company": "Company",
+    "contact": "Contact",
+    "employees": "Employees",
+    "departments": "Departments",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "allStatus": "All Status",
+    "openMenu": "Open menu",
+    "edit": "Edit",
+    "delete": "Delete",
+    "rowsPerPage": "Rows per page",
+    "pageOf": "Page {current} of {total}",
+    "goToFirstPage": "Go to first page",
+    "goToPreviousPage": "Go to previous page",
+    "goToNextPage": "Go to next page",
+    "goToLastPage": "Go to last page",
+    "deleteDialog": {
+      "title": "Are you sure?",
+      "description": "This will permanently delete <strong>{name}</strong> and all related data. This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    }
+  },
+  "modal": {
+    "titleView": "Company Details",
+    "titleEdit": "Edit Company",
+    "titleCreate": "Add New Company",
+    "descriptionView": "View detailed information about this company.",
+    "descriptionEdit": "Update company information. Fields marked with * are required.",
+    "descriptionCreate": "Fill in the details to add a new company. Fields marked with * are required.",
+    "basicInfo": "Basic Information",
+    "contactInfo": "Contact Information",
+    "additionalInfo": "Additional Information",
+    "companyName": "Company Name",
+    "email": "Email Address",
+    "phone": "Phone Number",
+    "website": "Website",
+    "address": "Address",
+    "description": "Description",
+    "companyNamePlaceholder": "Acme Corporation",
+    "emailPlaceholder": "contact@acmecorp.com",
+    "phonePlaceholder": "+1 (555) 123-4567",
+    "websitePlaceholder": "https://www.acmecorp.com",
+    "addressPlaceholder": "123 Main St, City, State 12345",
+    "descriptionPlaceholder": "Brief description of the company...",
+    "close": "Close",
+    "cancel": "Cancel",
+    "updateCompany": "Update Company",
+    "addCompany": "Add Company",
+    "errors": {
+      "nameRequired": "Company name is required",
+      "invalidEmail": "Invalid email format",
+      "invalidWebsite": "Invalid website URL",
+      "saveFailed": "Failed to save company. Please try again."
+    }
+  }
+}
