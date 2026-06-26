@@ -25,6 +25,8 @@
   "theme": "Theme",
   "lightMode": "Light Mode",
   "darkMode": "Dark Mode",
+  "light": "Light",
+  "dark": "Dark",
   "language": "Language",
   "signOut": "Sign Out"
 }

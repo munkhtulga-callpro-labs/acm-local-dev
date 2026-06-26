@@ -25,6 +25,8 @@
   "theme": "Загвар",
   "lightMode": "Цайвар горим",
   "darkMode": "Бараан горим",
+  "light": "Цайвар",
+  "dark": "Бараан",
   "language": "Хэл",
   "signOut": "Гарах"
 }

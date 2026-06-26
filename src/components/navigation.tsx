@@ -74,17 +74,19 @@ export function Navigation() {
   const [isResourcesOpen, setIsResourcesOpen] = useState(false)
 
   return (
-    <nav className="flex flex-col space-y-1 p-4">
+    <nav className="flex flex-1 flex-col p-4">
       {/* Logo and ACM text as header */}
       <div className="flex items-center px-4 py-4 mb-2">
-        <img 
-          src="/callpro-cloud.png" 
-          alt="CallPro" 
+        <img
+          src="/callpro-cloud.png"
+          alt="CallPro"
           className="h-8 w-8 mr-3 flex-shrink-0 object-contain"
         />
         <span className="text-xl font-bold text-foreground">ACM</span>
       </div>
-      
+
+      {/* Scrollable navigation links */}
+      <div className="flex-1 space-y-1 overflow-y-auto">
       {/* Main Navigation */}
       {mainNavigation.map((item) => {
         const isActive = pathname === item.href
@@ -198,12 +200,12 @@ export function Navigation() {
         <Settings className="mr-3 h-4 w-4" />
         {t('settings')}
       </Link>
-      
-      <div className="pt-4 mt-4 border-t border-border space-y-2">
-        <div className="flex items-center gap-2">
-          <ThemeSwitcher />
-          <LocaleSwitcher />
-        </div>
+      </div>
+
+      {/* Pinned configuration controls */}
+      <div className="mt-4 pt-4 border-t border-border space-y-1.5">
+        <ThemeSwitcher />
+        <LocaleSwitcher />
         <Button
           variant="ghost"
           className="w-full justify-start text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
