@@ -3,8 +3,7 @@
 import { useTransition } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { Languages, ChevronDown } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Globe, ChevronDown } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +12,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-// Add more languages here as they become available.
 const LOCALES = [
   { value: 'en', label: 'English' },
   { value: 'mn', label: 'Монгол' },
@@ -30,8 +28,6 @@ export function LocaleSwitcher() {
     if (next === locale) return
     document.cookie = `locale=${next}; path=/; max-age=31536000; samesite=lax`
     startTransition(() => {
-      // Soft refresh: re-renders server components with the new locale
-      // and updates the client provider without a full page reload.
       router.refresh()
     })
   }
@@ -39,19 +35,24 @@ export function LocaleSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
+        <button
           disabled={isPending}
           aria-label={t('language')}
-          className="w-full justify-start text-muted-foreground hover:text-foreground"
+          className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl bg-muted/40 hover:bg-muted/60 transition-colors disabled:opacity-50"
         >
-          <Languages className="mr-3 h-4 w-4" />
-          {currentLabel}
-          <ChevronDown className="ml-auto h-4 w-4 opacity-60" />
-        </Button>
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-muted">
+            <Globe className="h-[18px] w-[18px] text-foreground" />
+          </div>
+          <div className="flex-1 min-w-0 text-left">
+            <p className="text-sm font-semibold text-foreground">{t('language')}</p>
+            <p className="text-xs text-muted-foreground">{currentLabel}</p>
+          </div>
+          <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
+        side="top"
         className="w-[var(--radix-dropdown-menu-trigger-width)]"
       >
         <DropdownMenuRadioGroup value={locale} onValueChange={select}>

@@ -22,6 +22,8 @@
   "fileStorage": "File Storage",
   "physicalAccess": "Physical Access",
   "settings": "Settings",
+  "preferences": "Preferences",
+  "appearance": "Appearance",
   "theme": "Theme",
   "lightMode": "Light Mode",
   "darkMode": "Dark Mode",

@@ -36,8 +36,8 @@ export default function DashboardLayout({
     <div className="min-h-screen bg-background flex flex-col">
       <div className="flex flex-1">
         {/* Sidebar */}
-        <div className="hidden md:flex md:w-64 md:flex-col">
-          <div className="flex flex-col flex-grow bg-card">
+        <div className="hidden md:flex md:w-64 md:flex-col h-screen sticky top-0 overflow-hidden flex-shrink-0">
+          <div className="flex flex-col h-full bg-card border-r border-border">
             <Navigation />
           </div>
         </div>

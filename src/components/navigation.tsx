@@ -32,7 +32,6 @@ import {
   DoorOpen,
   PlusCircle,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { signOut } from 'next-auth/react'
 import { useState } from 'react'
 import { LocaleSwitcher } from './locale-switcher'
@@ -74,9 +73,9 @@ export function Navigation() {
   const [isResourcesOpen, setIsResourcesOpen] = useState(false)
 
   return (
-    <nav className="flex flex-1 flex-col p-4">
-      {/* Logo and ACM text as header */}
-      <div className="flex items-center px-4 py-4 mb-2">
+    <nav className="flex flex-col h-full">
+      {/* Logo — pinned at top */}
+      <div className="flex-none flex items-center px-6 py-5 border-b border-border">
         <img
           src="/callpro-cloud.png"
           alt="CallPro"
@@ -86,134 +85,133 @@ export function Navigation() {
       </div>
 
       {/* Scrollable navigation links */}
-      <div className="flex-1 space-y-1 overflow-y-auto">
-      {/* Main Navigation */}
-      {mainNavigation.map((item) => {
-        const isActive = pathname === item.href
-        return (
-          <Link
-            key={item.key}
-            href={item.href}
-            className={cn(
-              'flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors',
-              isActive
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-            )}
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1">
+        {mainNavigation.map((item) => {
+          const isActive = pathname === item.href
+          return (
+            <Link
+              key={item.key}
+              href={item.href}
+              className={cn(
+                'flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                isActive
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+              )}
+            >
+              <item.icon className="mr-3 h-4 w-4" />
+              {t(item.key)}
+            </Link>
+          )
+        })}
+
+        {/* Directory submenu */}
+        <div className="pt-1">
+          <button
+            className="flex w-full items-center px-3 py-2 rounded-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
+            onClick={() => setIsDirectoryOpen(!isDirectoryOpen)}
           >
-            <item.icon className="mr-3 h-4 w-4" />
-            {t(item.key)}
-          </Link>
-        )
-      })}
-
-      {/* Directory Submenu */}
-      <div className="pt-2">
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-sm font-medium transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
-          onClick={() => setIsDirectoryOpen(!isDirectoryOpen)}
-        >
-          <FolderOpen className="mr-3 h-4 w-4" />
-          {t('directory')}
-          {isDirectoryOpen ? (
-            <ChevronDown className="ml-auto h-4 w-4" />
-          ) : (
-            <ChevronRight className="ml-auto h-4 w-4" />
+            <FolderOpen className="mr-3 h-4 w-4" />
+            {t('directory')}
+            {isDirectoryOpen ? (
+              <ChevronDown className="ml-auto h-4 w-4" />
+            ) : (
+              <ChevronRight className="ml-auto h-4 w-4" />
+            )}
+          </button>
+          {isDirectoryOpen && (
+            <div className="ml-6 mt-1 space-y-1">
+              {directoryNavigation.map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <Link
+                    key={item.key}
+                    href={item.href}
+                    className={cn(
+                      'flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                      isActive
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    )}
+                  >
+                    <item.icon className="mr-3 h-4 w-4" />
+                    {t(item.key)}
+                  </Link>
+                )
+              })}
+            </div>
           )}
-        </Button>
-        
-        {isDirectoryOpen && (
-          <div className="ml-6 mt-1 space-y-1">
-            {directoryNavigation.map((item) => {
-              const isActive = pathname === item.href
-              return (
-                <Link
-                  key={item.key}
-                  href={item.href}
-                  className={cn(
-                    'flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                  )}
-                >
-                  <item.icon className="mr-3 h-4 w-4" />
-                  {t(item.key)}
-                </Link>
-              )
-            })}
-          </div>
-        )}
-      </div>
+        </div>
 
-      {/* Resources Submenu */}
-      <div className="pt-2">
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-sm font-medium transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
-          onClick={() => setIsResourcesOpen(!isResourcesOpen)}
-        >
-          <Monitor className="mr-3 h-4 w-4" />
-          {t('resources')}
-          {isResourcesOpen ? (
-            <ChevronDown className="ml-auto h-4 w-4" />
-          ) : (
-            <ChevronRight className="ml-auto h-4 w-4" />
+        {/* Resources submenu */}
+        <div className="pt-1">
+          <button
+            className="flex w-full items-center px-3 py-2 rounded-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
+            onClick={() => setIsResourcesOpen(!isResourcesOpen)}
+          >
+            <Monitor className="mr-3 h-4 w-4" />
+            {t('resources')}
+            {isResourcesOpen ? (
+              <ChevronDown className="ml-auto h-4 w-4" />
+            ) : (
+              <ChevronRight className="ml-auto h-4 w-4" />
+            )}
+          </button>
+          {isResourcesOpen && (
+            <div className="ml-6 mt-1 space-y-1">
+              {resourcesNavigation.map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <Link
+                    key={item.key}
+                    href={item.href}
+                    className={cn(
+                      'flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                      isActive
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    )}
+                  >
+                    <item.icon className="mr-3 h-4 w-4" />
+                    {t(item.key)}
+                  </Link>
+                )
+              })}
+            </div>
           )}
-        </Button>
+        </div>
 
-        {isResourcesOpen && (
-          <div className="ml-6 mt-1 space-y-1">
-            {resourcesNavigation.map((item) => {
-              const isActive = pathname === item.href
-              return (
-                <Link
-                  key={item.key}
-                  href={item.href}
-                  className={cn(
-                    'flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                  )}
-                >
-                  <item.icon className="mr-3 h-4 w-4" />
-                  {t(item.key)}
-                </Link>
-              )
-            })}
-          </div>
-        )}
+        {/* Settings */}
+        <Link
+          href="/settings"
+          className={cn(
+            'flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors',
+            pathname === '/settings'
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+          )}
+        >
+          <Settings className="mr-3 h-4 w-4" />
+          {t('settings')}
+        </Link>
       </div>
 
-      {/* Settings */}
-      <Link
-        href="/settings"
-        className={cn(
-          'flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors',
-          pathname === '/settings'
-            ? 'bg-primary text-primary-foreground'
-            : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-        )}
-      >
-        <Settings className="mr-3 h-4 w-4" />
-        {t('settings')}
-      </Link>
-      </div>
-
-      {/* Pinned configuration controls */}
-      <div className="mt-4 pt-4 border-t border-border space-y-1.5">
+      {/* Preferences — pinned at bottom */}
+      <div className="flex-none border-t border-border px-4 py-4 space-y-2">
+        <p className="px-1 mb-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          {t('preferences')}
+        </p>
         <ThemeSwitcher />
         <LocaleSwitcher />
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+        <button
           onClick={() => signOut()}
+          className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-destructive/10 transition-colors group"
         >
-          <LogOut className="mr-3 h-4 w-4" />
-          {t('signOut')}
-        </Button>
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-destructive/10">
+            <LogOut className="h-[18px] w-[18px] text-destructive" />
+          </div>
+          <span className="text-sm font-semibold text-foreground">{t('signOut')}</span>
+        </button>
       </div>
     </nav>
   )
