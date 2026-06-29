@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Users, Clock, AlertTriangle, Shield, Server, Database, Monitor } from 'lucide-react'
 import { DataTable } from '@/components/data-table'
@@ -19,6 +20,7 @@ interface DashboardStats {
 
 export default function DashboardPage() {
   const { data: session } = useSession()
+  const t = useTranslations('dashboard')
   const [stats, setStats] = useState<DashboardStats>({
     totalEmployees: 0,
     activeEmployees: 0,
@@ -123,120 +125,104 @@ export default function DashboardPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back, {session?.user?.name}</p>
+        <h1 className="text-3xl font-bold text-foreground">{t('title')}</h1>
+        <p className="text-muted-foreground">{t('welcome', { name: session?.user?.name ?? '' })}</p>
       </div>
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Employees</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('totalEmployees')}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? '...' : stats.totalEmployees}</div>
-            <p className="text-xs text-muted-foreground">
-              All employees in system
-            </p>
+            <p className="text-xs text-muted-foreground">{t('totalEmployeesDesc')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Requests</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('pendingRequests')}</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? '...' : stats.pendingRequests}</div>
-            <p className="text-xs text-muted-foreground">
-              Awaiting approval
-            </p>
+            <p className="text-xs text-muted-foreground">{t('pendingRequestsDesc')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Systems</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('totalSystems')}</CardTitle>
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? '...' : stats.totalSystems}</div>
-            <p className="text-xs text-muted-foreground">
-              All registered systems
-            </p>
+            <p className="text-xs text-muted-foreground">{t('totalSystemsDesc')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Expiring Access</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('expiringAccess')}</CardTitle>
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? '...' : stats.expiringAccess}</div>
-            <p className="text-xs text-muted-foreground">
-              Within 7 days
-            </p>
+            <p className="text-xs text-muted-foreground">{t('expiringAccessDesc')}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Resources Overview */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-foreground mb-4">Systems & Resources</h2>
-        <p className="text-muted-foreground mb-6">Manage systems, devices, servers, databases, and other resources for access control</p>
-        
+        <h2 className="text-2xl font-bold text-foreground mb-4">{t('systemsAndResources')}</h2>
+        <p className="text-muted-foreground mb-6">{t('systemsAndResourcesDesc')}</p>
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Systems</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('totalSystems')}</CardTitle>
               <Shield className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{loading ? '...' : stats.totalSystems}</div>
-              <p className="text-xs text-muted-foreground">
-                All registered systems
-              </p>
+              <p className="text-xs text-muted-foreground">{t('totalSystemsDesc')}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Devices</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('devices')}</CardTitle>
               <Monitor className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{loading ? '...' : stats.totalDevices}</div>
-              <p className="text-xs text-muted-foreground">
-                Laptops, phones, etc.
-              </p>
+              <p className="text-xs text-muted-foreground">{t('devicesDesc')}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Servers</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('servers')}</CardTitle>
               <Server className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{loading ? '...' : stats.totalServers}</div>
-              <p className="text-xs text-muted-foreground">
-                Production & staging
-              </p>
+              <p className="text-xs text-muted-foreground">{t('serversDesc')}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Databases</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('databases')}</CardTitle>
               <Database className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{loading ? '...' : stats.totalDatabases}</div>
-              <p className="text-xs text-muted-foreground">
-                Data storage systems
-              </p>
+              <p className="text-xs text-muted-foreground">{t('databasesDesc')}</p>
             </CardContent>
           </Card>
         </div>
@@ -245,14 +231,14 @@ export default function DashboardPage() {
       {/* Approval Details Table - Using shadcn/ui DataTable */}
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle>Approval Details</CardTitle>
-          <CardDescription>Review and manage access control approval requests</CardDescription>
+          <CardTitle>{t('approvalDetails')}</CardTitle>
+          <CardDescription>{t('approvalDetailsDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="pt-0 px-6 pb-6">
           {loading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading approval requests...</div>
+            <div className="text-center py-8 text-muted-foreground">{t('loading')}</div>
           ) : approvalRequests.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">No approval requests found</div>
+            <div className="text-center py-8 text-muted-foreground">{t('noApprovalRequests')}</div>
           ) : (
             <DataTable data={approvalRequests} />
           )}

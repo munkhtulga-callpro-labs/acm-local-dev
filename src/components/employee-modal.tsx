@@ -1,14 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { User, Briefcase, Mail, Phone, Calendar, Building2, Loader2 } from 'lucide-react'
-import { format } from 'date-fns'
+import { User, Briefcase, Mail, Phone, Calendar, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Employee {
@@ -48,6 +48,8 @@ export function EmployeeModal({
   departments,
   positions
 }: EmployeeModalProps) {
+  const t = useTranslations('employees.modal')
+
   const [formData, setFormData] = useState<Partial<Employee>>({
     firstName: '',
     lastName: '',
@@ -67,13 +69,10 @@ export function EmployeeModal({
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  // Filter departments and positions based on selected company/department
-  // Since departments are now company-agnostic (company="All"), show all departments
   const filteredDepartments = departments
-  
-  // Find the selected department by name to get its ID
+
   const selectedDept = departments.find(d => d.name === selectedDepartment)
-  const filteredPositions = selectedDept 
+  const filteredPositions = selectedDept
     ? positions.filter(pos => pos.departmentId === selectedDept.id)
     : []
 
@@ -106,17 +105,17 @@ export function EmployeeModal({
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.firstName?.trim()) newErrors.firstName = 'First name is required'
-    if (!formData.lastName?.trim()) newErrors.lastName = 'Last name is required'
+    if (!formData.firstName?.trim()) newErrors.firstName = t('errors.firstNameRequired')
+    if (!formData.lastName?.trim()) newErrors.lastName = t('errors.lastNameRequired')
     if (!formData.email?.trim()) {
-      newErrors.email = 'Email is required'
+      newErrors.email = t('errors.emailRequired')
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Invalid email format'
+      newErrors.email = t('errors.invalidEmail')
     }
-    if (!selectedCompany) newErrors.company = 'Company is required'
-    if (!selectedDepartment) newErrors.department = 'Department is required'
-    if (!selectedPosition) newErrors.position = 'Position is required'
-    if (!formData.startDate) newErrors.startDate = 'Start date is required'
+    if (!selectedCompany) newErrors.company = t('errors.companyRequired')
+    if (!selectedDepartment) newErrors.department = t('errors.departmentRequired')
+    if (!selectedPosition) newErrors.position = t('errors.positionRequired')
+    if (!formData.startDate) newErrors.startDate = t('errors.startDateRequired')
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -146,7 +145,7 @@ export function EmployeeModal({
       onClose()
     } catch (error) {
       console.error('Error saving employee:', error)
-      setErrors({ submit: 'Failed to save employee. Please try again.' })
+      setErrors({ submit: t('errors.saveFailed') })
     } finally {
       setIsLoading(false)
     }
@@ -172,14 +171,14 @@ export function EmployeeModal({
         <DialogHeader className="space-y-3 pb-6 border-b">
           <DialogTitle className="text-2xl font-semibold flex items-center gap-2">
             <User className="h-6 w-6 text-primary" />
-            {mode === 'view' && 'Employee Details'}
-            {mode === 'edit' && 'Edit Employee'}
-            {mode === 'create' && 'Add New Employee'}
+            {mode === 'view' && t('titleView')}
+            {mode === 'edit' && t('titleEdit')}
+            {mode === 'create' && t('titleCreate')}
           </DialogTitle>
           <DialogDescription className="text-base">
-            {mode === 'view' && 'View detailed information about this employee.'}
-            {mode === 'edit' && 'Update employee information. Fields marked with * are required.'}
-            {mode === 'create' && 'Fill in the details to add a new employee. Fields marked with * are required.'}
+            {mode === 'view' && t('descriptionView')}
+            {mode === 'edit' && t('descriptionEdit')}
+            {mode === 'create' && t('descriptionCreate')}
           </DialogDescription>
         </DialogHeader>
 
@@ -188,12 +187,12 @@ export function EmployeeModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <User className="h-4 w-4" />
-              Basic Information
+              {t('basicInfo')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="firstName" className="text-sm font-medium">
-                  First Name {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('firstName')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="firstName"
@@ -210,7 +209,7 @@ export function EmployeeModal({
 
               <div className="space-y-2">
                 <Label htmlFor="lastName" className="text-sm font-medium">
-                  Last Name {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('lastName')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="lastName"
@@ -231,12 +230,12 @@ export function EmployeeModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Mail className="h-4 w-4" />
-              Contact Information
+              {t('contactInfo')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">
-                  Email Address {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('emailAddress')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -257,7 +256,7 @@ export function EmployeeModal({
 
               <div className="space-y-2">
                 <Label htmlFor="phone" className="text-sm font-medium">
-                  Phone Number
+                  {t('phoneNumber')}
                 </Label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -279,12 +278,12 @@ export function EmployeeModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Briefcase className="h-4 w-4" />
-              Employment Details
+              {t('employmentDetails')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="company" className="text-sm font-medium">
-                  Company {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('company')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={companies.find(c => c.name === selectedCompany)?.id || ''}
@@ -292,7 +291,7 @@ export function EmployeeModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Select company" />
+                    <SelectValue placeholder={t('selectCompany')} />
                   </SelectTrigger>
                   <SelectContent>
                     {companies.map((company) => (
@@ -309,7 +308,7 @@ export function EmployeeModal({
 
               <div className="space-y-2">
                 <Label htmlFor="department" className="text-sm font-medium">
-                  Department {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('department')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={selectedDepartment}
@@ -317,7 +316,7 @@ export function EmployeeModal({
                   disabled={isViewMode || !selectedCompany}
                 >
                   <SelectTrigger className="h-10">
-                    <SelectValue placeholder={!selectedCompany ? "Select company first" : "Select department"} />
+                    <SelectValue placeholder={!selectedCompany ? t('selectCompanyFirst') : t('selectDepartment')} />
                   </SelectTrigger>
                   <SelectContent>
                     {filteredDepartments.map((dept) => (
@@ -334,7 +333,7 @@ export function EmployeeModal({
 
               <div className="space-y-2">
                 <Label htmlFor="position" className="text-sm font-medium">
-                  Position {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('position')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={selectedPosition}
@@ -342,7 +341,7 @@ export function EmployeeModal({
                   disabled={isViewMode || !selectedDepartment}
                 >
                   <SelectTrigger className="h-10">
-                    <SelectValue placeholder={!selectedDepartment ? "Select department first" : "Select position"} />
+                    <SelectValue placeholder={!selectedDepartment ? t('selectDepartmentFirst') : t('selectPosition')} />
                   </SelectTrigger>
                   <SelectContent>
                     {filteredPositions.map((pos) => (
@@ -359,7 +358,7 @@ export function EmployeeModal({
 
               <div className="space-y-2">
                 <Label htmlFor="manager" className="text-sm font-medium">
-                  Manager Email
+                  {t('managerEmail')}
                 </Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -377,7 +376,7 @@ export function EmployeeModal({
 
               <div className="space-y-2">
                 <Label htmlFor="startDate" className="text-sm font-medium">
-                  Start Date {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('startDate')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -397,7 +396,7 @@ export function EmployeeModal({
 
               <div className="space-y-2">
                 <Label htmlFor="endDate" className="text-sm font-medium">
-                  End Date
+                  {t('endDate')}
                 </Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -415,7 +414,7 @@ export function EmployeeModal({
               {!isViewMode && (
                 <div className="space-y-2">
                   <Label htmlFor="isActive" className="text-sm font-medium">
-                    Employment Status
+                    {t('employmentStatus')}
                   </Label>
                   <div className="flex items-center space-x-3 pt-2">
                     <Switch
@@ -424,7 +423,7 @@ export function EmployeeModal({
                       onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
                     />
                     <Label htmlFor="isActive" className="text-sm text-muted-foreground cursor-pointer">
-                      {formData.isActive ? 'Active Employee' : 'Inactive Employee'}
+                      {formData.isActive ? t('activeEmployee') : t('inactiveEmployee')}
                     </Label>
                   </div>
                 </div>
@@ -446,7 +445,7 @@ export function EmployeeModal({
               disabled={isLoading}
               className="min-w-24"
             >
-              {isViewMode ? 'Close' : 'Cancel'}
+              {isViewMode ? t('close') : t('cancel')}
             </Button>
             {!isViewMode && (
               <Button
@@ -455,7 +454,7 @@ export function EmployeeModal({
                 className="min-w-28"
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {mode === 'edit' ? 'Update Employee' : 'Add Employee'}
+                {mode === 'edit' ? t('updateEmployee') : t('addEmployee')}
               </Button>
             )}
           </DialogFooter>

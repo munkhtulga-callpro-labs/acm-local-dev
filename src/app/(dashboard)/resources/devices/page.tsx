@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,7 +15,6 @@ import {
   Trash2,
   Eye,
   MoreHorizontal,
-  Shield,
   CheckCircle2,
   XCircle,
 } from 'lucide-react'
@@ -56,6 +56,7 @@ interface DeviceResource {
 }
 
 export default function DevicesPage() {
+  const t = useTranslations('devices')
   const [devices, setDevices] = useState<DeviceResource[]>([])
   const [employees, setEmployees] = useState<Array<{ id: string; firstName: string; lastName: string; email: string }>>([])
   const [departments, setDepartments] = useState<Array<{ id: string; name: string }>>([])
@@ -82,10 +83,10 @@ export default function DevicesPage() {
         const data = await response.json()
         setDevices(data.data || [])
       } else {
-        setError('Failed to fetch devices')
+        setError(t('errors.fetchFailed'))
       }
     } catch (error) {
-      setError('Error fetching devices')
+      setError(t('errors.fetchError'))
       console.error('Error:', error)
     } finally {
       setLoading(false)
@@ -148,16 +149,16 @@ export default function DevicesPage() {
 
             if (!ownersResponse.ok) {
               const ownersError = await ownersResponse.json()
-              setError(`Device created but failed to save owners: ${ownersError.error || 'Unknown error'}`)
+              setError(t('errors.ownersFailed', { error: ownersError.error || 'Unknown error' }))
             }
           }
 
-          setSuccess('Device added successfully')
+          setSuccess(t('success.added'))
           fetchDevices()
         } else {
           const errorData = await response.json()
-          setError(errorData.error || 'Failed to add device')
-          throw new Error(errorData.error || 'Failed to add device')
+          setError(errorData.error || t('errors.addFailed'))
+          throw new Error(errorData.error || t('errors.addFailed'))
         }
       } else if (modalState.mode === 'edit' && modalState.device) {
         const response = await fetch(`/api/resources/devices/${modalState.device.id}`, {
@@ -185,12 +186,12 @@ export default function DevicesPage() {
             })
           }
 
-          setSuccess('Device updated successfully')
+          setSuccess(t('success.updated'))
           fetchDevices()
         } else {
           const errorData = await response.json()
-          setError(errorData.error || 'Failed to update device')
-          throw new Error(errorData.error || 'Failed to update device')
+          setError(errorData.error || t('errors.updateFailed'))
+          throw new Error(errorData.error || t('errors.updateFailed'))
         }
       }
     } catch (error) {
@@ -199,7 +200,7 @@ export default function DevicesPage() {
   }
 
   const handleDeleteDevice = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this device resource?')) return
+    if (!confirm(t('confirmDelete'))) return
 
     try {
       const response = await fetch(`/api/resources/devices/${id}`, {
@@ -207,13 +208,13 @@ export default function DevicesPage() {
       })
 
       if (response.ok) {
-        setSuccess('Device deleted successfully')
+        setSuccess(t('success.deleted'))
         fetchDevices()
       } else {
-        setError('Failed to delete device')
+        setError(t('errors.deleteFailed'))
       }
-    } catch (error) {
-      setError('Error deleting device')
+    } catch {
+      setError(t('errors.deleteError'))
     }
   }
 
@@ -272,10 +273,10 @@ export default function DevicesPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground flex items-center">
           <Laptop className="mr-3 h-8 w-8" />
-          Device Resources
+          {t('title')}
         </h1>
         <p className="text-muted-foreground mt-2">
-          Manage laptops, desktops, mobile devices, and hardware assets - ISO 27001 Compliant
+          {t('subtitle')}
         </p>
       </div>
 
@@ -297,7 +298,7 @@ export default function DevicesPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder="Search devices by type, model, serial number, asset tag..."
+              placeholder={t('searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -307,7 +308,7 @@ export default function DevicesPage() {
         <div className="flex gap-2">
           <Button onClick={() => setModalState({ isOpen: true, mode: 'create' })}>
             <Plus className="mr-2 h-4 w-4" />
-            Add Device
+            {t('addDevice')}
           </Button>
         </div>
       </div>
@@ -315,9 +316,9 @@ export default function DevicesPage() {
       {/* Device Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Devices ({filteredDevices.length})</CardTitle>
+          <CardTitle>{t('cardTitle', { count: filteredDevices.length })}</CardTitle>
           <CardDescription>
-            Track and manage physical hardware devices and equipment inventory
+            {t('cardDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -329,28 +330,28 @@ export default function DevicesPage() {
             <div className="text-center py-12">
               <Laptop className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">
-                No Devices Found
+                {t('noDevices')}
               </h3>
               <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-4">
-                Get started by adding your first device resource
+                {t('noDevicesDesc')}
               </p>
               <Button onClick={() => setModalState({ isOpen: true, mode: 'create' })}>
                 <Plus className="mr-2 h-4 w-4" />
-                Add Device
+                {t('addDevice')}
               </Button>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Device Type</TableHead>
-                  <TableHead>Make/Model</TableHead>
-                  <TableHead>Serial Number</TableHead>
-                  <TableHead>Asset Tag</TableHead>
-                  <TableHead>Assigned To</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Encryption</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
+                  <TableHead>{t('table.deviceType')}</TableHead>
+                  <TableHead>{t('table.makeModel')}</TableHead>
+                  <TableHead>{t('table.serialNumber')}</TableHead>
+                  <TableHead>{t('table.assetTag')}</TableHead>
+                  <TableHead>{t('table.assignedTo')}</TableHead>
+                  <TableHead>{t('table.status')}</TableHead>
+                  <TableHead>{t('table.encryption')}</TableHead>
+                  <TableHead className="w-[100px]">{t('table.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -381,24 +382,31 @@ export default function DevicesPage() {
                             <span className="truncate max-w-[150px]">{device.assignedTo}</span>
                           </div>
                         ) : (
-                          <span className="text-muted-foreground">Unassigned</span>
+                          <span className="text-muted-foreground">{t('unassigned')}</span>
                         )}
                       </TableCell>
                       <TableCell>
                         <Badge className={getStatusBadge(device.status)}>
-                          {device.status.replace(/_/g, ' ')}
+                          {device.status === 'AVAILABLE' ? t('table.statusAvailable')
+                            : device.status === 'ASSIGNED' ? t('table.statusAssigned')
+                            : device.status === 'IN_USE' ? t('table.statusInUse')
+                            : device.status === 'MAINTENANCE' ? t('table.statusMaintenance')
+                            : device.status === 'RETIRED' ? t('table.statusRetired')
+                            : device.status === 'LOST' ? t('table.statusLost')
+                            : device.status === 'STOLEN' ? t('table.statusStolen')
+                            : device.status.replace(/_/g, ' ')}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         {hasEncryption ? (
                           <div className="flex items-center gap-1 text-green-600">
                             <CheckCircle2 className="h-4 w-4" />
-                            <span className="text-xs">Enabled</span>
+                            <span className="text-xs">{t('table.encryptionEnabled')}</span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-1 text-muted-foreground">
                             <XCircle className="h-4 w-4" />
-                            <span className="text-xs">N/A</span>
+                            <span className="text-xs">{t('table.encryptionNA')}</span>
                           </div>
                         )}
                       </TableCell>
@@ -412,18 +420,18 @@ export default function DevicesPage() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => setModalState({ isOpen: true, mode: 'view', device: parseDeviceForModal(device) })}>
                               <Eye className="mr-2 h-4 w-4" />
-                              View
+                              {t('table.view')}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setModalState({ isOpen: true, mode: 'edit', device: parseDeviceForModal(device) })}>
                               <Edit className="mr-2 h-4 w-4" />
-                              Edit
+                              {t('table.edit')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => handleDeleteDevice(device.id)}
                               className="text-destructive"
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
+                              {t('table.delete')}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

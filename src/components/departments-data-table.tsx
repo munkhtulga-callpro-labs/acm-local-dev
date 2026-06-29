@@ -30,6 +30,7 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table"
+import { useTranslations } from "next-intl"
 import { z } from "zod"
 
 import { Badge } from "@/components/ui/badge"
@@ -82,19 +83,21 @@ export const departmentSchema = z.object({
 
 export type Department = z.infer<typeof departmentSchema>
 
-const getStatusBadge = (isActive: boolean) => {
+type TFunc = ReturnType<typeof useTranslations<'departments.table'>>
+
+const getStatusBadge = (isActive: boolean, t: TFunc) => {
   if (isActive) {
     return (
       <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
         <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400 mr-1 w-3 h-3" />
-        Active
+        {t('active')}
       </Badge>
     )
   } else {
     return (
       <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
         <IconX className="mr-1 w-3 h-3 text-red-500" />
-        Inactive
+        {t('inactive')}
       </Badge>
     )
   }
@@ -102,7 +105,8 @@ const getStatusBadge = (isActive: boolean) => {
 
 const createColumns = (
   onEdit: (department: Department) => void,
-  onDelete: (id: string, name: string) => void
+  onDelete: (id: string, name: string) => void,
+  t: TFunc
 ): ColumnDef<Department>[] => [
   {
     accessorKey: "name",
@@ -112,7 +116,7 @@ const createColumns = (
           className="flex items-center gap-1 hover:text-foreground"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Department
+          {t('department')}
           {column.getIsSorted() === "asc" ? (
             <IconArrowUp className="h-3 w-3" />
           ) : column.getIsSorted() === "desc" ? (
@@ -138,7 +142,7 @@ const createColumns = (
           className="flex items-center gap-1 hover:text-foreground"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Company
+          {t('company')}
           {column.getIsSorted() === "asc" ? (
             <IconArrowUp className="h-3 w-3" />
           ) : column.getIsSorted() === "desc" ? (
@@ -160,11 +164,11 @@ const createColumns = (
   },
   {
     accessorKey: "manager",
-    header: "Manager",
+    header: t('manager'),
     size: 150,
     cell: ({ row }) => (
       <div className="text-sm text-muted-foreground">
-        {row.original.manager || 'Not assigned'}
+        {row.original.manager || t('notAssigned')}
       </div>
     ),
   },
@@ -176,7 +180,7 @@ const createColumns = (
           className="flex items-center gap-1 hover:text-foreground"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Employees
+          {t('employees')}
           {column.getIsSorted() === "asc" ? (
             <IconArrowUp className="h-3 w-3" />
           ) : column.getIsSorted() === "desc" ? (
@@ -205,7 +209,7 @@ const createColumns = (
           className="flex items-center gap-1 hover:text-foreground"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Status
+          {t('status')}
           {column.getIsSorted() === "asc" ? (
             <IconArrowUp className="h-3 w-3" />
           ) : column.getIsSorted() === "desc" ? (
@@ -217,7 +221,7 @@ const createColumns = (
       )
     },
     size: 100,
-    cell: ({ row }) => getStatusBadge(row.original.isActive),
+    cell: ({ row }) => getStatusBadge(row.original.isActive, t),
     enableSorting: true,
   },
   {
@@ -232,19 +236,19 @@ const createColumns = (
             size="icon"
           >
             <IconDotsVertical className="size-3" />
-            <span className="sr-only">Open menu</span>
+            <span className="sr-only">{t('openMenu')}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-32">
           <DropdownMenuItem onClick={() => onEdit(row.original)}>
-            Edit
+            {t('edit')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             className="text-red-600"
             onClick={() => onDelete(row.original.id, row.original.name)}
           >
-            Delete
+            {t('delete')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -263,6 +267,7 @@ export function DepartmentsDataTable({
   onDelete: (id: string, name: string) => void
   onAdd?: () => void
 }) {
+  const t = useTranslations('departments.table')
   const [data, setData] = React.useState(() => initialData)
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
@@ -288,8 +293,8 @@ export function DepartmentsDataTable({
   }, [initialData])
 
   const columns = React.useMemo(
-    () => createColumns(onEdit, onDelete),
-    [onEdit, onDelete]
+    () => createColumns(onEdit, onDelete, t),
+    [onEdit, onDelete, t]
   )
 
   const table = useReactTable({
@@ -327,7 +332,7 @@ export function DepartmentsDataTable({
         {/* Search Input */}
         <div className="relative flex-1 max-w-sm">
           <Input
-            placeholder="Search departments..."
+            placeholder={t('searchPlaceholder')}
             value={globalFilter ?? ""}
             onChange={(e) => setGlobalFilter(e.target.value)}
             className="h-9"
@@ -342,8 +347,8 @@ export function DepartmentsDataTable({
           {onAdd && (
             <Button variant="outline" size="sm" onClick={onAdd}>
               <IconBuilding className="mr-1 h-3 w-3" />
-              <span className="hidden lg:inline">Add Department</span>
-              <span className="lg:hidden">Add</span>
+              <span className="hidden lg:inline">{t('addDepartment')}</span>
+              <span className="lg:hidden">{t('add')}</span>
             </Button>
           )}
         </div>
@@ -400,7 +405,7 @@ export function DepartmentsDataTable({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  {t('noResults')}
                 </TableCell>
               </TableRow>
             )}
@@ -411,13 +416,15 @@ export function DepartmentsDataTable({
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <div className="text-muted-foreground text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {t('rowsSelected', {
+            selected: table.getFilteredSelectedRowModel().rows.length,
+            total: table.getFilteredRowModel().rows.length,
+          })}
         </div>
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <Label htmlFor="rows-per-page" className="text-sm font-medium">
-              Rows per page
+              {t('rowsPerPage')}
             </Label>
             <Select
               value={`${table.getState().pagination.pageSize}`}
@@ -440,8 +447,10 @@ export function DepartmentsDataTable({
             </Select>
           </div>
           <div className="text-sm font-medium">
-            Page {table.getState().pagination.pageIndex + 1} of{" "}
-            {table.getPageCount()}
+            {t('pageOf', {
+              current: table.getState().pagination.pageIndex + 1,
+              total: table.getPageCount(),
+            })}
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -450,7 +459,7 @@ export function DepartmentsDataTable({
               onClick={() => table.setPageIndex(0)}
               disabled={!table.getCanPreviousPage()}
             >
-              <span className="sr-only">Go to first page</span>
+              <span className="sr-only">{t('goToFirstPage')}</span>
               <IconChevronsLeft className="h-4 w-4" />
             </Button>
             <Button
@@ -459,7 +468,7 @@ export function DepartmentsDataTable({
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
-              <span className="sr-only">Go to previous page</span>
+              <span className="sr-only">{t('goToPreviousPage')}</span>
               <IconChevronLeft className="h-4 w-4" />
             </Button>
             <Button
@@ -468,7 +477,7 @@ export function DepartmentsDataTable({
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >
-              <span className="sr-only">Go to next page</span>
+              <span className="sr-only">{t('goToNextPage')}</span>
               <IconChevronRight className="h-4 w-4" />
             </Button>
             <Button
@@ -477,7 +486,7 @@ export function DepartmentsDataTable({
               onClick={() => table.setPageIndex(table.getPageCount() - 1)}
               disabled={!table.getCanNextPage()}
             >
-              <span className="sr-only">Go to last page</span>
+              <span className="sr-only">{t('goToLastPage')}</span>
               <IconChevronsRight className="h-4 w-4" />
             </Button>
           </div>
@@ -496,6 +505,8 @@ function TableCellViewer({
   onEdit: (department: Department) => void
   onDelete: (id: string, name: string) => void
 }) {
+  const t = useTranslations('departments.drawer')
+
   return (
     <Drawer direction="right">
       <DrawerTrigger asChild>
@@ -514,48 +525,48 @@ function TableCellViewer({
         <DrawerHeader className="gap-1">
           <DrawerTitle>{item.name}</DrawerTitle>
           <DrawerDescription>
-            Department details and management
+            {t('description')}
           </DrawerDescription>
         </DrawerHeader>
         <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
           <div className="grid gap-2">
             <div className="flex gap-2 leading-none font-medium">
-              Department: {item.name}
+              {t('department')}: {item.name}
             </div>
             {item.description && (
               <div className="text-muted-foreground">
-                Description: {item.description}
+                {t('descriptionLabel')}: {item.description}
               </div>
             )}
             <div className="text-muted-foreground">
-              Company: {item.company}
+              {t('company')}: {item.company}
             </div>
             <div className="text-muted-foreground">
-              Manager: {item.manager || 'Not assigned'}
+              {t('manager')}: {item.manager || t('notAssigned')}
             </div>
             <div className="text-muted-foreground">
-              Employees: {item.employeeCount}
+              {t('employees')}: {item.employeeCount}
             </div>
             <div className="text-muted-foreground">
-              Status: {item.isActive ? 'Active' : 'Inactive'}
+              {t('status')}: {item.isActive ? t('active') : t('inactive')}
             </div>
             <div className="text-muted-foreground">
-              Created: {new Date(item.createdAt).toLocaleDateString()}
+              {t('created')}: {new Date(item.createdAt).toLocaleDateString()}
             </div>
           </div>
         </div>
         <DrawerFooter>
           <Button onClick={() => onEdit(item)}>
-            Edit Department
+            {t('editDepartment')}
           </Button>
           <Button
             variant="destructive"
             onClick={() => onDelete(item.id, item.name)}
           >
-            Delete Department
+            {t('deleteDepartment')}
           </Button>
           <DrawerClose asChild>
-            <Button variant="outline">Close</Button>
+            <Button variant="outline">{t('close')}</Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

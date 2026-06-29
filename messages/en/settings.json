@@ -1,0 +1,117 @@
+{
+  "title": "System Settings",
+  "subtitle": "Configure system preferences and security settings",
+  "saving": "Saving...",
+  "success": "Settings saved successfully",
+  "errors": {
+    "forbidden": "You don't have permission to change settings",
+    "sessionExpired": "Session expired, please log in again",
+    "formErrors": "Please fix the form errors and try again"
+  },
+  "tabs": {
+    "general": "General",
+    "security": "Security",
+    "notifications": "Notifications",
+    "system": "System"
+  },
+  "general": {
+    "title": "General Settings",
+    "description": "Configure basic system settings and preferences",
+    "companyName": "Company Name",
+    "systemName": "System Name",
+    "timezone": "Timezone",
+    "language": "Language",
+    "autoLogout": "Auto Logout (minutes)",
+    "save": "Save General Settings"
+  },
+  "security": {
+    "title": "Security Settings",
+    "description": "Configure password policies and security features",
+    "passwordMinLength": "Minimum Password Length",
+    "sessionTimeout": "Session Timeout (minutes)",
+    "save": "Save Security Settings",
+    "toggles": {
+      "requireSpecialChars": {
+        "label": "Require Special Characters",
+        "desc": "Passwords must contain special characters"
+      },
+      "requireNumbers": {
+        "label": "Require Numbers",
+        "desc": "Passwords must contain numbers"
+      },
+      "requireUppercase": {
+        "label": "Require Uppercase",
+        "desc": "Passwords must contain uppercase letters"
+      },
+      "twoFactorAuth": {
+        "label": "Two-Factor Authentication",
+        "desc": "Enable 2FA for all users"
+      },
+      "ipWhitelist": {
+        "label": "IP Whitelist",
+        "desc": "Restrict access to specific IP addresses"
+      },
+      "auditLogging": {
+        "label": "Audit Logging",
+        "desc": "Log all system activities for compliance"
+      }
+    }
+  },
+  "notifications": {
+    "title": "Notification Settings",
+    "description": "Configure email and notification preferences",
+    "reminderDays": "Reminder Days Before Expiry",
+    "save": "Save Notification Settings",
+    "toggles": {
+      "emailNotifications": {
+        "label": "Email Notifications",
+        "desc": "Send notifications via email"
+      },
+      "smsNotifications": {
+        "label": "SMS Notifications",
+        "desc": "Send notifications via SMS"
+      },
+      "approvalReminders": {
+        "label": "Approval Reminders",
+        "desc": "Send reminders for pending approvals"
+      },
+      "expiryWarnings": {
+        "label": "Expiry Warnings",
+        "desc": "Notify before access expires"
+      },
+      "securityAlerts": {
+        "label": "Security Alerts",
+        "desc": "Send alerts for security events"
+      },
+      "systemUpdates": {
+        "label": "System Updates",
+        "desc": "Notify about system updates"
+      }
+    }
+  },
+  "system": {
+    "title": "System Settings",
+    "description": "Configure system performance and maintenance settings",
+    "maxFileSize": "Max File Size (MB)",
+    "backupFrequency": "Backup Frequency",
+    "logRetention": "Log Retention (days)",
+    "apiRateLimit": "API Rate Limit (requests/hour)",
+    "save": "Save System Settings",
+    "backupOptions": {
+      "hourly": "Hourly",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly"
+    },
+    "toggles": {
+      "maintenanceMode": {
+        "label": "Maintenance Mode",
+        "desc": "Put system in maintenance mode"
+      },
+      "debugMode": {
+        "label": "Debug Mode",
+        "desc": "Enable debug logging"
+      }
+    }
+  }
+}

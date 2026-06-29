@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { useTranslations } from 'next-intl'
 import {
   flexRender,
   getCoreRowModel,
@@ -81,52 +82,54 @@ interface ServersDataTableProps {
   onAdd?: () => void
 }
 
-const getStatusBadge = (isActive: boolean) => {
+type TFunc = ReturnType<typeof useTranslations<'servers.table'>>
+
+const getStatusBadge = (isActive: boolean, t: TFunc) => {
   if (isActive) {
     return (
       <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
         <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400 mr-1 w-3 h-3" />
-        Active
+        {t('active')}
       </Badge>
     )
   }
   return (
     <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
       <IconCircleFilled className="fill-gray-400 dark:fill-gray-500 mr-1 w-3 h-3" />
-      Inactive
+      {t('inactive')}
     </Badge>
   )
 }
 
-const getEnvironmentBadge = (env: string) => {
+const getEnvironmentBadge = (env: string, t: TFunc) => {
   const envLower = env.toLowerCase()
   switch (envLower) {
     case 'production':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleCheckFilled className="fill-red-500 dark:fill-red-400 mr-1 w-3 h-3" />
-          Production
+          {t('envProduction')}
         </Badge>
       )
     case 'staging':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleCheckFilled className="fill-yellow-500 dark:fill-yellow-400 mr-1 w-3 h-3" />
-          Staging
+          {t('envStaging')}
         </Badge>
       )
     case 'development':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleCheckFilled className="fill-blue-500 dark:fill-blue-400 mr-1 w-3 h-3" />
-          Development
+          {t('envDevelopment')}
         </Badge>
       )
     case 'testing':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400 mr-1 w-3 h-3" />
-          Testing
+          {t('envTesting')}
         </Badge>
       )
     default:
@@ -139,35 +142,35 @@ const getEnvironmentBadge = (env: string) => {
   }
 }
 
-const getAccessLevelBadge = (level: string) => {
+const getAccessLevelBadge = (level: string, t: TFunc) => {
   const levelLower = level.toLowerCase()
   switch (levelLower) {
     case 'read':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconShieldLock className="mr-1 w-3 h-3 text-green-500" />
-          Read
+          {t('accessRead')}
         </Badge>
       )
     case 'write':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconShieldLock className="mr-1 w-3 h-3 text-blue-500" />
-          Write
+          {t('accessWrite')}
         </Badge>
       )
     case 'admin':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconShieldLock className="mr-1 w-3 h-3 text-orange-500" />
-          Admin
+          {t('accessAdmin')}
         </Badge>
       )
     case 'full':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconShieldLock className="mr-1 w-3 h-3 text-red-500" />
-          Full
+          {t('accessFull')}
         </Badge>
       )
     default:
@@ -204,6 +207,8 @@ export function ServersDataTable({
   onView,
   onAdd,
 }: ServersDataTableProps) {
+  const t = useTranslations('servers.table')
+  const tDrawer = useTranslations('servers.drawer')
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -221,7 +226,7 @@ export function ServersDataTable({
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
             className="px-0 hover:bg-transparent"
           >
-            Name
+            {t('name')}
             <ArrowUpDown className="ml-2 h-3 w-3" />
           </Button>
         )
@@ -238,7 +243,7 @@ export function ServersDataTable({
     },
     {
       accessorKey: 'type',
-      header: 'Type',
+      header: () => t('type'),
       cell: ({ row }) => {
         const type = row.getValue('type') as string
         return (
@@ -250,7 +255,7 @@ export function ServersDataTable({
     },
     {
       accessorKey: 'os',
-      header: 'OS',
+      header: () => t('os'),
       cell: ({ row }) => {
         const os = row.getValue('os') as string
         return (
@@ -263,7 +268,7 @@ export function ServersDataTable({
     },
     {
       accessorKey: 'ipHostname',
-      header: 'IP/Hostname',
+      header: () => t('ipHostname'),
       cell: ({ row }) => {
         const ip = row.getValue('ipHostname') as string
         return (
@@ -283,27 +288,27 @@ export function ServersDataTable({
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
             className="px-0 hover:bg-transparent"
           >
-            Environment
+            {t('environment')}
             <ArrowUpDown className="ml-2 h-3 w-3" />
           </Button>
         )
       },
       cell: ({ row }) => {
         const env = row.getValue('environment') as string
-        return getEnvironmentBadge(env)
+        return getEnvironmentBadge(env, t)
       },
     },
     {
       accessorKey: 'accessLevel',
-      header: 'Access Level',
+      header: () => t('accessLevel'),
       cell: ({ row }) => {
         const level = row.getValue('accessLevel') as string
-        return getAccessLevelBadge(level)
+        return getAccessLevelBadge(level, t)
       },
     },
     {
       accessorKey: 'accessMethod',
-      header: 'Access Method',
+      header: () => t('accessMethod'),
       cell: ({ row }) => {
         const method = row.getValue('accessMethod') as string
         return (
@@ -322,14 +327,14 @@ export function ServersDataTable({
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
             className="px-0 hover:bg-transparent"
           >
-            Status
+            {t('status')}
             <ArrowUpDown className="ml-2 h-3 w-3" />
           </Button>
         )
       },
       cell: ({ row }) => {
         const isActive = row.getValue('isActive') as boolean
-        return getStatusBadge(isActive)
+        return getStatusBadge(isActive, t)
       },
     },
     {
@@ -342,24 +347,24 @@ export function ServersDataTable({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
+                <span className="sr-only">{t('openMenu')}</span>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('openMenu')}</DropdownMenuLabel>
               <DropdownMenuItem
                 onClick={() => {
                   setSelectedServer(server)
                   setDrawerOpen(true)
                 }}
               >
-                View details
+                {t('viewDetails')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {onEdit && (
                 <DropdownMenuItem onClick={() => onEdit(server)}>
-                  Edit server
+                  {t('editServer')}
                 </DropdownMenuItem>
               )}
               {onDelete && (
@@ -367,7 +372,7 @@ export function ServersDataTable({
                   onClick={() => onDelete(server.id, server.name)}
                   className="text-destructive"
                 >
-                  Delete server
+                  {t('deleteServer')}
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
@@ -405,7 +410,7 @@ export function ServersDataTable({
     <div className="w-full">
       <div className="flex items-center gap-2 py-4">
         <Input
-          placeholder="Search servers..."
+          placeholder={t('searchPlaceholder')}
           value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
             table.getColumn('name')?.setFilterValue(event.target.value)
@@ -415,7 +420,7 @@ export function ServersDataTable({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
+              {t('columns')} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -440,7 +445,7 @@ export function ServersDataTable({
         </DropdownMenu>
         {onAdd && (
           <Button onClick={onAdd} size="sm">
-            Add Server
+            {t('addServer')}
           </Button>
         )}
       </div>
@@ -487,7 +492,7 @@ export function ServersDataTable({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  {t('noResults')}
                 </TableCell>
               </TableRow>
             )}
@@ -496,7 +501,7 @@ export function ServersDataTable({
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredRowModel().rows.length} server(s) total
+          {t('serverTotal', { count: table.getFilteredRowModel().rows.length })}
         </div>
         <div className="space-x-2">
           <Button
@@ -505,7 +510,7 @@ export function ServersDataTable({
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            Previous
+            {t('previous')}
           </Button>
           <Button
             variant="outline"
@@ -513,7 +518,7 @@ export function ServersDataTable({
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            {t('next')}
           </Button>
         </div>
       </div>
@@ -527,54 +532,54 @@ export function ServersDataTable({
                 <IconServer className="w-5 h-5" />
                 {selectedServer?.name}
               </DrawerTitle>
-              <DrawerDescription>Server resource details</DrawerDescription>
+              <DrawerDescription>{tDrawer('description')}</DrawerDescription>
             </DrawerHeader>
             {selectedServer && (
               <div className="p-4 pb-0 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Type</p>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('type')}</p>
                     <p className="text-sm mt-1">{selectedServer.type}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Operating System</p>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('operatingSystem')}</p>
                     <div className="flex items-center gap-1.5 mt-1">
                       {getOSIcon(selectedServer.os)}
                       <p className="text-sm">{selectedServer.os}</p>
                     </div>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Environment</p>
-                    <div className="mt-1">{getEnvironmentBadge(selectedServer.environment)}</div>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('environment')}</p>
+                    <div className="mt-1">{getEnvironmentBadge(selectedServer.environment, t)}</div>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Status</p>
-                    <div className="mt-1">{getStatusBadge(selectedServer.isActive)}</div>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('status')}</p>
+                    <div className="mt-1">{getStatusBadge(selectedServer.isActive, t)}</div>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">IP/Hostname</p>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('ipHostname')}</p>
                     <p className="text-sm font-mono mt-1">{selectedServer.ipHostname}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Access Method</p>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('accessMethod')}</p>
                     <p className="text-sm mt-1">{selectedServer.accessMethod}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Access Level</p>
-                    <div className="mt-1">{getAccessLevelBadge(selectedServer.accessLevel)}</div>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('accessLevel')}</p>
+                    <div className="mt-1">{getAccessLevelBadge(selectedServer.accessLevel, t)}</div>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Owner Department</p>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('ownerDepartment')}</p>
                     <p className="text-sm mt-1">{selectedServer.ownerDepartment}</p>
                   </div>
                   {selectedServer.locationRegion && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Location/Region</p>
+                      <p className="text-sm font-medium text-muted-foreground">{tDrawer('locationRegion')}</p>
                       <p className="text-sm mt-1">{selectedServer.locationRegion}</p>
                     </div>
                   )}
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Created</p>
+                    <p className="text-sm font-medium text-muted-foreground">{tDrawer('created')}</p>
                     <p className="text-sm mt-1">
                       {new Date(selectedServer.createdAt).toLocaleDateString()}
                     </p>
@@ -593,7 +598,7 @@ export function ServersDataTable({
                     }}
                     className="flex-1"
                   >
-                    Edit
+                    {tDrawer('edit')}
                   </Button>
                 )}
                 {onDelete && selectedServer && (
@@ -605,12 +610,12 @@ export function ServersDataTable({
                     }}
                     className="flex-1"
                   >
-                    Delete
+                    {tDrawer('delete')}
                   </Button>
                 )}
               </div>
               <DrawerClose asChild>
-                <Button variant="outline">Close</Button>
+                <Button variant="outline">{tDrawer('close')}</Button>
               </DrawerClose>
             </DrawerFooter>
           </div>

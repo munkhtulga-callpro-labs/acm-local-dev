@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Clock, CheckCircle, AlertTriangle, XCircle, Plus } from 'lucide-react'
@@ -15,6 +16,7 @@ interface AccessClientProps {
 }
 
 export function AccessClient({ initialData }: AccessClientProps) {
+  const t = useTranslations('accessControl')
   const router = useRouter()
   const [modalOpen, setModalOpen] = useState(false)
   const now = new Date()
@@ -33,52 +35,52 @@ export function AccessClient({ initialData }: AccessClientProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Access Control</h1>
-        <p className="text-muted-foreground">Manage and monitor resource access assignments</p>
+        <h1 className="text-3xl font-bold text-foreground">{t('title')}</h1>
+        <p className="text-muted-foreground">{t('subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Access</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('activeAccess')}</CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeCount}</div>
-            <p className="text-xs text-muted-foreground">Currently granted</p>
+            <p className="text-xs text-muted-foreground">{t('activeAccessDesc')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Expiring Soon</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('expiringSoon')}</CardTitle>
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{expiringSoonCount}</div>
-            <p className="text-xs text-muted-foreground">Within 30 days</p>
+            <p className="text-xs text-muted-foreground">{t('expiringSoonDesc')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Expired</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('expired')}</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{expiredCount}</div>
-            <p className="text-xs text-muted-foreground">Past validity</p>
+            <p className="text-xs text-muted-foreground">{t('expiredDesc')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revoked</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('revoked')}</CardTitle>
             <XCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{revokedCount}</div>
-            <p className="text-xs text-muted-foreground">Access removed</p>
+            <p className="text-xs text-muted-foreground">{t('revokedDesc')}</p>
           </CardContent>
         </Card>
       </div>
@@ -86,14 +88,14 @@ export function AccessClient({ initialData }: AccessClientProps) {
       <Card>
         <CardHeader className="pb-4 flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Resource Assignments</CardTitle>
+            <CardTitle>{t('resourceAssignments')}</CardTitle>
             <CardDescription className="mt-1.5">
-              Manage and monitor resource access assignments
+              {t('resourceAssignmentsDesc')}
             </CardDescription>
           </div>
           <Button size="sm" onClick={() => setModalOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Request Access
+            {t('requestAccess')}
           </Button>
         </CardHeader>
         <CardContent className="pt-0 px-6 pb-6">
@@ -101,7 +103,7 @@ export function AccessClient({ initialData }: AccessClientProps) {
             <Alert>
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                No resource assignments found. Assignments are created when access requests are approved.
+                {t('noAssignments')}
               </AlertDescription>
             </Alert>
           ) : (
@@ -115,7 +117,7 @@ export function AccessClient({ initialData }: AccessClientProps) {
         onClose={() => setModalOpen(false)}
         onSuccess={() => {
           setModalOpen(false)
-          toast.success('Access request submitted successfully')
+          toast.success(t('successToast'))
           router.refresh()
         }}
       />

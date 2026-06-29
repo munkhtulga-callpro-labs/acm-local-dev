@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -68,41 +69,43 @@ function getTypeBadgeClass(type: string) {
   return map[type] || 'bg-gray-50 text-gray-700 border border-gray-200'
 }
 
-function getResourceInfo(resource: CatalogResource) {
+type InfoLabelsT = (key: string) => string
+
+function getResourceInfo(resource: CatalogResource, tLabel: InfoLabelsT) {
   const info: { label: string; value: string }[] = []
   switch (resource.resourceType) {
     case 'DATABASE':
-      if (resource.environment) info.push({ label: 'Environment', value: resource.environment as string })
-      if (resource.host) info.push({ label: 'Host', value: resource.host as string })
-      if (resource.databaseType) info.push({ label: 'Type', value: resource.databaseType as string })
+      if (resource.environment) info.push({ label: tLabel('environment'), value: resource.environment as string })
+      if (resource.host) info.push({ label: tLabel('host'), value: resource.host as string })
+      if (resource.databaseType) info.push({ label: tLabel('type'), value: resource.databaseType as string })
       break
     case 'SERVER':
-      if (resource.environment) info.push({ label: 'Environment', value: resource.environment as string })
-      if (resource.type) info.push({ label: 'Type', value: resource.type as string })
-      if (resource.ipHostname) info.push({ label: 'IP', value: resource.ipHostname as string })
+      if (resource.environment) info.push({ label: tLabel('environment'), value: resource.environment as string })
+      if (resource.type) info.push({ label: tLabel('type'), value: resource.type as string })
+      if (resource.ipHostname) info.push({ label: tLabel('ip'), value: resource.ipHostname as string })
       break
     case 'SAAS_SUBSCRIPTION':
-      if (resource.category) info.push({ label: 'Category', value: resource.category as string })
-      if (resource.subscriptionPlan) info.push({ label: 'Plan', value: resource.subscriptionPlan as string })
+      if (resource.category) info.push({ label: tLabel('category'), value: resource.category as string })
+      if (resource.subscriptionPlan) info.push({ label: tLabel('plan'), value: resource.subscriptionPlan as string })
       break
     case 'CLOUD_ACCOUNT':
-      if (resource.cloudProvider) info.push({ label: 'Provider', value: resource.cloudProvider as string })
-      if (resource.environment) info.push({ label: 'Environment', value: resource.environment as string })
+      if (resource.cloudProvider) info.push({ label: tLabel('provider'), value: resource.cloudProvider as string })
+      if (resource.environment) info.push({ label: tLabel('environment'), value: resource.environment as string })
       break
     case 'SOFTWARE_LICENSE':
-      if (resource.vendor) info.push({ label: 'Vendor', value: resource.vendor as string })
-      if (resource.licenseType) info.push({ label: 'License Type', value: resource.licenseType as string })
+      if (resource.vendor) info.push({ label: tLabel('vendor'), value: resource.vendor as string })
+      if (resource.licenseType) info.push({ label: tLabel('licenseType'), value: resource.licenseType as string })
       break
     case 'CODE_REPOSITORY':
-      if (resource.platform) info.push({ label: 'Platform', value: resource.platform as string })
-      if (resource.organizationTeam) info.push({ label: 'Team', value: resource.organizationTeam as string })
+      if (resource.platform) info.push({ label: tLabel('platform'), value: resource.platform as string })
+      if (resource.organizationTeam) info.push({ label: tLabel('team'), value: resource.organizationTeam as string })
       break
     case 'DEVICE':
-      if (resource.operatingSystem) info.push({ label: 'OS', value: resource.operatingSystem as string })
-      if (resource.location) info.push({ label: 'Location', value: resource.location as string })
+      if (resource.operatingSystem) info.push({ label: tLabel('os'), value: resource.operatingSystem as string })
+      if (resource.location) info.push({ label: tLabel('location'), value: resource.location as string })
       break
     default:
-      if (resource.environment) info.push({ label: 'Environment', value: resource.environment as string })
+      if (resource.environment) info.push({ label: tLabel('environment'), value: resource.environment as string })
       break
   }
   while (info.length < 3) info.push({ label: '', value: '' })
@@ -110,6 +113,7 @@ function getResourceInfo(resource: CatalogResource) {
 }
 
 export function RequestAccessClient({ initialData }: RequestAccessClientProps) {
+  const t = useTranslations('requestAccess')
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState('ALL')
   const [selectedResource, setSelectedResource] = useState<CatalogResource | null>(null)
@@ -125,17 +129,15 @@ export function RequestAccessClient({ initialData }: RequestAccessClientProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Request Access to Resources</h1>
-        <p className="text-muted-foreground mt-2">
-          Browse available resources and request access with proper justification
-        </p>
+        <h1 className="text-3xl font-bold text-foreground">{t('title')}</h1>
+        <p className="text-muted-foreground mt-2">{t('subtitle')}</p>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
-            placeholder="Search resources..."
+            placeholder={t('searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -150,7 +152,7 @@ export function RequestAccessClient({ initialData }: RequestAccessClientProps) {
             <SelectContent>
               {RESOURCE_TYPES.map(type => (
                 <SelectItem key={type} value={type}>
-                  {type === 'ALL' ? 'All Resources' : type.replace(/_/g, ' ')}
+                  {type === 'ALL' ? t('allResources') : t(`resourceTypes.${type}`)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -163,11 +165,9 @@ export function RequestAccessClient({ initialData }: RequestAccessClientProps) {
           <CardContent className="py-12">
             <div className="text-center">
               <Package className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-2">No Resources Found</h3>
+              <h3 className="text-lg font-medium text-foreground mb-2">{t('noResourcesFound')}</h3>
               <p className="text-sm text-muted-foreground">
-                {searchTerm || filterType !== 'ALL'
-                  ? 'Try adjusting your search or filters'
-                  : 'No resources are available in the catalog yet'}
+                {searchTerm || filterType !== 'ALL' ? t('noResultsFilter') : t('noResultsEmpty')}
               </p>
             </div>
           </CardContent>
@@ -193,7 +193,7 @@ export function RequestAccessClient({ initialData }: RequestAccessClientProps) {
               <div className="flex flex-wrap gap-2 mb-4">
                 <Badge variant="outline" className={getTypeBadgeClass(resource.resourceType)}>
                   <span className="text-xs font-medium uppercase tracking-wide">
-                    {resource.resourceType.replace(/_/g, ' ')}
+                    {t(`resourceTypes.${resource.resourceType}`)}
                   </span>
                 </Badge>
                 {!!resource.environment && (
@@ -204,7 +204,7 @@ export function RequestAccessClient({ initialData }: RequestAccessClientProps) {
               </div>
 
               <div className="space-y-1.5 text-sm">
-                {getResourceInfo(resource).map((info, i) => (
+                {getResourceInfo(resource, (key) => t(`infoLabels.${key}`)).map((info, i) => (
                   info.label && info.value ? (
                     <div key={i} className="flex items-start text-muted-foreground">
                       <span className="text-xs">{info.label}:</span>
@@ -227,7 +227,7 @@ export function RequestAccessClient({ initialData }: RequestAccessClientProps) {
           resource={selectedResource as { id: string; displayName: string; resourceType: string }}
           onSuccess={() => {
             setSelectedResource(null)
-            toast.success('Access request submitted successfully')
+            toast.success(t('successToast'))
           }}
         />
       )}

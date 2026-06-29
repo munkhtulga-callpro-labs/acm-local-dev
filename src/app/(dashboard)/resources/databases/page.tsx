@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -13,6 +14,7 @@ import {
 import { DatabasesDataTable, type DatabaseResource } from '@/components/databases-data-table'
 
 export default function DatabasesPage() {
+  const t = useTranslations('databases')
   const [databases, setDatabases] = useState<DatabaseResource[]>([])
   const [employees, setEmployees] = useState<Array<{ id: string; firstName: string; lastName: string; email: string }>>([])
   const [departments, setDepartments] = useState<Array<{ id: string; name: string }>>([])
@@ -38,11 +40,10 @@ export default function DatabasesPage() {
         const data = await response.json()
         setDatabases(data.data || [])
       } else {
-        setError('Failed to fetch databases')
+        setError(t('errors.fetchFailed'))
       }
-    } catch (error) {
-      setError('Error fetching databases')
-      console.error('Error:', error)
+    } catch {
+      setError(t('errors.fetchError'))
     } finally {
       setLoading(false)
     }
@@ -103,16 +104,16 @@ export default function DatabasesPage() {
 
             if (!ownersResponse.ok) {
               const ownersError = await ownersResponse.json()
-              setError(`Database created but failed to save owners: ${ownersError.error || 'Unknown error'}`)
+              setError(t('errors.ownersFailed', { error: ownersError.error || 'Unknown error' }))
             }
           }
 
-          setSuccess('Database added successfully')
+          setSuccess(t('success.added'))
           fetchDatabases()
         } else {
           const errorData = await response.json()
-          setError(errorData.error || 'Failed to add database')
-          throw new Error(errorData.error || 'Failed to add database')
+          setError(errorData.error || t('errors.addFailed'))
+          throw new Error(errorData.error || t('errors.addFailed'))
         }
       } else if (modalState.mode === 'edit' && modalState.database) {
         const response = await fetch(`/api/resources/databases/${modalState.database.id}`, {
@@ -139,12 +140,12 @@ export default function DatabasesPage() {
             })
           }
 
-          setSuccess('Database updated successfully')
+          setSuccess(t('success.updated'))
           fetchDatabases()
         } else {
           const errorData = await response.json()
-          setError(errorData.error || 'Failed to update database')
-          throw new Error(errorData.error || 'Failed to update database')
+          setError(errorData.error || t('errors.updateFailed'))
+          throw new Error(errorData.error || t('errors.updateFailed'))
         }
       }
     } catch (error) {
@@ -161,7 +162,7 @@ export default function DatabasesPage() {
   }
 
   const handleDeleteDatabase = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete ${name}?`)) return
+    if (!confirm(t('confirmDelete', { name }))) return
 
     try {
       const response = await fetch(`/api/resources/databases/${id}`, {
@@ -169,13 +170,13 @@ export default function DatabasesPage() {
       })
 
       if (response.ok) {
-        setSuccess(`${name} deleted successfully`)
+        setSuccess(t('success.deleted', { name }))
         fetchDatabases()
       } else {
-        setError('Failed to delete database')
+        setError(t('errors.deleteFailed'))
       }
-    } catch (error) {
-      setError('Error deleting database')
+    } catch {
+      setError(t('errors.deleteError'))
     }
   }
 
@@ -189,12 +190,12 @@ export default function DatabasesPage() {
       {/* Header */}
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Database Resources</h1>
-          <p className="text-muted-foreground">Manage database access and permissions - ISO 27001 Compliant</p>
+          <h1 className="text-3xl font-bold text-foreground">{t('title')}</h1>
+          <p className="text-muted-foreground">{t('subtitle')}</p>
         </div>
         <Button onClick={() => setModalState({ isOpen: true, mode: 'create' })}>
           <Database className="mr-2 h-4 w-4" />
-          Add Database
+          {t('addDatabase')}
         </Button>
       </div>
 
@@ -214,46 +215,46 @@ export default function DatabasesPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Databases</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('stats.totalDatabases')}</CardTitle>
             <Database className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalDatabases}</div>
             <p className="text-xs text-muted-foreground">
-              {activeDatabases} active
+              {t('stats.activeDatabases', { count: activeDatabases })}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Production</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('stats.production')}</CardTitle>
             <Server className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{productionDatabases}</div>
             <p className="text-xs text-muted-foreground">
-              Production databases
+              {t('stats.productionDatabases')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Encrypted</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('stats.encrypted')}</CardTitle>
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{encryptedDatabases}</div>
             <p className="text-xs text-muted-foreground">
-              With encryption enabled
+              {t('stats.encryptedDesc')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Compliance</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('stats.compliance')}</CardTitle>
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -261,7 +262,7 @@ export default function DatabasesPage() {
               {totalDatabases > 0 ? Math.round((encryptedDatabases / totalDatabases) * 100) : 0}%
             </div>
             <p className="text-xs text-muted-foreground">
-              Encryption rate
+              {t('stats.encryptionRate')}
             </p>
           </CardContent>
         </Card>
@@ -270,9 +271,9 @@ export default function DatabasesPage() {
       {/* Database Table */}
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle>Databases</CardTitle>
+          <CardTitle>{t('databasesCard')}</CardTitle>
           <CardDescription className="mt-1.5">
-            Track and manage access to MySQL, PostgreSQL, MongoDB, and other database systems
+            {t('databasesCardDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-0 px-6 pb-6">
@@ -284,10 +285,10 @@ export default function DatabasesPage() {
             <div className="text-center py-12">
               <Database className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">
-                No Databases Found
+                {t('noDatabases')}
               </h3>
               <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                Get started by adding your first database resource
+                {t('noDatabasesDesc')}
               </p>
             </div>
           ) : (

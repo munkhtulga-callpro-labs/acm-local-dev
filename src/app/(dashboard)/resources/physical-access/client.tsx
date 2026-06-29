@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,6 +18,7 @@ interface PhysicalAccessClientProps {
 }
 
 export function PhysicalAccessClient({ initialData }: PhysicalAccessClientProps) {
+  const t = useTranslations('physicalAccess')
   const router = useRouter()
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
   const [modalState, setModalState] = useState<{
@@ -36,20 +38,20 @@ export function PhysicalAccessClient({ initialData }: PhysicalAccessClientProps)
       if (result?.error) {
         if (typeof result.error === 'string') {
           toast.error(result.error === 'Forbidden'
-            ? 'You don\'t have permission to manage physical access'
-            : 'Session expired, please log in again')
+            ? t('errors.forbidden')
+            : t('errors.sessionExpired'))
         } else {
-          toast.error('Please fix the form errors and try again')
+          toast.error(t('errors.formErrors'))
         }
         // Keep the modal open so the user doesn't lose their input
         return false
       }
 
-      toast.success(mode === 'edit' ? 'Physical access updated successfully' : 'Physical access added successfully')
+      toast.success(mode === 'edit' ? t('success.updated') : t('success.added'))
       router.refresh()
       return true
     } catch {
-      toast.error('Something went wrong. Please try again.')
+      toast.error(t('errors.saveFailed'))
       return false
     }
   }
@@ -64,14 +66,14 @@ export function PhysicalAccessClient({ initialData }: PhysicalAccessClientProps)
       const result = await deletePhysicalAccess(deleteTarget.id)
       if (result?.error) {
         toast.error(result.error === 'Forbidden'
-          ? 'You don\'t have permission to delete physical access'
-          : 'Session expired, please log in again')
+          ? t('errors.deleteForbidden')
+          : t('errors.sessionExpired'))
         return
       }
-      toast.success(`"${deleteTarget.name}" deleted successfully`)
+      toast.success(t('success.deleted', { name: deleteTarget.name }))
       router.refresh()
     } catch {
-      toast.error('Error deleting physical access record')
+      toast.error(t('errors.deleteError'))
     } finally {
       setDeleteTarget(null)
     }
@@ -93,66 +95,66 @@ export function PhysicalAccessClient({ initialData }: PhysicalAccessClientProps)
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Physical Access</h1>
-          <p className="text-muted-foreground">Manage building and room access permissions — ISO 27001 Compliant</p>
+          <h1 className="text-3xl font-bold text-foreground">{t('title')}</h1>
+          <p className="text-muted-foreground">{t('subtitle')}</p>
         </div>
         <Button onClick={() => setModalState({ isOpen: true, mode: 'create' })}>
           <DoorOpen className="mr-2 h-4 w-4" />
-          Add Access
+          {t('addAccess')}
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Records</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('stats.totalRecords')}</CardTitle>
             <DoorOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalRecords}</div>
-            <p className="text-xs text-muted-foreground">{activeRecords} active</p>
+            <p className="text-xs text-muted-foreground">{t('stats.activeCount', { count: activeRecords })}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('stats.active')}</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeRecords}</div>
-            <p className="text-xs text-muted-foreground">Currently granted</p>
+            <p className="text-xs text-muted-foreground">{t('stats.activeDesc')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Escort Required</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('stats.escortRequired')}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{escortRequired}</div>
-            <p className="text-xs text-muted-foreground">Supervised access</p>
+            <p className="text-xs text-muted-foreground">{t('stats.escortRequiredDesc')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Expiring Soon</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('stats.expiringSoon')}</CardTitle>
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{expiringSoon}</div>
-            <p className="text-xs text-muted-foreground">Within 30 days</p>
+            <p className="text-xs text-muted-foreground">{t('stats.expiringSoonDesc')}</p>
           </CardContent>
         </Card>
       </div>
 
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle>Physical Access Records</CardTitle>
+          <CardTitle>{t('cardTitle')}</CardTitle>
           <CardDescription className="mt-1.5">
-            Track and manage building, room, and zone access permissions
+            {t('cardDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-0 px-6 pb-6">
@@ -175,10 +177,10 @@ export function PhysicalAccessClient({ initialData }: PhysicalAccessClientProps)
       <ConfirmDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="Delete Physical Access"
-        description={`Are you sure you want to delete access for "${deleteTarget?.name}"? This action cannot be undone.`}
+        title={t('deleteDialog.title')}
+        description={t('deleteDialog.description', { name: deleteTarget?.name ?? '' })}
         onConfirm={confirmDelete}
-        confirmLabel="Delete"
+        confirmLabel={t('deleteDialog.confirm')}
       />
     </div>
   )

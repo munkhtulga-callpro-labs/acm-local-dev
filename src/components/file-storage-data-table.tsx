@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { useTranslations } from 'next-intl'
 import {
   flexRender,
   getCoreRowModel,
@@ -74,20 +75,22 @@ interface FileStorageDataTableProps {
   onDelete?: (id: string, name: string) => void
 }
 
-const getStatusBadge = (status: string) => {
+type TFunc = ReturnType<typeof useTranslations<'fileStorage.table'>>
+
+const getStatusBadge = (status: string, t: TFunc) => {
   switch (status.toUpperCase()) {
     case 'ACTIVE':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400 mr-1 w-3 h-3" />
-          Active
+          {t('statusActive')}
         </Badge>
       )
     case 'ARCHIVED':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleFilled className="fill-yellow-500 dark:fill-yellow-400 mr-1 w-3 h-3" />
-          Archived
+          {t('statusArchived')}
         </Badge>
       )
     default:
@@ -100,13 +103,13 @@ const getStatusBadge = (status: string) => {
   }
 }
 
-const getPermissionBadge = (level: string) => {
+const getPermissionBadge = (level: string, t: TFunc) => {
   const l = level.toLowerCase()
   if (l.includes('full') || l.includes('control')) {
     return (
       <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
         <IconShieldLock className="mr-1 w-3 h-3 text-red-500" />
-        Full Control
+        {t('permFullControl')}
       </Badge>
     )
   }
@@ -114,19 +117,20 @@ const getPermissionBadge = (level: string) => {
     return (
       <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
         <IconShieldLock className="mr-1 w-3 h-3 text-blue-500" />
-        Write
+        {t('permWrite')}
       </Badge>
     )
   }
   return (
     <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
       <IconShieldLock className="mr-1 w-3 h-3 text-green-500" />
-      Read
+      {t('permRead')}
     </Badge>
   )
 }
 
 export function FileStorageDataTable({ data, onEdit, onDelete }: FileStorageDataTableProps) {
+  const t = useTranslations('fileStorage.table')
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -143,7 +147,7 @@ export function FileStorageDataTable({ data, onEdit, onDelete }: FileStorageData
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           className="px-0 hover:bg-transparent"
         >
-          Path / Location
+          {t('pathLocation')}
           <ArrowUpDown className="ml-2 h-3 w-3" />
         </Button>
       ),
@@ -158,7 +162,7 @@ export function FileStorageDataTable({ data, onEdit, onDelete }: FileStorageData
     },
     {
       accessorKey: 'storageType',
-      header: 'Storage Type',
+      header: t('storageType'),
       cell: ({ row }) => (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           {row.getValue('storageType')}
@@ -167,12 +171,12 @@ export function FileStorageDataTable({ data, onEdit, onDelete }: FileStorageData
     },
     {
       accessorKey: 'permissionLevel',
-      header: 'Permission',
-      cell: ({ row }) => getPermissionBadge(row.getValue('permissionLevel')),
+      header: t('permission'),
+      cell: ({ row }) => getPermissionBadge(row.getValue('permissionLevel'), t),
     },
     {
       accessorKey: 'quotaLimit',
-      header: 'Quota',
+      header: t('quota'),
       cell: ({ row }) => {
         const val = row.getValue('quotaLimit') as string | null
         return val
@@ -182,7 +186,7 @@ export function FileStorageDataTable({ data, onEdit, onDelete }: FileStorageData
     },
     {
       accessorKey: 'assignedTo',
-      header: 'Assigned To',
+      header: t('assignedTo'),
       cell: ({ row }) => {
         const val = row.getValue('assignedTo') as string | null
         return val
@@ -192,7 +196,7 @@ export function FileStorageDataTable({ data, onEdit, onDelete }: FileStorageData
     },
     {
       accessorKey: 'encryptionStatus',
-      header: 'Encryption',
+      header: t('encryption'),
       cell: ({ row }) => {
         const val = row.getValue('encryptionStatus') as string | null
         return val ? (
@@ -207,8 +211,8 @@ export function FileStorageDataTable({ data, onEdit, onDelete }: FileStorageData
     },
     {
       accessorKey: 'status',
-      header: 'Status',
-      cell: ({ row }) => getStatusBadge(row.getValue('status')),
+      header: t('status'),
+      cell: ({ row }) => getStatusBadge(row.getValue('status'), t),
     },
     {
       id: 'actions',
@@ -219,25 +223,25 @@ export function FileStorageDataTable({ data, onEdit, onDelete }: FileStorageData
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
+                <span className="sr-only">{t('openMenu')}</span>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
               <DropdownMenuItem onClick={() => { setSelectedItem(item); setDrawerOpen(true) }}>
-                View details
+                {t('viewDetails')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {onEdit && (
-                <DropdownMenuItem onClick={() => onEdit(item)}>Edit storage</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onEdit(item)}>{t('editStorage')}</DropdownMenuItem>
               )}
               {onDelete && (
                 <DropdownMenuItem
                   onClick={() => onDelete(item.id, item.pathLocation)}
                   className="text-destructive"
                 >
-                  Delete storage
+                  {t('deleteStorage')}
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
@@ -266,7 +270,7 @@ export function FileStorageDataTable({ data, onEdit, onDelete }: FileStorageData
     <div className="w-full">
       <div className="flex items-center gap-2 py-4">
         <Input
-          placeholder="Search by path..."
+          placeholder={t('searchPlaceholder')}
           value={(table.getColumn('pathLocation')?.getFilterValue() as string) ?? ''}
           onChange={(e) => table.getColumn('pathLocation')?.setFilterValue(e.target.value)}
           className="max-w-sm"
@@ -274,7 +278,7 @@ export function FileStorageDataTable({ data, onEdit, onDelete }: FileStorageData
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
+              {t('columns')} <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -319,7 +323,7 @@ export function FileStorageDataTable({ data, onEdit, onDelete }: FileStorageData
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
+                  {t('noResults')}
                 </TableCell>
               </TableRow>
             )}
@@ -329,14 +333,14 @@ export function FileStorageDataTable({ data, onEdit, onDelete }: FileStorageData
 
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredRowModel().rows.length} storage record(s) total
+          {t('recordsTotal', { count: table.getFilteredRowModel().rows.length })}
         </div>
         <div className="space-x-2">
           <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
-            Previous
+            {t('previous')}
           </Button>
           <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
-            Next
+            {t('next')}
           </Button>
         </div>
       </div>
@@ -349,67 +353,67 @@ export function FileStorageDataTable({ data, onEdit, onDelete }: FileStorageData
                 <IconFolder className="w-4 h-4" />
                 {selectedItem?.pathLocation}
               </DrawerTitle>
-              <DrawerDescription>File storage details</DrawerDescription>
+              <DrawerDescription>{t('drawer.description')}</DrawerDescription>
             </DrawerHeader>
             {selectedItem && (
               <div className="p-4 pb-0">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Storage Type</p>
+                    <p className="text-sm font-medium text-muted-foreground">{t('drawer.storageType')}</p>
                     <p className="text-sm mt-1">{selectedItem.storageType}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Permission</p>
-                    <div className="mt-1">{getPermissionBadge(selectedItem.permissionLevel)}</div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('drawer.permission')}</p>
+                    <div className="mt-1">{getPermissionBadge(selectedItem.permissionLevel, t)}</div>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Status</p>
-                    <div className="mt-1">{getStatusBadge(selectedItem.status)}</div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('drawer.status')}</p>
+                    <div className="mt-1">{getStatusBadge(selectedItem.status, t)}</div>
                   </div>
                   {selectedItem.quotaLimit && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Quota Limit</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t('drawer.quotaLimit')}</p>
                       <p className="text-sm mt-1">{selectedItem.quotaLimit}</p>
                     </div>
                   )}
                   {selectedItem.assignedTo && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Assigned To</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t('drawer.assignedTo')}</p>
                       <p className="text-sm mt-1">{selectedItem.assignedTo}</p>
                     </div>
                   )}
                   {selectedItem.encryptionStatus && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Encryption</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t('drawer.encryption')}</p>
                       <p className="text-sm mt-1">{selectedItem.encryptionStatus}</p>
                     </div>
                   )}
                   {selectedItem.ownerDepartment && (
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Owner Department</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t('drawer.ownerDepartment')}</p>
                       <p className="text-sm mt-1">{selectedItem.ownerDepartment}</p>
                     </div>
                   )}
                   {selectedItem.sharingSettings && (
                     <div className="col-span-2">
-                      <p className="text-sm font-medium text-muted-foreground">Sharing Settings</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t('drawer.sharingSettings')}</p>
                       <p className="text-sm mt-1">{selectedItem.sharingSettings}</p>
                     </div>
                   )}
                   {selectedItem.retentionPolicy && (
                     <div className="col-span-2">
-                      <p className="text-sm font-medium text-muted-foreground">Retention Policy</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t('drawer.retentionPolicy')}</p>
                       <p className="text-sm mt-1">{selectedItem.retentionPolicy}</p>
                     </div>
                   )}
                   {selectedItem.notes && (
                     <div className="col-span-2">
-                      <p className="text-sm font-medium text-muted-foreground">Notes</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t('drawer.notes')}</p>
                       <p className="text-sm mt-1">{selectedItem.notes}</p>
                     </div>
                   )}
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Created</p>
+                    <p className="text-sm font-medium text-muted-foreground">{t('drawer.created')}</p>
                     <p className="text-sm mt-1">{new Date(selectedItem.createdAt).toLocaleDateString()}</p>
                   </div>
                 </div>
@@ -419,17 +423,17 @@ export function FileStorageDataTable({ data, onEdit, onDelete }: FileStorageData
               <div className="flex gap-2 w-full">
                 {onEdit && selectedItem && (
                   <Button variant="outline" onClick={() => { setDrawerOpen(false); onEdit(selectedItem) }} className="flex-1">
-                    Edit
+                    {t('drawer.edit')}
                   </Button>
                 )}
                 {onDelete && selectedItem && (
                   <Button variant="destructive" onClick={() => { setDrawerOpen(false); onDelete(selectedItem.id, selectedItem.pathLocation) }} className="flex-1">
-                    Delete
+                    {t('drawer.delete')}
                   </Button>
                 )}
               </div>
               <DrawerClose asChild>
-                <Button variant="outline">Close</Button>
+                <Button variant="outline">{t('drawer.close')}</Button>
               </DrawerClose>
             </DrawerFooter>
           </div>

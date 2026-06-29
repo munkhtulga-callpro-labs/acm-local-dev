@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Cloud, Users, FileText, Calendar, Loader2, DollarSign } from 'lucide-react'
+import { Cloud, Calendar, Loader2, DollarSign } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ResourceOwnershipSection } from '@/components/resource-ownership-section'
 
@@ -70,6 +71,7 @@ export function SaaSSubscriptionModal({
     apiAccess: false
   })
 
+  const t = useTranslations('saasSubscriptions.modal')
   const [owners, setOwners] = useState<ResourceOwner[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -126,16 +128,16 @@ export function SaaSSubscriptionModal({
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.serviceName?.trim()) newErrors.serviceName = 'Service name is required'
-    if (!formData.subscriptionPlan?.trim()) newErrors.subscriptionPlan = 'Subscription plan is required'
-    if (!formData.category) newErrors.category = 'Category is required'
-    if (!formData.billingCycle) newErrors.billingCycle = 'Billing cycle is required'
-    if (!formData.totalSeats || formData.totalSeats < 1) newErrors.totalSeats = 'Total seats must be at least 1'
-    if (formData.usedSeats !== undefined && formData.usedSeats < 0) newErrors.usedSeats = 'Used seats cannot be negative'
+    if (!formData.serviceName?.trim()) newErrors.serviceName = t('errors.serviceNameRequired')
+    if (!formData.subscriptionPlan?.trim()) newErrors.subscriptionPlan = t('errors.subscriptionPlanRequired')
+    if (!formData.category) newErrors.category = t('errors.categoryRequired')
+    if (!formData.billingCycle) newErrors.billingCycle = t('errors.billingCycleRequired')
+    if (!formData.totalSeats || formData.totalSeats < 1) newErrors.totalSeats = t('errors.totalSeatsRequired')
+    if (formData.usedSeats !== undefined && formData.usedSeats < 0) newErrors.usedSeats = t('errors.usedSeatsNegative')
     if (formData.usedSeats !== undefined && formData.totalSeats !== undefined && formData.usedSeats > formData.totalSeats) {
-      newErrors.usedSeats = 'Used seats cannot exceed total seats'
+      newErrors.usedSeats = t('errors.usedSeatsExceed')
     }
-    if (!formData.owner?.trim()) newErrors.owner = 'Primary owner is required'
+    if (!formData.owner?.trim()) newErrors.owner = t('errors.ownerRequired')
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -160,7 +162,7 @@ export function SaaSSubscriptionModal({
       onClose()
     } catch (error) {
       console.error('Error saving SaaS subscription:', error)
-      setErrors({ submit: 'Failed to save SaaS subscription. Please try again.' })
+      setErrors({ submit: t('errors.saveFailed') })
     } finally {
       setIsLoading(false)
     }
@@ -182,14 +184,14 @@ export function SaaSSubscriptionModal({
         <DialogHeader className="space-y-3 pb-6 border-b">
           <DialogTitle className="text-2xl font-semibold flex items-center gap-2">
             <Cloud className="h-6 w-6 text-primary" />
-            {mode === 'view' && 'SaaS Subscription Details'}
-            {mode === 'edit' && 'Edit SaaS Subscription'}
-            {mode === 'create' && 'Add New SaaS Subscription'}
+            {mode === 'view' && t('titleView')}
+            {mode === 'edit' && t('titleEdit')}
+            {mode === 'create' && t('titleCreate')}
           </DialogTitle>
           <DialogDescription className="text-base">
-            {mode === 'view' && 'View detailed information about this SaaS subscription.'}
-            {mode === 'edit' && 'Update SaaS subscription information. Fields marked with * are required for ISO 27001 compliance.'}
-            {mode === 'create' && 'Register a new SaaS subscription. Fields marked with * are required for ISO 27001 compliance.'}
+            {mode === 'view' && t('descriptionView')}
+            {mode === 'edit' && t('descriptionEdit')}
+            {mode === 'create' && t('descriptionCreate')}
           </DialogDescription>
         </DialogHeader>
 
@@ -198,12 +200,12 @@ export function SaaSSubscriptionModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Cloud className="h-4 w-4" />
-              Subscription Information
+              {t('subscriptionInfo')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="serviceName" className="text-sm font-medium">
-                  Service Name {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('serviceName')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="serviceName"
@@ -218,7 +220,7 @@ export function SaaSSubscriptionModal({
 
               <div className="space-y-2">
                 <Label htmlFor="category" className="text-sm font-medium">
-                  Category {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('category')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.category}
@@ -226,7 +228,7 @@ export function SaaSSubscriptionModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn("h-10", errors.category && "border-destructive")}>
-                    <SelectValue placeholder="Select category" />
+                    <SelectValue placeholder={t('selectCategory')} />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((cat) => (
@@ -239,7 +241,7 @@ export function SaaSSubscriptionModal({
 
               <div className="space-y-2">
                 <Label htmlFor="subscriptionPlan" className="text-sm font-medium">
-                  Subscription Plan {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('subscriptionPlan')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="subscriptionPlan"
@@ -254,7 +256,7 @@ export function SaaSSubscriptionModal({
 
               <div className="space-y-2">
                 <Label htmlFor="ssoEnabled" className="text-sm font-medium">
-                  SSO Enabled
+                  {t('ssoEnabled')}
                 </Label>
                 <div className="flex items-center space-x-3 pt-2">
                   <Switch
@@ -264,14 +266,14 @@ export function SaaSSubscriptionModal({
                     disabled={isViewMode}
                   />
                   <Label htmlFor="ssoEnabled" className="text-sm text-muted-foreground cursor-pointer">
-                    {formData.ssoEnabled ? 'Enabled' : 'Disabled'}
+                    {formData.ssoEnabled ? t('enabled') : t('disabled')}
                   </Label>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="apiAccess" className="text-sm font-medium">
-                  API Access
+                  {t('apiAccess')}
                 </Label>
                 <div className="flex items-center space-x-3 pt-2">
                   <Switch
@@ -281,7 +283,7 @@ export function SaaSSubscriptionModal({
                     disabled={isViewMode}
                   />
                   <Label htmlFor="apiAccess" className="text-sm text-muted-foreground cursor-pointer">
-                    {formData.apiAccess ? 'Enabled' : 'Disabled'}
+                    {formData.apiAccess ? t('enabled') : t('disabled')}
                   </Label>
                 </div>
               </div>
@@ -292,12 +294,12 @@ export function SaaSSubscriptionModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <DollarSign className="h-4 w-4" />
-              Billing & Usage
+              {t('billingUsage')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="billingCycle" className="text-sm font-medium">
-                  Billing Cycle {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('billingCycle')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.billingCycle}
@@ -305,7 +307,7 @@ export function SaaSSubscriptionModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn("h-10", errors.billingCycle && "border-destructive")}>
-                    <SelectValue placeholder="Select billing cycle" />
+                    <SelectValue placeholder={t('selectBillingCycle')} />
                   </SelectTrigger>
                   <SelectContent>
                     {billingCycles.map((cycle) => (
@@ -318,7 +320,7 @@ export function SaaSSubscriptionModal({
 
               <div className="space-y-2">
                 <Label htmlFor="cost" className="text-sm font-medium">
-                  Cost (USD)
+                  {t('costUsd')}
                 </Label>
                 <Input
                   id="cost"
@@ -333,7 +335,7 @@ export function SaaSSubscriptionModal({
 
               <div className="space-y-2">
                 <Label htmlFor="renewalDate" className="text-sm font-medium">
-                  Renewal Date
+                  {t('renewalDate')}
                 </Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -350,7 +352,7 @@ export function SaaSSubscriptionModal({
 
               <div className="space-y-2">
                 <Label htmlFor="status" className="text-sm font-medium">
-                  Status
+                  {t('status')}
                 </Label>
                 <Select
                   value={formData.status}
@@ -358,20 +360,20 @@ export function SaaSSubscriptionModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Select status" />
+                    <SelectValue placeholder={t('selectStatus')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ACTIVE">Active</SelectItem>
-                    <SelectItem value="INACTIVE">Inactive</SelectItem>
-                    <SelectItem value="EXPIRED">Expired</SelectItem>
-                    <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                    <SelectItem value="ACTIVE">{t('statusActive')}</SelectItem>
+                    <SelectItem value="INACTIVE">{t('statusInactive')}</SelectItem>
+                    <SelectItem value="EXPIRED">{t('statusExpired')}</SelectItem>
+                    <SelectItem value="CANCELLED">{t('statusCancelled')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="totalSeats" className="text-sm font-medium">
-                  Total Seats {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('totalSeats')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="totalSeats"
@@ -387,7 +389,7 @@ export function SaaSSubscriptionModal({
 
               <div className="space-y-2">
                 <Label htmlFor="usedSeats" className="text-sm font-medium">
-                  Current Users
+                  {t('currentUsers')}
                 </Label>
                 <Input
                   id="usedSeats"
@@ -404,12 +406,12 @@ export function SaaSSubscriptionModal({
               {/* Utilization Display */}
               <div className="space-y-2 md:col-span-2">
                 <Label className="text-sm font-medium">
-                  Utilization
+                  {t('utilization')}
                 </Label>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">
-                      {formData.usedSeats || 0} of {formData.totalSeats || 0} seats used
+                      {t('seatsUsed', { used: formData.usedSeats || 0, total: formData.totalSeats || 0 })}
                     </span>
                     <span className="font-medium">
                       {utilizationPercentage.toFixed(1)}%
@@ -457,7 +459,7 @@ export function SaaSSubscriptionModal({
               disabled={isLoading}
               className="min-w-24"
             >
-              {isViewMode ? 'Close' : 'Cancel'}
+              {isViewMode ? t('close') : t('cancel')}
             </Button>
             {!isViewMode && (
               <Button
@@ -466,7 +468,7 @@ export function SaaSSubscriptionModal({
                 className="min-w-28"
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {mode === 'edit' ? 'Update Subscription' : 'Add Subscription'}
+                {mode === 'edit' ? t('updateSubscription') : t('addSubscription')}
               </Button>
             )}
           </DialogFooter>

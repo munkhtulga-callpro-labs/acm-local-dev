@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle, Clock, XCircle, AlertCircle } from 'lucide-react'
 import { ApprovalDecisionModal } from '@/components/approval-decision-modal'
@@ -11,6 +12,7 @@ interface ApprovalsClientProps {
 }
 
 export function ApprovalsClient({ initialData }: ApprovalsClientProps) {
+  const t = useTranslations('approvals')
   const [data, setData] = useState<ApprovalRequest[]>(initialData)
   const [selectedRequest, setSelectedRequest] = useState<ApprovalRequest | null>(null)
   const [showDecisionModal, setShowDecisionModal] = useState(false)
@@ -44,67 +46,67 @@ export function ApprovalsClient({ initialData }: ApprovalsClientProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Resource Access Approvals</h1>
-        <p className="text-muted-foreground">Review and approve resource access requests</p>
+        <h1 className="text-3xl font-bold text-foreground">{t('title')}</h1>
+        <p className="text-muted-foreground">{t('subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Approval</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('pendingApproval')}</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{pendingCount}</div>
-            <p className="text-xs text-muted-foreground">Awaiting your review</p>
+            <p className="text-xs text-muted-foreground">{t('pendingApprovalDesc')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Urgent</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('urgent')}</CardTitle>
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{urgentCount}</div>
-            <p className="text-xs text-muted-foreground">High priority pending</p>
+            <p className="text-xs text-muted-foreground">{t('urgentDesc')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Approved</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('approved')}</CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{approvedCount}</div>
-            <p className="text-xs text-muted-foreground">Access granted</p>
+            <p className="text-xs text-muted-foreground">{t('approvedDesc')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Rejected</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('rejected')}</CardTitle>
             <XCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{rejectedCount}</div>
-            <p className="text-xs text-muted-foreground">Access denied</p>
+            <p className="text-xs text-muted-foreground">{t('rejectedDesc')}</p>
           </CardContent>
         </Card>
       </div>
 
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle>Access Requests</CardTitle>
+          <CardTitle>{t('accessRequests')}</CardTitle>
           <CardDescription className="mt-1.5">
-            Review and manage resource access requests
+            {t('accessRequestsDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-0 px-6 pb-6">
           {data.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No approval requests found
+              {t('noRequests')}
             </div>
           ) : (
             <ApprovalsDataTable data={data} onReview={handleReviewClick} />

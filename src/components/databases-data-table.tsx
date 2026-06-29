@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslations } from "next-intl"
 import {
   IconChevronLeft,
   IconChevronRight,
@@ -90,35 +91,37 @@ export const databaseResourceSchema = z.object({
 
 export type DatabaseResource = z.infer<typeof databaseResourceSchema>
 
-const getEnvironmentBadge = (env: string) => {
+type TFunc = ReturnType<typeof useTranslations<'databases.table'>>
+
+const getEnvironmentBadge = (env: string, t: TFunc) => {
   const envLower = env.toLowerCase()
   switch (envLower) {
     case 'production':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleCheckFilled className="fill-red-500 dark:fill-red-400 mr-1 w-3 h-3" />
-          Production
+          {t('envProduction')}
         </Badge>
       )
     case 'staging':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleCheckFilled className="fill-yellow-500 dark:fill-yellow-400 mr-1 w-3 h-3" />
-          Staging
+          {t('envStaging')}
         </Badge>
       )
     case 'development':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleCheckFilled className="fill-blue-500 dark:fill-blue-400 mr-1 w-3 h-3" />
-          Development
+          {t('envDevelopment')}
         </Badge>
       )
     case 'testing':
       return (
         <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
           <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400 mr-1 w-3 h-3" />
-          Testing
+          {t('envTesting')}
         </Badge>
       )
     default:
@@ -126,19 +129,19 @@ const getEnvironmentBadge = (env: string) => {
   }
 }
 
-const getStatusBadge = (isActive: boolean) => {
+const getStatusBadge = (isActive: boolean, t: TFunc) => {
   if (isActive) {
     return (
       <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
         <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400 mr-1 w-3 h-3" />
-        Active
+        {t('active')}
       </Badge>
     )
   } else {
     return (
       <Badge variant="outline" className="text-muted-foreground px-1.5 text-xs">
         <IconX className="mr-1 w-3 h-3 text-red-500" />
-        Inactive
+        {t('inactive')}
       </Badge>
     )
   }
@@ -147,7 +150,8 @@ const getStatusBadge = (isActive: boolean) => {
 const createColumns = (
   onView: (database: DatabaseResource) => void,
   onEdit: (database: DatabaseResource) => void,
-  onDelete: (id: string, name: string) => void
+  onDelete: (id: string, name: string) => void,
+  t: TFunc
 ): ColumnDef<DatabaseResource>[] => [
   {
     accessorKey: "name",
@@ -157,7 +161,7 @@ const createColumns = (
           className="flex items-center gap-1 hover:text-foreground"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Database
+          {t('database')}
           {column.getIsSorted() === "asc" ? (
             <IconArrowUp className="h-3 w-3" />
           ) : column.getIsSorted() === "desc" ? (
@@ -170,14 +174,14 @@ const createColumns = (
     },
     size: 220,
     cell: ({ row }) => (
-      <TableCellViewer item={row.original} onView={onView} onEdit={onEdit} onDelete={onDelete} />
+      <TableCellViewer item={row.original} onEdit={onEdit} onDelete={onDelete} />
     ),
     enableSorting: true,
     enableHiding: false,
   },
   {
     accessorKey: "databaseType",
-    header: "Type",
+    header: t('type'),
     size: 120,
     cell: ({ row }) => (
       <div className="flex flex-col">
@@ -193,7 +197,7 @@ const createColumns = (
   {
     accessorFn: (row) => `${row.host}:${row.port}`,
     id: "hostPort",
-    header: "Host:Port",
+    header: t('hostPort'),
     size: 200,
     cell: ({ row }) => (
       <div className="flex items-center text-sm text-muted-foreground">
@@ -210,7 +214,7 @@ const createColumns = (
           className="flex items-center gap-1 hover:text-foreground"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Environment
+          {t('environment')}
           {column.getIsSorted() === "asc" ? (
             <IconArrowUp className="h-3 w-3" />
           ) : column.getIsSorted() === "desc" ? (
@@ -222,12 +226,12 @@ const createColumns = (
       )
     },
     size: 130,
-    cell: ({ row }) => getEnvironmentBadge(row.original.environment),
+    cell: ({ row }) => getEnvironmentBadge(row.original.environment, t),
     enableSorting: true,
   },
   {
     accessorKey: "accessLevel",
-    header: "Access Level",
+    header: t('accessLevel'),
     size: 110,
     cell: ({ row }) => (
       <Badge variant="secondary" className="text-xs capitalize">
@@ -237,18 +241,18 @@ const createColumns = (
   },
   {
     id: "security",
-    header: "Security",
+    header: t('security'),
     size: 120,
     cell: ({ row }) => (
       <div className="flex gap-1 flex-wrap">
         {row.original.isEncrypted && (
           <Badge variant="outline" className="text-xs px-1.5">
-            <IconShield className="mr-1 h-3 w-3 text-green-500" /> Encrypted
+            <IconShield className="mr-1 h-3 w-3 text-green-500" /> {t('encrypted')}
           </Badge>
         )}
         {row.original.backupEnabled && (
           <Badge variant="outline" className="text-xs px-1.5">
-            <IconDatabaseImport className="mr-1 h-3 w-3" /> Backup
+            <IconDatabaseImport className="mr-1 h-3 w-3" /> {t('backup')}
           </Badge>
         )}
       </div>
@@ -256,7 +260,7 @@ const createColumns = (
   },
   {
     accessorKey: "owner",
-    header: "Owner",
+    header: t('owner'),
     size: 150,
     cell: ({ row }) => (
       <div className="text-sm text-muted-foreground">
@@ -273,7 +277,7 @@ const createColumns = (
           className="flex items-center gap-1 hover:text-foreground"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Status
+          {t('status')}
           {column.getIsSorted() === "asc" ? (
             <IconArrowUp className="h-3 w-3" />
           ) : column.getIsSorted() === "desc" ? (
@@ -285,7 +289,7 @@ const createColumns = (
       )
     },
     size: 100,
-    cell: ({ row }) => getStatusBadge(row.original.isActive),
+    cell: ({ row }) => getStatusBadge(row.original.isActive, t),
     enableSorting: true,
   },
   {
@@ -300,22 +304,22 @@ const createColumns = (
             size="icon"
           >
             <IconDotsVertical className="size-3" />
-            <span className="sr-only">Open menu</span>
+            <span className="sr-only">{t('openMenu')}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-32">
           <DropdownMenuItem onClick={() => onView(row.original)}>
-            View Details
+            {t('viewDetails')}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onEdit(row.original)}>
-            Edit
+            {t('edit')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             className="text-red-600"
             onClick={() => onDelete(row.original.id, row.original.name)}
           >
-            Delete
+            {t('delete')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -336,6 +340,7 @@ export function DatabasesDataTable({
   onDelete: (id: string, name: string) => void
   onAdd?: () => void
 }) {
+  const t = useTranslations('databases.table')
   const [data, setData] = React.useState(() => initialData)
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
@@ -346,7 +351,7 @@ export function DatabasesDataTable({
   const [sorting, setSorting] = React.useState<SortingState>([
     {
       id: "name",
-      desc: false, // A-Z
+      desc: false,
     }
   ])
   const [globalFilter, setGlobalFilter] = React.useState("")
@@ -355,14 +360,13 @@ export function DatabasesDataTable({
     pageSize: 20,
   })
 
-  // Sync internal data state with parent data changes
   React.useEffect(() => {
     setData(initialData)
   }, [initialData])
 
   const columns = React.useMemo(
-    () => createColumns(onView, onEdit, onDelete),
-    [onView, onEdit, onDelete]
+    () => createColumns(onView, onEdit, onDelete, t),
+    [onView, onEdit, onDelete, t]
   )
 
   const table = useReactTable({
@@ -395,34 +399,29 @@ export function DatabasesDataTable({
 
   return (
     <div className="w-full space-y-4">
-      {/* Header with search and buttons */}
       <div className="flex items-center gap-3">
-        {/* Search Input */}
         <div className="relative flex-1 max-w-sm">
           <Input
-            placeholder="Search databases..."
+            placeholder={t('searchPlaceholder')}
             value={globalFilter ?? ""}
             onChange={(e) => setGlobalFilter(e.target.value)}
             className="h-9"
           />
         </div>
 
-        {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Action buttons */}
         <div className="flex items-center gap-2">
           {onAdd && (
             <Button variant="outline" size="sm" onClick={onAdd}>
               <IconDatabase className="mr-1 h-3 w-3" />
-              <span className="hidden lg:inline">Add Database</span>
-              <span className="lg:hidden">Add</span>
+              <span className="hidden lg:inline">{t('addDatabase')}</span>
+              <span className="lg:hidden">{t('add')}</span>
             </Button>
           )}
         </div>
       </div>
 
-      {/* Table with proper alignment */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -473,7 +472,7 @@ export function DatabasesDataTable({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  {t('noResults')}
                 </TableCell>
               </TableRow>
             )}
@@ -481,16 +480,17 @@ export function DatabasesDataTable({
         </Table>
       </div>
 
-      {/* Pagination */}
       <div className="flex items-center justify-between">
         <div className="text-muted-foreground text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {t('rowsSelected', {
+            selected: table.getFilteredSelectedRowModel().rows.length,
+            total: table.getFilteredRowModel().rows.length,
+          })}
         </div>
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <Label htmlFor="rows-per-page" className="text-sm font-medium">
-              Rows per page
+              {t('rowsPerPage')}
             </Label>
             <Select
               value={`${table.getState().pagination.pageSize}`}
@@ -513,8 +513,10 @@ export function DatabasesDataTable({
             </Select>
           </div>
           <div className="text-sm font-medium">
-            Page {table.getState().pagination.pageIndex + 1} of{" "}
-            {table.getPageCount()}
+            {t('pageOf', {
+              current: table.getState().pagination.pageIndex + 1,
+              total: table.getPageCount(),
+            })}
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -523,7 +525,7 @@ export function DatabasesDataTable({
               onClick={() => table.setPageIndex(0)}
               disabled={!table.getCanPreviousPage()}
             >
-              <span className="sr-only">Go to first page</span>
+              <span className="sr-only">{t('goToFirstPage')}</span>
               <IconChevronsLeft className="h-4 w-4" />
             </Button>
             <Button
@@ -532,7 +534,7 @@ export function DatabasesDataTable({
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
-              <span className="sr-only">Go to previous page</span>
+              <span className="sr-only">{t('goToPreviousPage')}</span>
               <IconChevronLeft className="h-4 w-4" />
             </Button>
             <Button
@@ -541,7 +543,7 @@ export function DatabasesDataTable({
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >
-              <span className="sr-only">Go to next page</span>
+              <span className="sr-only">{t('goToNextPage')}</span>
               <IconChevronRight className="h-4 w-4" />
             </Button>
             <Button
@@ -550,7 +552,7 @@ export function DatabasesDataTable({
               onClick={() => table.setPageIndex(table.getPageCount() - 1)}
               disabled={!table.getCanNextPage()}
             >
-              <span className="sr-only">Go to last page</span>
+              <span className="sr-only">{t('goToLastPage')}</span>
               <IconChevronsRight className="h-4 w-4" />
             </Button>
           </div>
@@ -562,15 +564,15 @@ export function DatabasesDataTable({
 
 function TableCellViewer({
   item,
-  onView,
   onEdit,
   onDelete,
 }: {
   item: DatabaseResource
-  onView: (database: DatabaseResource) => void
   onEdit: (database: DatabaseResource) => void
   onDelete: (id: string, name: string) => void
 }) {
+  const t = useTranslations('databases.drawer')
+
   return (
     <Drawer direction="right">
       <DrawerTrigger asChild>
@@ -592,62 +594,62 @@ function TableCellViewer({
         <DrawerHeader className="gap-1">
           <DrawerTitle>{item.name}</DrawerTitle>
           <DrawerDescription>
-            Database resource details
+            {t('description')}
           </DrawerDescription>
         </DrawerHeader>
         <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
           <div className="grid gap-2">
             <div className="flex gap-2 leading-none font-medium">
-              Database: {item.name}
+              {t('database')}: {item.name}
             </div>
             <div className="text-muted-foreground">
-              Type: {item.databaseType} {item.version && `(v${item.version})`}
+              {t('type')}: {item.databaseType} {item.version && `(v${item.version})`}
             </div>
             <div className="text-muted-foreground">
-              Host: {item.host}:{item.port}
+              {t('host')}: {item.host}:{item.port}
             </div>
             {item.databaseName && (
               <div className="text-muted-foreground">
-                Database Name: {item.databaseName}
+                {t('databaseName')}: {item.databaseName}
               </div>
             )}
             {item.schema && (
               <div className="text-muted-foreground">
-                Schema: {item.schema}
+                {t('schema')}: {item.schema}
               </div>
             )}
             <div className="text-muted-foreground">
-              Environment: {item.environment}
+              {t('environment')}: {item.environment}
             </div>
             <div className="text-muted-foreground">
-              Access Level: {item.accessLevel}
+              {t('accessLevel')}: {item.accessLevel}
             </div>
             <div className="text-muted-foreground">
-              Owner: {item.owner}
+              {t('owner')}: {item.owner}
             </div>
             <div className="text-muted-foreground">
-              Encrypted: {item.isEncrypted ? 'Yes' : 'No'}
+              {t('encrypted')}: {item.isEncrypted ? t('yes') : t('no')}
             </div>
             <div className="text-muted-foreground">
-              Backup Enabled: {item.backupEnabled ? 'Yes' : 'No'}
+              {t('backupEnabled')}: {item.backupEnabled ? t('yes') : t('no')}
             </div>
             <div className="text-muted-foreground">
-              Status: {item.isActive ? 'Active' : 'Inactive'}
+              {t('status')}: {item.isActive ? t('active') : t('inactive')}
             </div>
           </div>
         </div>
         <DrawerFooter>
           <Button onClick={() => onEdit(item)}>
-            Edit Database
+            {t('editDatabase')}
           </Button>
           <Button
             variant="destructive"
             onClick={() => onDelete(item.id, item.name)}
           >
-            Delete Database
+            {t('deleteDatabase')}
           </Button>
           <DrawerClose asChild>
-            <Button variant="outline">Close</Button>
+            <Button variant="outline">{t('close')}</Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

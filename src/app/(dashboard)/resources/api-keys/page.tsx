@@ -6,16 +6,16 @@ import { APIKeysClient } from './client'
 import { cacheLife, cacheTag } from 'next/cache'
 import { createApiKey, updateApiKey, deleteApiKey, getApiKeyToken } from '@/lib/actions/api-keys'
 
+async function fetchApiKeys() {
+  'use cache'
+  cacheLife('minutes')
+  cacheTag('api-keys')
+  return await prisma.aPIKey.findMany({ orderBy: { createdDate: 'desc' } })
+}
+
 export default async function APIKeysPage() {
   const session = await getServerSession(authOptions)
   if (!session) redirect('/login')
-
-  async function fetchApiKeys() {
-    'use cache'
-    cacheLife('minutes')
-    cacheTag('api-keys');
-    return await prisma.aPIKey.findMany({ orderBy: { createdDate: 'desc' } })
-  }
 
   const rows = await fetchApiKeys();
   const initialData = rows.map(({ apiKeyToken: _token, expiryDate, createdDate, requestDate, approvalDate, updatedAt, ...rest }) => ({

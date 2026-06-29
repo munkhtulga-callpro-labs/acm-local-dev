@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -45,6 +46,7 @@ export function CompanyModal({
     description: ''
   })
 
+  const t = useTranslations('companies.modal')
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -67,14 +69,14 @@ export function CompanyModal({
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.name?.trim()) newErrors.name = 'Company name is required'
+    if (!formData.name?.trim()) newErrors.name = t('errors.nameRequired')
 
     if (formData.email?.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Invalid email format'
+      newErrors.email = t('errors.invalidEmail')
     }
 
     if (formData.website?.trim() && !/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/.test(formData.website)) {
-      newErrors.website = 'Invalid website URL'
+      newErrors.website = t('errors.invalidWebsite')
     }
 
     setErrors(newErrors)
@@ -100,7 +102,7 @@ export function CompanyModal({
       onClose()
     } catch (error) {
       console.error('Error saving company:', error)
-      setErrors({ submit: 'Failed to save company. Please try again.' })
+      setErrors({ submit: t('errors.saveFailed') })
     } finally {
       setIsLoading(false)
     }
@@ -114,14 +116,14 @@ export function CompanyModal({
         <DialogHeader className="space-y-3 pb-6 border-b">
           <DialogTitle className="text-2xl font-semibold flex items-center gap-2">
             <Building className="h-6 w-6 text-primary" />
-            {mode === 'view' && 'Company Details'}
-            {mode === 'edit' && 'Edit Company'}
-            {mode === 'create' && 'Add New Company'}
+            {mode === 'view' && t('titleView')}
+            {mode === 'edit' && t('titleEdit')}
+            {mode === 'create' && t('titleCreate')}
           </DialogTitle>
           <DialogDescription className="text-base">
-            {mode === 'view' && 'View detailed information about this company.'}
-            {mode === 'edit' && 'Update company information. Fields marked with * are required.'}
-            {mode === 'create' && 'Fill in the details to add a new company. Fields marked with * are required.'}
+            {mode === 'view' && t('descriptionView')}
+            {mode === 'edit' && t('descriptionEdit')}
+            {mode === 'create' && t('descriptionCreate')}
           </DialogDescription>
         </DialogHeader>
 
@@ -130,12 +132,12 @@ export function CompanyModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Building className="h-4 w-4" />
-              Basic Information
+              {t('basicInfo')}
             </h3>
             <div className="grid grid-cols-1 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-sm font-medium">
-                  Company Name {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('companyName')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="name"
@@ -143,7 +145,7 @@ export function CompanyModal({
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   disabled={isViewMode}
                   className={cn(errors.name && "border-destructive focus-visible:ring-destructive")}
-                  placeholder="Acme Corporation"
+                  placeholder={t('companyNamePlaceholder')}
                 />
                 {errors.name && (
                   <p className="text-xs text-destructive">{errors.name}</p>
@@ -156,12 +158,12 @@ export function CompanyModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Mail className="h-4 w-4" />
-              Contact Information
+              {t('contactInfo')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">
-                  Email Address
+                  {t('email')}
                 </Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -172,7 +174,7 @@ export function CompanyModal({
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     disabled={isViewMode}
                     className={cn("pl-10", errors.email && "border-destructive focus-visible:ring-destructive")}
-                    placeholder="contact@acmecorp.com"
+                    placeholder={t('emailPlaceholder')}
                   />
                 </div>
                 {errors.email && (
@@ -182,7 +184,7 @@ export function CompanyModal({
 
               <div className="space-y-2">
                 <Label htmlFor="phone" className="text-sm font-medium">
-                  Phone Number
+                  {t('phone')}
                 </Label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -193,14 +195,14 @@ export function CompanyModal({
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     disabled={isViewMode}
                     className="pl-10"
-                    placeholder="+1 (555) 123-4567"
+                    placeholder={t('phonePlaceholder')}
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="website" className="text-sm font-medium">
-                  Website
+                  {t('website')}
                 </Label>
                 <div className="relative">
                   <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -211,7 +213,7 @@ export function CompanyModal({
                     onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                     disabled={isViewMode}
                     className={cn("pl-10", errors.website && "border-destructive focus-visible:ring-destructive")}
-                    placeholder="https://www.acmecorp.com"
+                    placeholder={t('websitePlaceholder')}
                   />
                 </div>
                 {errors.website && (
@@ -221,7 +223,7 @@ export function CompanyModal({
 
               <div className="space-y-2">
                 <Label htmlFor="address" className="text-sm font-medium">
-                  Address
+                  {t('address')}
                 </Label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -231,7 +233,7 @@ export function CompanyModal({
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                     disabled={isViewMode}
                     className="pl-10"
-                    placeholder="123 Main St, City, State 12345"
+                    placeholder={t('addressPlaceholder')}
                   />
                 </div>
               </div>
@@ -242,12 +244,12 @@ export function CompanyModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Building className="h-4 w-4" />
-              Additional Information
+              {t('additionalInfo')}
             </h3>
             <div className="grid grid-cols-1 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="description" className="text-sm font-medium">
-                  Description
+                  {t('description')}
                 </Label>
                 <Textarea
                   id="description"
@@ -255,7 +257,7 @@ export function CompanyModal({
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   disabled={isViewMode}
                   className="min-h-[100px] resize-none"
-                  placeholder="Brief description of the company..."
+                  placeholder={t('descriptionPlaceholder')}
                 />
               </div>
             </div>
@@ -275,7 +277,7 @@ export function CompanyModal({
               disabled={isLoading}
               className="min-w-24"
             >
-              {isViewMode ? 'Close' : 'Cancel'}
+              {isViewMode ? t('close') : t('cancel')}
             </Button>
             {!isViewMode && (
               <Button
@@ -284,7 +286,7 @@ export function CompanyModal({
                 className="min-w-28"
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {mode === 'edit' ? 'Update Company' : 'Add Company'}
+                {mode === 'edit' ? t('updateCompany') : t('addCompany')}
               </Button>
             )}
           </DialogFooter>

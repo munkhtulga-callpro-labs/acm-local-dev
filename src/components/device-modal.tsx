@@ -1,14 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
-import { Laptop, Shield, FileText, Calendar, Key, Loader2 } from 'lucide-react'
+import { Laptop, Shield, Calendar, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ResourceOwnershipSection } from '@/components/resource-ownership-section'
 
@@ -74,6 +74,7 @@ export function DeviceModal({
     owner: ''
   })
 
+  const t = useTranslations('devices.modal')
   const [owners, setOwners] = useState<ResourceOwner[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -148,11 +149,11 @@ export function DeviceModal({
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.deviceType) newErrors.deviceType = 'Device type is required'
+    if (!formData.deviceType) newErrors.deviceType = t('errors.deviceTypeRequired')
     if (!formData.brand?.trim() && !formData.model?.trim()) {
-      newErrors.model = 'Either brand or model is required'
+      newErrors.model = t('errors.modelRequired')
     }
-    if (!formData.owner?.trim()) newErrors.owner = 'Primary owner is required'
+    if (!formData.owner?.trim()) newErrors.owner = t('errors.ownerRequired')
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -177,7 +178,7 @@ export function DeviceModal({
       onClose()
     } catch (error) {
       console.error('Error saving device:', error)
-      setErrors({ submit: 'Failed to save device. Please try again.' })
+      setErrors({ submit: t('errors.saveFailed') })
     } finally {
       setIsLoading(false)
     }
@@ -204,14 +205,14 @@ export function DeviceModal({
         <DialogHeader className="space-y-3 pb-6 border-b">
           <DialogTitle className="text-2xl font-semibold flex items-center gap-2">
             <Laptop className="h-6 w-6 text-primary" />
-            {mode === 'view' && 'Device Resource Details'}
-            {mode === 'edit' && 'Edit Device Resource'}
-            {mode === 'create' && 'Add New Device Resource'}
+            {mode === 'view' && t('titleView')}
+            {mode === 'edit' && t('titleEdit')}
+            {mode === 'create' && t('titleCreate')}
           </DialogTitle>
           <DialogDescription className="text-base">
-            {mode === 'view' && 'View detailed information about this device resource.'}
-            {mode === 'edit' && 'Update device resource information. Fields marked with * are required for ISO 27001 compliance.'}
-            {mode === 'create' && 'Register a new device resource. Fields marked with * are required for ISO 27001 compliance.'}
+            {mode === 'view' && t('descriptionView')}
+            {mode === 'edit' && t('descriptionEdit')}
+            {mode === 'create' && t('descriptionCreate')}
           </DialogDescription>
         </DialogHeader>
 
@@ -220,12 +221,12 @@ export function DeviceModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Laptop className="h-4 w-4" />
-              Device Information
+              {t('deviceInfo')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="deviceType" className="text-sm font-medium">
-                  Device Type {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('deviceType')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Select
                   value={formData.deviceType}
@@ -233,7 +234,7 @@ export function DeviceModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className={cn("h-10", errors.deviceType && "border-destructive")}>
-                    <SelectValue placeholder="Select device type" />
+                    <SelectValue placeholder={t('selectDeviceType')} />
                   </SelectTrigger>
                   <SelectContent>
                     {deviceTypes.map((type) => (
@@ -246,7 +247,7 @@ export function DeviceModal({
 
               <div className="space-y-2">
                 <Label htmlFor="brand" className="text-sm font-medium">
-                  Brand
+                  {t('brand')}
                 </Label>
                 <Input
                   id="brand"
@@ -259,7 +260,7 @@ export function DeviceModal({
 
               <div className="space-y-2">
                 <Label htmlFor="model" className="text-sm font-medium">
-                  Model {!isViewMode && <span className="text-destructive">*</span>}
+                  {t('model')} {!isViewMode && <span className="text-destructive">*</span>}
                 </Label>
                 <Input
                   id="model"
@@ -274,7 +275,7 @@ export function DeviceModal({
 
               <div className="space-y-2">
                 <Label htmlFor="serialNumber" className="text-sm font-medium">
-                  Serial Number
+                  {t('serialNumber')}
                 </Label>
                 <Input
                   id="serialNumber"
@@ -287,7 +288,7 @@ export function DeviceModal({
 
               <div className="space-y-2">
                 <Label htmlFor="assetTag" className="text-sm font-medium">
-                  Asset Tag
+                  {t('assetTag')}
                 </Label>
                 <Input
                   id="assetTag"
@@ -300,7 +301,7 @@ export function DeviceModal({
 
               <div className="space-y-2">
                 <Label htmlFor="operatingSystem" className="text-sm font-medium">
-                  Operating System
+                  {t('operatingSystem')}
                 </Label>
                 <Input
                   id="operatingSystem"
@@ -313,18 +314,18 @@ export function DeviceModal({
 
               <div className="space-y-2">
                 <Label htmlFor="assignedTo" className="text-sm font-medium">
-                  Assigned To
+                  {t('assignedTo')}
                 </Label>
                 <Select
-                  value={formData.assignedTo || ''}
-                  onValueChange={(value) => setFormData({ ...formData, assignedTo: value })}
+                  value={formData.assignedTo || '__none__'}
+                  onValueChange={(value) => setFormData({ ...formData, assignedTo: value === '__none__' ? '' : value })}
                   disabled={isViewMode}
                 >
                   <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Select employee" />
+                    <SelectValue placeholder={t('selectEmployee')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Unassigned</SelectItem>
+                    <SelectItem value="__none__">{t('unassigned')}</SelectItem>
                     {employees.map((emp) => (
                       <SelectItem key={emp.id} value={emp.email}>
                         {emp.firstName} {emp.lastName} ({emp.email})
@@ -336,7 +337,7 @@ export function DeviceModal({
 
               <div className="space-y-2">
                 <Label htmlFor="assignmentDate" className="text-sm font-medium">
-                  Assignment Date
+                  {t('assignmentDate')}
                 </Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -353,7 +354,7 @@ export function DeviceModal({
 
               <div className="space-y-2">
                 <Label htmlFor="location" className="text-sm font-medium">
-                  Location
+                  {t('location')}
                 </Label>
                 <Input
                   id="location"
@@ -366,7 +367,7 @@ export function DeviceModal({
 
               <div className="space-y-2">
                 <Label htmlFor="condition" className="text-sm font-medium">
-                  Condition
+                  {t('condition')}
                 </Label>
                 <Select
                   value={formData.condition || undefined}
@@ -374,7 +375,7 @@ export function DeviceModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Select condition" />
+                    <SelectValue placeholder={t('selectCondition')} />
                   </SelectTrigger>
                   <SelectContent>
                     {conditions.map((cond) => (
@@ -386,7 +387,7 @@ export function DeviceModal({
 
               <div className="space-y-2">
                 <Label htmlFor="status" className="text-sm font-medium">
-                  Status
+                  {t('status')}
                 </Label>
                 <Select
                   value={formData.status}
@@ -394,7 +395,7 @@ export function DeviceModal({
                   disabled={isViewMode}
                 >
                   <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Select status" />
+                    <SelectValue placeholder={t('selectStatus')} />
                   </SelectTrigger>
                   <SelectContent>
                     {statuses.map((stat) => (
@@ -408,7 +409,7 @@ export function DeviceModal({
 
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="specifications" className="text-sm font-medium">
-                  Specifications
+                  {t('specifications')}
                 </Label>
                 <Textarea
                   id="specifications"
@@ -426,12 +427,12 @@ export function DeviceModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2 pb-2 border-b">
               <Shield className="h-4 w-4" />
-              Security & Compliance
+              {t('securityCompliance')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="purchaseDate" className="text-sm font-medium">
-                  Purchase Date
+                  {t('purchaseDate')}
                 </Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -448,7 +449,7 @@ export function DeviceModal({
 
               <div className="space-y-2">
                 <Label htmlFor="warrantyExpiry" className="text-sm font-medium">
-                  Warranty Expiry
+                  {t('warrantyExpiry')}
                 </Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -465,7 +466,7 @@ export function DeviceModal({
 
               <div className="space-y-2">
                 <Label htmlFor="purchaseCost" className="text-sm font-medium">
-                  Purchase Cost
+                  {t('purchaseCost')}
                 </Label>
                 <Input
                   id="purchaseCost"
@@ -506,7 +507,7 @@ export function DeviceModal({
               disabled={isLoading}
               className="min-w-24"
             >
-              {isViewMode ? 'Close' : 'Cancel'}
+              {isViewMode ? t('close') : t('cancel')}
             </Button>
             {!isViewMode && (
               <Button
@@ -515,7 +516,7 @@ export function DeviceModal({
                 className="min-w-28"
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {mode === 'edit' ? 'Update Device' : 'Add Device'}
+                {mode === 'edit' ? t('updateDevice') : t('addDevice')}
               </Button>
             )}
           </DialogFooter>

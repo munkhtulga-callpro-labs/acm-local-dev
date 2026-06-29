@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -53,6 +54,7 @@ interface SaaSSubscription {
 }
 
 export default function SaaSSubscriptionsPage() {
+  const t = useTranslations('saasSubscriptions')
   const [subscriptions, setSubscriptions] = useState<SaaSSubscription[]>([])
   const [employees, setEmployees] = useState<Array<{ id: string; firstName: string; lastName: string; email: string }>>([])
   const [departments, setDepartments] = useState<Array<{ id: string; name: string }>>([])
@@ -81,10 +83,10 @@ export default function SaaSSubscriptionsPage() {
         const data = await response.json()
         setSubscriptions(data.data || [])
       } else {
-        setError('Failed to fetch SaaS subscriptions')
+        setError(t('errors.fetchFailed'))
       }
     } catch (error) {
-      setError('Error fetching SaaS subscriptions')
+      setError(t('errors.fetchError'))
       console.error('Error:', error)
     } finally {
       setLoading(false)
@@ -147,16 +149,16 @@ export default function SaaSSubscriptionsPage() {
 
             if (!ownersResponse.ok) {
               const ownersError = await ownersResponse.json()
-              setError(`SaaS subscription created but failed to save owners: ${ownersError.error || 'Unknown error'}`)
+              setError(t('errors.ownersFailed', { error: ownersError.error || 'Unknown error' }))
             }
           }
 
-          setSuccess('SaaS subscription added successfully')
+          setSuccess(t('success.added'))
           fetchSubscriptions()
         } else {
           const errorData = await response.json()
-          setError(errorData.error || 'Failed to add SaaS subscription')
-          throw new Error(errorData.error || 'Failed to add SaaS subscription')
+          setError(errorData.error || t('errors.addFailed'))
+          throw new Error(errorData.error || t('errors.addFailed'))
         }
       } else if (modalState.mode === 'edit' && modalState.subscription) {
         const response = await fetch(`/api/resources/saas-subscriptions/${modalState.subscription.id}`, {
@@ -184,12 +186,12 @@ export default function SaaSSubscriptionsPage() {
             })
           }
 
-          setSuccess('SaaS subscription updated successfully')
+          setSuccess(t('success.updated'))
           fetchSubscriptions()
         } else {
           const errorData = await response.json()
-          setError(errorData.error || 'Failed to update SaaS subscription')
-          throw new Error(errorData.error || 'Failed to update SaaS subscription')
+          setError(errorData.error || t('errors.updateFailed'))
+          throw new Error(errorData.error || t('errors.updateFailed'))
         }
       }
     } catch (error) {
@@ -198,7 +200,7 @@ export default function SaaSSubscriptionsPage() {
   }
 
   const handleDeleteSubscription = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this SaaS subscription?')) return
+    if (!confirm(t('confirmDelete'))) return
 
     try {
       const response = await fetch(`/api/resources/saas-subscriptions/${id}`, {
@@ -206,13 +208,13 @@ export default function SaaSSubscriptionsPage() {
       })
 
       if (response.ok) {
-        setSuccess('SaaS subscription deleted successfully')
+        setSuccess(t('success.deleted'))
         fetchSubscriptions()
       } else {
-        setError('Failed to delete SaaS subscription')
+        setError(t('errors.deleteFailed'))
       }
-    } catch (error) {
-      setError('Error deleting SaaS subscription')
+    } catch {
+      setError(t('errors.deleteError'))
     }
   }
 
@@ -269,10 +271,10 @@ export default function SaaSSubscriptionsPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground flex items-center">
           <Cloud className="mr-3 h-8 w-8" />
-          SaaS Subscriptions
+          {t('title')}
         </h1>
         <p className="text-muted-foreground mt-2">
-          Track SaaS subscriptions and user seat allocations - ISO 27001 Compliant
+          {t('subtitle')}
         </p>
       </div>
 
@@ -294,7 +296,7 @@ export default function SaaSSubscriptionsPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder="Search subscriptions..."
+              placeholder={t('searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -304,7 +306,7 @@ export default function SaaSSubscriptionsPage() {
         <div className="flex gap-2">
           <Button onClick={() => setModalState({ isOpen: true, mode: 'create' })}>
             <Plus className="mr-2 h-4 w-4" />
-            Add Subscription
+            {t('addSubscription')}
           </Button>
         </div>
       </div>
@@ -312,9 +314,9 @@ export default function SaaSSubscriptionsPage() {
       {/* Subscription Table */}
       <Card>
         <CardHeader>
-          <CardTitle>SaaS Subscriptions ({filteredSubscriptions.length})</CardTitle>
+          <CardTitle>{t('cardTitle', { count: filteredSubscriptions.length })}</CardTitle>
           <CardDescription>
-            Manage SaaS subscriptions, track user seats, and monitor renewal dates
+            {t('cardDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -326,29 +328,29 @@ export default function SaaSSubscriptionsPage() {
             <div className="text-center py-12">
               <Cloud className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">
-                No SaaS Subscriptions Found
+                {t('noSubscriptions')}
               </h3>
               <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-4">
-                Get started by adding your first SaaS subscription
+                {t('noSubscriptionsDesc')}
               </p>
               <Button onClick={() => setModalState({ isOpen: true, mode: 'create' })}>
                 <Plus className="mr-2 h-4 w-4" />
-                Add Subscription
+                {t('addSubscription')}
               </Button>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Service Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Plan</TableHead>
-                  <TableHead>Users</TableHead>
-                  <TableHead>Utilization</TableHead>
-                  <TableHead>Cost</TableHead>
-                  <TableHead>Billing Cycle</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
+                  <TableHead>{t('table.serviceName')}</TableHead>
+                  <TableHead>{t('table.category')}</TableHead>
+                  <TableHead>{t('table.plan')}</TableHead>
+                  <TableHead>{t('table.users')}</TableHead>
+                  <TableHead>{t('table.utilization')}</TableHead>
+                  <TableHead>{t('table.cost')}</TableHead>
+                  <TableHead>{t('table.billingCycle')}</TableHead>
+                  <TableHead>{t('table.status')}</TableHead>
+                  <TableHead className="w-[100px]">{t('table.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -378,7 +380,11 @@ export default function SaaSSubscriptionsPage() {
                     </TableCell>
                     <TableCell>
                       <Badge className={getStatusBadge(subscription.status)}>
-                        {subscription.status}
+                        {subscription.status === 'ACTIVE' ? t('table.statusActive')
+                          : subscription.status === 'EXPIRED' ? t('table.statusExpired')
+                          : subscription.status === 'CANCELLED' ? t('table.statusCancelled')
+                          : subscription.status === 'INACTIVE' ? t('table.statusInactive')
+                          : subscription.status}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -391,18 +397,18 @@ export default function SaaSSubscriptionsPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => setModalState({ isOpen: true, mode: 'view', subscription })}>
                             <Eye className="mr-2 h-4 w-4" />
-                            View
+                            {t('table.view')}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setModalState({ isOpen: true, mode: 'edit', subscription })}>
                             <Edit className="mr-2 h-4 w-4" />
-                            Edit
+                            {t('table.edit')}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleDeleteSubscription(subscription.id)}
                             className="text-destructive"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
+                            {t('table.delete')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
