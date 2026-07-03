@@ -3,8 +3,12 @@ import {
   createUserSchema,
   updateUserSchema,
   createEmployeeSchema,
+  updateEmployeeSchema,
   createAccessRequestSchema,
+  createAccessPermissionSchema,
+  updateAccessPermissionSchema,
   paginationSchema,
+  auditLogQuerySchema,
   createCompanySchema,
 } from '@/lib/validations'
 
@@ -97,6 +101,56 @@ describe('createEmployeeSchema', () => {
   })
 })
 
+describe('updateEmployeeSchema', () => {
+  it('accepts an empty update (all fields optional)', () => {
+    expect(() => updateEmployeeSchema.parse({})).not.toThrow()
+  })
+
+  it('transforms endDate string to Date', () => {
+    const result = updateEmployeeSchema.parse({ endDate: '2024-06-30' })
+    expect(result.endDate).toBeInstanceOf(Date)
+  })
+
+  it('leaves endDate undefined when not provided', () => {
+    const result = updateEmployeeSchema.parse({})
+    expect(result.endDate).toBeUndefined()
+  })
+})
+
+describe('createAccessPermissionSchema', () => {
+  const valid = {
+    employeeId: 'emp-1',
+    systemId: 'sys-1',
+    accessLevel: 'READ',
+  }
+
+  it('accepts a payload without an expiry', () => {
+    expect(() => createAccessPermissionSchema.parse(valid)).not.toThrow()
+  })
+
+  it('transforms expiresAt string to Date', () => {
+    const result = createAccessPermissionSchema.parse({ ...valid, expiresAt: '2025-12-31' })
+    expect(result.expiresAt).toBeInstanceOf(Date)
+  })
+
+  it('rejects missing accessLevel', () => {
+    expect(() =>
+      createAccessPermissionSchema.parse({ ...valid, accessLevel: '' })
+    ).toThrow()
+  })
+})
+
+describe('updateAccessPermissionSchema', () => {
+  it('accepts an empty update (all fields optional)', () => {
+    expect(() => updateAccessPermissionSchema.parse({})).not.toThrow()
+  })
+
+  it('transforms expiresAt string to Date', () => {
+    const result = updateAccessPermissionSchema.parse({ expiresAt: '2025-12-31' })
+    expect(result.expiresAt).toBeInstanceOf(Date)
+  })
+})
+
 describe('createAccessRequestSchema', () => {
   const valid = {
     employeeId: 'emp-1',
@@ -147,6 +201,29 @@ describe('paginationSchema', () => {
   it('accepts asc sortOrder', () => {
     const result = paginationSchema.parse({ sortOrder: 'asc' })
     expect(result.sortOrder).toBe('asc')
+  })
+})
+
+describe('auditLogQuerySchema', () => {
+  it('accepts an empty query and applies pagination defaults', () => {
+    const result = auditLogQuerySchema.parse({})
+    expect(result.page).toBe(1)
+    expect(result.limit).toBe(10)
+  })
+
+  it('transforms startDate and endDate strings to Dates', () => {
+    const result = auditLogQuerySchema.parse({
+      startDate: '2026-01-01',
+      endDate: '2026-01-31',
+    })
+    expect(result.startDate).toBeInstanceOf(Date)
+    expect(result.endDate).toBeInstanceOf(Date)
+  })
+
+  it('leaves startDate and endDate undefined when not provided', () => {
+    const result = auditLogQuerySchema.parse({})
+    expect(result.startDate).toBeUndefined()
+    expect(result.endDate).toBeUndefined()
   })
 })
 
