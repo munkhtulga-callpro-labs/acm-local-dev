@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest'
 
 beforeAll(() => {
   process.env.ENCRYPTION_KEY = 'test-encryption-key-for-vitest-only'
@@ -50,5 +50,47 @@ describe('encrypt / decrypt', () => {
   it('throws when format is wrong (not three colon-delimited parts)', async () => {
     const { decrypt } = await getModule()
     expect(() => decrypt('notvalid')).toThrow('Invalid encrypted text format')
+  })
+})
+
+describe('getEncryptionKey branches', () => {
+  const originalKey = process.env.ENCRYPTION_KEY
+
+  afterEach(() => {
+    process.env.ENCRYPTION_KEY = originalKey
+    vi.resetModules()
+  })
+
+  it('falls back to a random key and warns when ENCRYPTION_KEY is unset', async () => {
+    delete process.env.ENCRYPTION_KEY
+    vi.resetModules()
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const { encrypt, decrypt } = await getModule()
+    const plaintext = 'no key configured'
+    expect(decrypt(encrypt(plaintext))).toBe(plaintext)
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('ENCRYPTION_KEY environment variable not set')
+    )
+
+    warnSpy.mockRestore()
+  })
+
+  it('uses a 64-char hex string directly as the key', async () => {
+    process.env.ENCRYPTION_KEY = 'a'.repeat(64)
+    vi.resetModules()
+
+    const { encrypt, decrypt } = await getModule()
+    const plaintext = 'hex encoded key'
+    expect(decrypt(encrypt(plaintext))).toBe(plaintext)
+  })
+
+  it('hashes a non-hex key string down to 32 bytes', async () => {
+    process.env.ENCRYPTION_KEY = 'a-plain-passphrase-not-hex'
+    vi.resetModules()
+
+    const { encrypt, decrypt } = await getModule()
+    const plaintext = 'hashed key'
+    expect(decrypt(encrypt(plaintext))).toBe(plaintext)
   })
 })
