@@ -21,6 +21,59 @@ import { prisma } from '@/lib/prisma'
 import { AuditService } from '@/services/audit-service'
 import { AccessService } from '@/services/access-service'
 
+describe('AccessService.getAccessPermissions', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(prisma.accessPermission.findMany).mockResolvedValue([])
+  })
+
+  it('queries with an empty where clause when no filters are given', async () => {
+    await AccessService.getAccessPermissions()
+
+    expect(prisma.accessPermission.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: {} })
+    )
+  })
+
+  it('filters by employeeId alone', async () => {
+    await AccessService.getAccessPermissions({ employeeId: 'emp-1' })
+
+    expect(prisma.accessPermission.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { employeeId: 'emp-1' } })
+    )
+  })
+
+  it('filters by systemId alone', async () => {
+    await AccessService.getAccessPermissions({ systemId: 'sys-1' })
+
+    expect(prisma.accessPermission.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { systemId: 'sys-1' } })
+    )
+  })
+
+  it('filters by isActive: false without it being dropped as falsy', async () => {
+    await AccessService.getAccessPermissions({ isActive: false })
+
+    expect(prisma.accessPermission.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { isActive: false } })
+    )
+  })
+
+  it('combines all three filters when provided together', async () => {
+    await AccessService.getAccessPermissions({
+      employeeId: 'emp-1',
+      systemId: 'sys-1',
+      isActive: true,
+    })
+
+    expect(prisma.accessPermission.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { employeeId: 'emp-1', systemId: 'sys-1', isActive: true },
+      })
+    )
+  })
+})
+
 describe('AccessService.createAccessPermission', () => {
   beforeEach(() => {
     vi.clearAllMocks()
