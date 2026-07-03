@@ -1,4 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import type { AccessPermission, Employee, System } from '@prisma/client'
+
+type ExpiryFindManyArgs = {
+  where: { isActive: boolean; expiresAt: { gte?: Date; lte?: Date; lt?: Date } }
+}
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
@@ -27,7 +32,7 @@ describe('AccessService.createAccessPermission', () => {
       employeeId: 'emp-1',
       systemId: 'sys-1',
       accessLevel: 'READ',
-    } as any)
+    } as unknown as AccessPermission)
 
     const result = await AccessService.createAccessPermission({
       employeeId: 'emp-1',
@@ -58,12 +63,12 @@ describe('AccessService.updateAccessPermission', () => {
     vi.mocked(prisma.accessPermission.findUnique).mockResolvedValue({
       id: 'perm-1',
       accessLevel: 'READ',
-    } as any)
+    } as unknown as AccessPermission)
     vi.mocked(prisma.accessPermission.update).mockResolvedValue({
       id: 'perm-1',
       employeeId: 'emp-1',
       accessLevel: 'WRITE',
-    } as any)
+    } as unknown as AccessPermission)
 
     const result = await AccessService.updateAccessPermission({
       id: 'perm-1',
@@ -94,13 +99,13 @@ describe('AccessService.revokeAccessPermission', () => {
     vi.mocked(prisma.accessPermission.findUnique).mockResolvedValue({
       id: 'perm-1',
       isActive: true,
-    } as any)
+    } as unknown as AccessPermission)
     vi.mocked(prisma.accessPermission.update).mockResolvedValue({
       id: 'perm-1',
       employeeId: 'emp-1',
       isActive: false,
       revokedBy: 'admin-1',
-    } as any)
+    } as unknown as AccessPermission)
 
     const result = await AccessService.revokeAccessPermission({
       id: 'perm-1',
@@ -135,11 +140,11 @@ describe('AccessService.getAccessMatrix', () => {
         id: 'emp-2',
         accessPermissions: [],
       },
-    ] as any)
+    ] as unknown as Employee[])
     vi.mocked(prisma.system.findMany).mockResolvedValue([
       { id: 'sys-1', name: 'GitHub' },
       { id: 'sys-2', name: 'AWS' },
-    ] as any)
+    ] as unknown as System[])
 
     const matrix = await AccessService.getAccessMatrix()
 
@@ -158,23 +163,25 @@ describe('AccessService.getExpiringAccess / getExpiredAccess', () => {
   })
 
   it('queries for active permissions expiring within the given window', async () => {
-    vi.mocked(prisma.accessPermission.findMany).mockResolvedValue([] as any)
+    vi.mocked(prisma.accessPermission.findMany).mockResolvedValue([])
 
     await AccessService.getExpiringAccess(14)
 
-    const call = vi.mocked(prisma.accessPermission.findMany).mock.calls[0][0] as any
+    const call = vi.mocked(prisma.accessPermission.findMany).mock
+      .calls[0][0] as unknown as ExpiryFindManyArgs
     expect(call.where.isActive).toBe(true)
     expect(call.where.expiresAt.gte).toBeInstanceOf(Date)
     expect(call.where.expiresAt.lte).toBeInstanceOf(Date)
-    expect(call.where.expiresAt.lte.getTime()).toBeGreaterThan(call.where.expiresAt.gte.getTime())
+    expect(call.where.expiresAt.lte!.getTime()).toBeGreaterThan(call.where.expiresAt.gte!.getTime())
   })
 
   it('queries for active permissions with an expiresAt in the past', async () => {
-    vi.mocked(prisma.accessPermission.findMany).mockResolvedValue([] as any)
+    vi.mocked(prisma.accessPermission.findMany).mockResolvedValue([])
 
     await AccessService.getExpiredAccess()
 
-    const call = vi.mocked(prisma.accessPermission.findMany).mock.calls[0][0] as any
+    const call = vi.mocked(prisma.accessPermission.findMany).mock
+      .calls[0][0] as unknown as ExpiryFindManyArgs
     expect(call.where.isActive).toBe(true)
     expect(call.where.expiresAt.lt).toBeInstanceOf(Date)
   })
@@ -189,12 +196,14 @@ describe('AccessService.revokeExpiredAccess', () => {
     vi.mocked(prisma.accessPermission.findMany).mockResolvedValue([
       { id: 'perm-1' },
       { id: 'perm-2' },
-    ] as any)
-    vi.mocked(prisma.accessPermission.findUnique).mockResolvedValue({ id: 'perm-x' } as any)
+    ] as unknown as AccessPermission[])
+    vi.mocked(prisma.accessPermission.findUnique).mockResolvedValue(
+      { id: 'perm-x' } as unknown as AccessPermission
+    )
     vi.mocked(prisma.accessPermission.update).mockResolvedValue({
       id: 'perm-x',
       employeeId: 'emp-1',
-    } as any)
+    } as unknown as AccessPermission)
 
     const count = await AccessService.revokeExpiredAccess()
 
@@ -215,7 +224,7 @@ describe('AccessService.revokeExpiredAccess', () => {
   })
 
   it('returns 0 and revokes nothing when there is no expired access', async () => {
-    vi.mocked(prisma.accessPermission.findMany).mockResolvedValue([] as any)
+    vi.mocked(prisma.accessPermission.findMany).mockResolvedValue([])
 
     const count = await AccessService.revokeExpiredAccess()
 

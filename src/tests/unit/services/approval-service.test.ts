@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import type { AccessRequest, Approval, User } from '@prisma/client'
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
@@ -43,7 +44,7 @@ describe('ApprovalService.getApprovalWorkflow', () => {
   })
 
   it('routes technical systems to an IT staff approver', async () => {
-    vi.mocked(prisma.user.findFirst).mockResolvedValueOnce(itStaffUser as any)
+    vi.mocked(prisma.user.findFirst).mockResolvedValueOnce(itStaffUser as unknown as User)
 
     const workflow = await ApprovalService.getApprovalWorkflow('ACCESS_REQUEST', [infraSystem])
 
@@ -51,7 +52,7 @@ describe('ApprovalService.getApprovalWorkflow', () => {
   })
 
   it('routes finance systems to an HR manager approver', async () => {
-    vi.mocked(prisma.user.findFirst).mockResolvedValueOnce(hrManagerUser as any)
+    vi.mocked(prisma.user.findFirst).mockResolvedValueOnce(hrManagerUser as unknown as User)
 
     const workflow = await ApprovalService.getApprovalWorkflow('ACCESS_REQUEST', [financeSystem])
 
@@ -59,7 +60,7 @@ describe('ApprovalService.getApprovalWorkflow', () => {
   })
 
   it('requires HR approval for onboarding requests regardless of system category', async () => {
-    vi.mocked(prisma.user.findFirst).mockResolvedValueOnce(hrManagerUser as any)
+    vi.mocked(prisma.user.findFirst).mockResolvedValueOnce(hrManagerUser as unknown as User)
 
     const workflow = await ApprovalService.getApprovalWorkflow('ONBOARDING', [])
 
@@ -68,8 +69,8 @@ describe('ApprovalService.getApprovalWorkflow', () => {
 
   it('stacks IT then HR steps when both technical and sensitive systems are present', async () => {
     vi.mocked(prisma.user.findFirst)
-      .mockResolvedValueOnce(itStaffUser as any)
-      .mockResolvedValueOnce(hrManagerUser as any)
+      .mockResolvedValueOnce(itStaffUser as unknown as User)
+      .mockResolvedValueOnce(hrManagerUser as unknown as User)
 
     const workflow = await ApprovalService.getApprovalWorkflow('ACCESS_REQUEST', [
       infraSystem,
@@ -83,7 +84,7 @@ describe('ApprovalService.getApprovalWorkflow', () => {
   })
 
   it('falls back to an admin approver when no specific approver is matched', async () => {
-    vi.mocked(prisma.user.findFirst).mockResolvedValueOnce(adminUser as any)
+    vi.mocked(prisma.user.findFirst).mockResolvedValueOnce(adminUser as unknown as User)
 
     const workflow = await ApprovalService.getApprovalWorkflow('ACCESS_REQUEST', [hrSystem])
 
@@ -121,19 +122,19 @@ describe('ApprovalService.approveRequest / rejectRequest', () => {
   })
 
   it('approving marks the approval APPROVED and logs the action', async () => {
-    vi.mocked(prisma.approval.findFirst).mockResolvedValue({ id: 'appr-1' } as any)
+    vi.mocked(prisma.approval.findFirst).mockResolvedValue({ id: 'appr-1' } as unknown as Approval)
     vi.mocked(prisma.accessRequest.findUnique).mockResolvedValue({
       id: 'req-1',
       employeeId: 'emp-1',
       approvals: [],
       systems: [],
       employee: { id: 'emp-1' },
-    } as any)
+    } as unknown as AccessRequest)
     vi.mocked(prisma.accessRequest.update).mockResolvedValue({
       id: 'req-1',
       employeeId: 'emp-1',
       status: 'COMPLETED',
-    } as any)
+    } as unknown as AccessRequest)
 
     const result = await ApprovalService.approveRequest({
       requestId: 'req-1',
@@ -152,12 +153,12 @@ describe('ApprovalService.approveRequest / rejectRequest', () => {
   })
 
   it('rejecting marks the approval REJECTED and updates the request status', async () => {
-    vi.mocked(prisma.approval.findFirst).mockResolvedValue({ id: 'appr-1' } as any)
+    vi.mocked(prisma.approval.findFirst).mockResolvedValue({ id: 'appr-1' } as unknown as Approval)
     vi.mocked(prisma.accessRequest.update).mockResolvedValue({
       id: 'req-1',
       employeeId: 'emp-1',
       status: 'REJECTED',
-    } as any)
+    } as unknown as AccessRequest)
 
     const result = await ApprovalService.rejectRequest({
       requestId: 'req-1',
@@ -194,8 +195,8 @@ describe('ApprovalService.checkAndCompleteRequest', () => {
       id: 'req-1',
       employeeId: 'emp-1',
       approvals: [{ status: 'REJECTED' }, { status: 'APPROVED' }],
-    } as any)
-    vi.mocked(prisma.accessRequest.update).mockResolvedValue({ status: 'REJECTED' } as any)
+    } as unknown as AccessRequest)
+    vi.mocked(prisma.accessRequest.update).mockResolvedValue({ status: 'REJECTED' } as unknown as AccessRequest)
 
     const result = await ApprovalService.checkAndCompleteRequest('req-1')
 
@@ -212,7 +213,7 @@ describe('ApprovalService.checkAndCompleteRequest', () => {
       employeeId: 'emp-1',
       approvals: [{ status: 'APPROVED' }, { status: 'PENDING' }],
     }
-    vi.mocked(prisma.accessRequest.findUnique).mockResolvedValue(pendingRequest as any)
+    vi.mocked(prisma.accessRequest.findUnique).mockResolvedValue(pendingRequest as unknown as AccessRequest)
 
     const result = await ApprovalService.checkAndCompleteRequest('req-1')
 
@@ -226,15 +227,15 @@ describe('ApprovalService.checkAndCompleteRequest', () => {
         id: 'req-1',
         employeeId: 'emp-1',
         approvals: [{ status: 'APPROVED' }],
-      } as any)
+      } as unknown as AccessRequest)
       .mockResolvedValueOnce({
         id: 'req-1',
         employeeId: 'emp-1',
         requestedBy: 'requester-1',
         systems: [{ systemId: 'sys-1', accessLevel: 'READ', system: { id: 'sys-1' } }],
         employee: { id: 'emp-1' },
-      } as any)
-    vi.mocked(prisma.accessRequest.update).mockResolvedValue({ status: 'COMPLETED' } as any)
+      } as unknown as AccessRequest)
+    vi.mocked(prisma.accessRequest.update).mockResolvedValue({ status: 'COMPLETED' } as unknown as AccessRequest)
 
     const result = await ApprovalService.checkAndCompleteRequest('req-1')
 

@@ -1,4 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import type { AuditLog } from '@prisma/client'
+
+type AuditLogFindManyCall = {
+  where: Record<string, unknown> & { createdAt?: { gte?: Date; lte?: Date } }
+  skip: number
+  take: number
+}
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
@@ -15,7 +22,7 @@ describe('AuditService.logAction', () => {
   })
 
   it('creates an audit log entry with the given fields', async () => {
-    vi.mocked(prisma.auditLog.create).mockResolvedValue({ id: 'log-1' } as any)
+    vi.mocked(prisma.auditLog.create).mockResolvedValue({ id: 'log-1' } as unknown as AuditLog)
 
     const result = await AuditService.logAction({
       action: 'CREATE_ACCESS',
@@ -50,7 +57,7 @@ describe('AuditService.getAuditLogs', () => {
   it('builds an empty where clause and default pagination when no filters are given', async () => {
     await AuditService.getAuditLogs()
 
-    const findManyCall = vi.mocked(prisma.auditLog.findMany).mock.calls[0][0] as any
+    const findManyCall = vi.mocked(prisma.auditLog.findMany).mock.calls[0][0] as unknown as AuditLogFindManyCall
     expect(findManyCall.where).toEqual({})
     expect(findManyCall.skip).toBe(0)
     expect(findManyCall.take).toBe(10)
@@ -60,7 +67,7 @@ describe('AuditService.getAuditLogs', () => {
   it('filters by action, entityType, and userId when provided', async () => {
     await AuditService.getAuditLogs({ action: 'CREATE_ACCESS', entityType: 'AccessPermission', userId: 'user-1' })
 
-    const findManyCall = vi.mocked(prisma.auditLog.findMany).mock.calls[0][0] as any
+    const findManyCall = vi.mocked(prisma.auditLog.findMany).mock.calls[0][0] as unknown as AuditLogFindManyCall
     expect(findManyCall.where).toEqual({
       action: 'CREATE_ACCESS',
       entityType: 'AccessPermission',
@@ -74,7 +81,7 @@ describe('AuditService.getAuditLogs', () => {
 
     await AuditService.getAuditLogs({ startDate, endDate })
 
-    const findManyCall = vi.mocked(prisma.auditLog.findMany).mock.calls[0][0] as any
+    const findManyCall = vi.mocked(prisma.auditLog.findMany).mock.calls[0][0] as unknown as AuditLogFindManyCall
     expect(findManyCall.where.createdAt).toEqual({ gte: startDate, lte: endDate })
   })
 
@@ -83,20 +90,20 @@ describe('AuditService.getAuditLogs', () => {
 
     await AuditService.getAuditLogs({ startDate })
 
-    const findManyCall = vi.mocked(prisma.auditLog.findMany).mock.calls[0][0] as any
+    const findManyCall = vi.mocked(prisma.auditLog.findMany).mock.calls[0][0] as unknown as AuditLogFindManyCall
     expect(findManyCall.where.createdAt).toEqual({ gte: startDate })
   })
 
   it('paginates using page and limit to compute skip', async () => {
     await AuditService.getAuditLogs({ page: 3, limit: 20 })
 
-    const findManyCall = vi.mocked(prisma.auditLog.findMany).mock.calls[0][0] as any
+    const findManyCall = vi.mocked(prisma.auditLog.findMany).mock.calls[0][0] as unknown as AuditLogFindManyCall
     expect(findManyCall.skip).toBe(40)
     expect(findManyCall.take).toBe(20)
   })
 
   it('returns data alongside pagination metadata with totalPages rounded up', async () => {
-    vi.mocked(prisma.auditLog.findMany).mockResolvedValue([{ id: 'log-1' }] as any)
+    vi.mocked(prisma.auditLog.findMany).mockResolvedValue([{ id: 'log-1' }] as unknown as AuditLog[])
     vi.mocked(prisma.auditLog.count).mockResolvedValue(25)
 
     const result = await AuditService.getAuditLogs({ page: 2, limit: 10 })
@@ -114,7 +121,7 @@ describe('AuditService.getAuditLogById', () => {
   })
 
   it('returns the log when found', async () => {
-    vi.mocked(prisma.auditLog.findUnique).mockResolvedValue({ id: 'log-1' } as any)
+    vi.mocked(prisma.auditLog.findUnique).mockResolvedValue({ id: 'log-1' } as unknown as AuditLog)
 
     const result = await AuditService.getAuditLogById('log-1')
 

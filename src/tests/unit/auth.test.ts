@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import type { User } from '@prisma/client'
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
@@ -62,7 +63,7 @@ describe('auth authorize', () => {
   })
 
   it('returns null when user has no password set', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ ...mockUser, password: null } as any)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ ...mockUser, password: null } as unknown as User)
 
     const result = await credentialsProvider.authorize({
       email: 'jane@example.com',
@@ -73,7 +74,7 @@ describe('auth authorize', () => {
   })
 
   it('returns null when password is invalid', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as unknown as User)
     vi.mocked(bcrypt.compare).mockResolvedValue(false as never)
 
     const result = await credentialsProvider.authorize({
@@ -85,7 +86,7 @@ describe('auth authorize', () => {
   })
 
   it('returns the user when credentials are valid', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any)
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as unknown as User)
     vi.mocked(bcrypt.compare).mockResolvedValue(true as never)
 
     const result = await credentialsProvider.authorize({
