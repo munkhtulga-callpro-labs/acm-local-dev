@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import type { AccessRequest, Approval, User } from '@prisma/client'
 
 vi.mock('@/lib/prisma', () => ({
@@ -250,5 +250,185 @@ describe('ApprovalService.checkAndCompleteRequest', () => {
       expect.objectContaining({ data: expect.objectContaining({ status: 'COMPLETED' }) })
     )
     expect(result.status).toBe('COMPLETED')
+  })
+})
+
+describe('ApprovalService.createAccessRequest', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('creates the request, logs the action, and kicks off the approval workflow', async () => {
+    vi.mocked(prisma.accessRequest.create).mockResolvedValue({
+      id: 'req-1',
+      employeeId: 'emp-1',
+    } as unknown as AccessRequest)
+    const workflowSpy = vi
+      .spyOn(ApprovalService, 'startApprovalWorkflow')
+      .mockResolvedValue(undefined)
+
+    const result = await ApprovalService.createAccessRequest({
+      employeeId: 'emp-1',
+      requestType: 'ACCESS_REQUEST',
+      title: 'Need GitHub access',
+      priority: 'MEDIUM',
+      systems: [{ systemId: 'sys-1', accessLevel: 'READ', isRequired: true }],
+      requestedBy: 'requester-1',
+    })
+
+    expect(prisma.accessRequest.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          employeeId: 'emp-1',
+          requestType: 'ACCESS_REQUEST',
+          title: 'Need GitHub access',
+          requestedBy: 'requester-1',
+        }),
+      })
+    )
+    expect(AuditService.logAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'CREATE_REQUEST',
+        entityId: 'req-1',
+        employeeId: 'emp-1',
+        userId: 'requester-1',
+      })
+    )
+    expect(workflowSpy).toHaveBeenCalledWith('req-1')
+    expect(result.id).toBe('req-1')
+  })
+})
+
+describe('ApprovalService.startApprovalWorkflow', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('does nothing when the request no longer exists', async () => {
+    vi.mocked(prisma.accessRequest.findUnique).mockResolvedValue(null)
+    const workflowSpy = vi.spyOn(ApprovalService, 'getApprovalWorkflow')
+
+    await ApprovalService.startApprovalWorkflow('missing')
+
+    expect(workflowSpy).not.toHaveBeenCalled()
+    expect(prisma.approval.create).not.toHaveBeenCalled()
+  })
+
+  it('creates a PENDING approval per workflow step and notifies approvers', async () => {
+    vi.mocked(prisma.accessRequest.findUnique).mockResolvedValue({
+      id: 'req-1',
+      requestType: 'ACCESS_REQUEST',
+      systems: [],
+    } as unknown as AccessRequest)
+    vi.spyOn(ApprovalService, 'getApprovalWorkflow').mockResolvedValue({
+      steps: [
+        { step: 1, approverId: 'it-1', role: 'IT_STAFF' },
+        { step: 2, approverId: 'hr-1', role: 'HR_MANAGER' },
+      ],
+    })
+    const notifySpy = vi.spyOn(ApprovalService, 'notifyApprovers').mockResolvedValue(undefined)
+
+    await ApprovalService.startApprovalWorkflow('req-1')
+
+    expect(prisma.approval.create).toHaveBeenCalledTimes(2)
+    expect(prisma.approval.create).toHaveBeenCalledWith({
+      data: { accessRequestId: 'req-1', approverId: 'it-1', step: 1, status: 'PENDING' },
+    })
+    expect(prisma.approval.create).toHaveBeenCalledWith({
+      data: { accessRequestId: 'req-1', approverId: 'hr-1', step: 2, status: 'PENDING' },
+    })
+    expect(notifySpy).toHaveBeenCalledWith('req-1')
+  })
+})
+
+describe('ApprovalService.notifyApprovers', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('does nothing when the request has no pending approvals', async () => {
+    vi.mocked(prisma.accessRequest.findUnique).mockResolvedValue({
+      id: 'req-1',
+      approvals: [],
+    } as unknown as AccessRequest)
+
+    await ApprovalService.notifyApprovers('req-1')
+
+    expect(EmailService.sendApprovalRequiredNotification).not.toHaveBeenCalled()
+  })
+
+  it('does nothing when the request no longer exists', async () => {
+    vi.mocked(prisma.accessRequest.findUnique).mockResolvedValue(null)
+
+    await ApprovalService.notifyApprovers('missing')
+
+    expect(EmailService.sendApprovalRequiredNotification).not.toHaveBeenCalled()
+  })
+
+  it('notifies the first pending approver', async () => {
+    vi.mocked(prisma.accessRequest.findUnique).mockResolvedValue({
+      id: 'req-1',
+      approvals: [{ approverId: 'it-1', step: 1 }],
+    } as unknown as AccessRequest)
+
+    await ApprovalService.notifyApprovers('req-1')
+
+    expect(EmailService.sendApprovalRequiredNotification).toHaveBeenCalledWith(
+      expect.objectContaining({ approverId: 'it-1' })
+    )
+  })
+})
+
+describe('ApprovalService.getPendingApprovals', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('queries pending requests where the given user has a pending approval', async () => {
+    vi.mocked(prisma.accessRequest.findMany).mockResolvedValue([])
+
+    await ApprovalService.getPendingApprovals('user-1')
+
+    expect(prisma.accessRequest.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          status: 'PENDING',
+          approvals: { some: { approverId: 'user-1', status: 'PENDING' } },
+        },
+      })
+    )
+  })
+})
+
+describe('ApprovalService.getRequestById', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('returns the request when found', async () => {
+    vi.mocked(prisma.accessRequest.findUnique).mockResolvedValue({ id: 'req-1' } as unknown as AccessRequest)
+
+    const result = await ApprovalService.getRequestById('req-1')
+
+    expect(prisma.accessRequest.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'req-1' } })
+    )
+    expect(result?.id).toBe('req-1')
+  })
+
+  it('returns null when not found', async () => {
+    vi.mocked(prisma.accessRequest.findUnique).mockResolvedValue(null)
+
+    const result = await ApprovalService.getRequestById('missing')
+
+    expect(result).toBeNull()
   })
 })
