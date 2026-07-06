@@ -46,7 +46,6 @@ export class ExpiryService {
               entityType: 'AccessPermission',
               entityId: permission.id,
               newValues: { daysUntilExpiry },
-              userId: 'system',
             },
           })
         }
