@@ -427,6 +427,11 @@ export class ApprovalService {
       where: { id: requestId },
       include: {
         employee: true,
+        systems: {
+          include: {
+            system: true,
+          },
+        },
         approvals: {
           where: { status: 'PENDING' },
           orderBy: { step: 'asc' },

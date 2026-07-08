@@ -128,7 +128,7 @@ export class AccessService {
     revokedBy,
   }: {
     id: string
-    revokedBy: string
+    revokedBy: string | null
   }): Promise<AccessPermissionWithRelations> {
     const oldPermission = await prisma.accessPermission.findUnique({
       where: { id },
@@ -158,7 +158,7 @@ export class AccessService {
       entityId: id,
       oldValues: oldPermission,
       newValues: permission,
-      userId: revokedBy,
+      userId: revokedBy ?? undefined,
       employeeId: permission.employeeId,
     })
 
@@ -245,7 +245,7 @@ export class AccessService {
     for (const permission of expiredPermissions) {
       await this.revokeAccessPermission({
         id: permission.id,
-        revokedBy: 'system',
+        revokedBy: null,
       })
     }
 
