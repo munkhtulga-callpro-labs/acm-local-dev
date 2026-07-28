@@ -46,7 +46,8 @@
     "goToFirstPage": "Эхний хуудас руу",
     "goToPreviousPage": "Өмнөх хуудас руу",
     "goToNextPage": "Дараагийн хуудас руу",
-    "goToLastPage": "Сүүлийн хуудас руу"
+    "goToLastPage": "Сүүлийн хуудас руу",
+    "accessTemplates": "Хандалтын загвар"
   },
   "drawer": {
     "description": "Хэлтсийн дэлгэрэнгүй болон удирдлага",
@@ -91,6 +92,41 @@
       "companyRequired": "Компани заавал шаардлагатай",
       "invalidEmail": "И-мэйл хаяг буруу байна",
       "saveFailed": "Хэлтэс хадгалахад алдаа гарлаа. Дахин оролдоно уу."
+    }
+  },
+  "accessTemplates": {
+    "title": "Хандалтын загвар — {department}",
+    "description": "Энэ хэлтэст шинээр орох ажилтан бүрт автоматаар хүсэлт үүсгэх систем болон нөөц.",
+    "templateCount": "{count, plural, =0 {Загвар байхгүй} other {# загвар}}",
+    "addTemplate": "Загвар нэмэх",
+    "editTemplate": "Загвар засах",
+    "saveChanges": "Хадгалах",
+    "cancel": "Цуцлах",
+    "close": "Хаах",
+    "empty": "Хандалтын загвар алга. Энэ хэлтсийн шинэ ажилтнууд автомат хандалт авахгүй.",
+    "kindLabel": "Төрөл",
+    "kind": {
+      "SYSTEM": "Систем",
+      "RESOURCE": "Нөөц"
+    },
+    "systemLabel": "Систем",
+    "systemPlaceholder": "Систем сонгох",
+    "resourceLabel": "Нөөц",
+    "resourcePlaceholder": "Нөөц сонгох",
+    "accessLevelLabel": "Хандалтын түвшин",
+    "accessLevelPlaceholder": "жишээ нь User, Read, Write",
+    "requiredLabel": "Заавал",
+    "requiredHint": "Энэ хандалтыг тухайн албан тушаалд заавал шаардлагатай гэж тэмдэглэх.",
+    "activeLabel": "Идэвхтэй",
+    "activeHint": "Идэвхгүй загварыг ажилд авах үед алгасна.",
+    "required": "Заавал",
+    "inactive": "Идэвхгүй",
+    "readOnlyNotice": "Хандалтын загвар өөрчлөхөд админ эсвэл IT ажилтны эрх шаардлагатай.",
+    "confirmDelete": "{name}-г энэ хэлтсийн хандалтын загвараас хасах уу?",
+    "errors": {
+      "fetchFailed": "Хандалтын загвар ачаалж чадсангүй",
+      "saveFailed": "Хандалтын загвар хадгалж чадсангүй",
+      "deleteFailed": "Хандалтын загвар устгаж чадсангүй"
     }
   }
 }

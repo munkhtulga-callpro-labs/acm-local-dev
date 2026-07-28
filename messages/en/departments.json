@@ -46,7 +46,8 @@
     "goToFirstPage": "Go to first page",
     "goToPreviousPage": "Go to previous page",
     "goToNextPage": "Go to next page",
-    "goToLastPage": "Go to last page"
+    "goToLastPage": "Go to last page",
+    "accessTemplates": "Access Templates"
   },
   "drawer": {
     "description": "Department details and management",
@@ -91,6 +92,41 @@
       "companyRequired": "Company is required",
       "invalidEmail": "Invalid email format",
       "saveFailed": "Failed to save department. Please try again."
+    }
+  },
+  "accessTemplates": {
+    "title": "Access Templates — {department}",
+    "description": "Systems and resources automatically requested for every new employee joining this department.",
+    "templateCount": "{count, plural, =0 {No templates} one {# template} other {# templates}}",
+    "addTemplate": "Add Template",
+    "editTemplate": "Edit Template",
+    "saveChanges": "Save Changes",
+    "cancel": "Cancel",
+    "close": "Close",
+    "empty": "No access templates yet. New employees in this department get no automatic access.",
+    "kindLabel": "Type",
+    "kind": {
+      "SYSTEM": "System",
+      "RESOURCE": "Resource"
+    },
+    "systemLabel": "System",
+    "systemPlaceholder": "Select a system",
+    "resourceLabel": "Resource",
+    "resourcePlaceholder": "Select a resource",
+    "accessLevelLabel": "Access level",
+    "accessLevelPlaceholder": "e.g. User, Read, Write",
+    "requiredLabel": "Required",
+    "requiredHint": "Mark this access as mandatory for the role.",
+    "activeLabel": "Active",
+    "activeHint": "Inactive templates are skipped during onboarding.",
+    "required": "Required",
+    "inactive": "Inactive",
+    "readOnlyNotice": "You need administrator or IT staff permissions to change access templates.",
+    "confirmDelete": "Remove {name} from this department’s access templates?",
+    "errors": {
+      "fetchFailed": "Failed to load access templates",
+      "saveFailed": "Failed to save access template",
+      "deleteFailed": "Failed to delete access template"
     }
   }
 }
