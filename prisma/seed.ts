@@ -147,6 +147,180 @@ async function main() {
     })
   }
 
+  // Default access templates: what each department's employees get on day one.
+  // Systems are requested through the ONBOARDING approval workflow; resources
+  // are requested from the resource's configured owner(s).
+  const departmentSystemDefaults: Record<string, Array<{ system: string; accessLevel: string }>> = {
+    'Customer Service': [
+      { system: 'Google Workspace', accessLevel: 'User' },
+      { system: 'CallPro Teams', accessLevel: 'User' },
+      { system: 'SupportPal', accessLevel: 'User' },
+    ],
+    'Sales': [
+      { system: 'Google Workspace', accessLevel: 'User' },
+      { system: 'CallPro Teams', accessLevel: 'User' },
+      { system: 'HubSpot', accessLevel: 'User' },
+    ],
+    'Finance': [
+      { system: 'Google Workspace', accessLevel: 'User' },
+      { system: 'CallPro Teams', accessLevel: 'User' },
+      { system: 'Timely Admin', accessLevel: 'User' },
+    ],
+    'Technical Support': [
+      { system: 'Google Workspace', accessLevel: 'User' },
+      { system: 'CallPro Teams', accessLevel: 'User' },
+      { system: 'SupportPal', accessLevel: 'User' },
+    ],
+    'Administration': [
+      { system: 'Google Workspace', accessLevel: 'User' },
+      { system: 'CallPro Teams', accessLevel: 'User' },
+      { system: 'Timely Admin', accessLevel: 'User' },
+    ],
+    'Business Development': [
+      { system: 'Google Workspace', accessLevel: 'User' },
+      { system: 'CallPro Teams', accessLevel: 'User' },
+      { system: 'HubSpot', accessLevel: 'User' },
+    ],
+    'Development': [
+      { system: 'Google Workspace', accessLevel: 'User' },
+      { system: 'CallPro Teams', accessLevel: 'User' },
+      { system: 'LIME Backend', accessLevel: 'User' },
+    ],
+    'Marketing': [
+      { system: 'Google Workspace', accessLevel: 'User' },
+      { system: 'CallPro Teams', accessLevel: 'User' },
+      { system: 'HubSpot', accessLevel: 'User' },
+    ],
+  }
+
+  for (const [departmentName, defaults] of Object.entries(departmentSystemDefaults)) {
+    const department = await prisma.department.findUnique({
+      where: { name_company: { name: departmentName, company: 'CallPro LLC' } },
+    })
+    if (!department) continue
+
+    for (const { system: systemName, accessLevel } of defaults) {
+      const system = await prisma.system.findUnique({ where: { name: systemName } })
+      if (!system) continue
+
+      const existing = await prisma.departmentAccessTemplate.findFirst({
+        where: { departmentId: department.id, kind: 'SYSTEM', systemId: system.id },
+      })
+      if (existing) continue
+
+      await prisma.departmentAccessTemplate.create({
+        data: {
+          departmentId: department.id,
+          kind: 'SYSTEM',
+          systemId: system.id,
+          accessLevel,
+          isRequired: true,
+        },
+      })
+    }
+  }
+
+  // Resource-type defaults: seed one concrete resource + owner per example
+  // department so the RESOURCE-kind provisioning path has something real to
+  // point at (resourceType/resourceId reference actual rows, not a generic "type").
+  const devDepartment = await prisma.department.findUnique({
+    where: { name_company: { name: 'Development', company: 'CallPro LLC' } },
+  })
+
+  if (devDepartment) {
+    const codeRepository = await prisma.codeRepository.upsert({
+      where: { id: 'seed-code-repo-onlime-backend' },
+      update: {},
+      create: {
+        id: 'seed-code-repo-onlime-backend',
+        platform: 'GitHub',
+        repositoryName: 'onlime-backend-monorepo',
+        organizationTeam: 'Development',
+        accessLevel: 'Write',
+        ownerDepartment: 'Development',
+        status: 'ACTIVE',
+      },
+    })
+
+    await prisma.resourceOwner.upsert({
+      where: { id: 'seed-resource-owner-onlime-backend' },
+      update: {},
+      create: {
+        id: 'seed-resource-owner-onlime-backend',
+        resourceType: 'CODE_REPOSITORY',
+        resourceId: codeRepository.id,
+        ownershipType: 'MAIN_OWNER',
+        ownerEmail: itStaff.email,
+      },
+    })
+
+    const existingTemplate = await prisma.departmentAccessTemplate.findFirst({
+      where: { departmentId: devDepartment.id, kind: 'RESOURCE', resourceId: codeRepository.id },
+    })
+    if (!existingTemplate) {
+      await prisma.departmentAccessTemplate.create({
+        data: {
+          departmentId: devDepartment.id,
+          kind: 'RESOURCE',
+          resourceType: 'CODE_REPOSITORY',
+          resourceId: codeRepository.id,
+          resourceName: codeRepository.repositoryName,
+          accessLevel: 'Write',
+          isRequired: true,
+        },
+      })
+    }
+  }
+
+  const techSupportDepartment = await prisma.department.findUnique({
+    where: { name_company: { name: 'Technical Support', company: 'CallPro LLC' } },
+  })
+
+  if (techSupportDepartment) {
+    const vpnAccess = await prisma.vPNNetworkAccess.upsert({
+      where: { id: 'seed-vpn-tech-support' },
+      update: {},
+      create: {
+        id: 'seed-vpn-tech-support',
+        profileName: 'Technical Support VPN',
+        vpnType: 'OpenVPN',
+        networkSegments: 'internal-tools,monitoring',
+        accessLevel: 'Standard',
+        validFrom: new Date(),
+        status: 'ACTIVE',
+      },
+    })
+
+    await prisma.resourceOwner.upsert({
+      where: { id: 'seed-resource-owner-vpn-tech-support' },
+      update: {},
+      create: {
+        id: 'seed-resource-owner-vpn-tech-support',
+        resourceType: 'VPN_NETWORK_ACCESS',
+        resourceId: vpnAccess.id,
+        ownershipType: 'MAIN_OWNER',
+        ownerEmail: itStaff.email,
+      },
+    })
+
+    const existingTemplate = await prisma.departmentAccessTemplate.findFirst({
+      where: { departmentId: techSupportDepartment.id, kind: 'RESOURCE', resourceId: vpnAccess.id },
+    })
+    if (!existingTemplate) {
+      await prisma.departmentAccessTemplate.create({
+        data: {
+          departmentId: techSupportDepartment.id,
+          kind: 'RESOURCE',
+          resourceType: 'VPN_NETWORK_ACCESS',
+          resourceId: vpnAccess.id,
+          resourceName: vpnAccess.profileName,
+          accessLevel: 'Standard',
+          isRequired: true,
+        },
+      })
+    }
+  }
+
   // Create sample employees
   const sampleEmployees = [
     {

@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
+import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { DepartmentModal } from '@/components/department-modal'
+import { DepartmentAccessTemplatesModal } from '@/components/department-access-templates-modal'
+import { isPrivilegedRole } from '@/lib/roles'
 import {
   Building2,
   Users,
@@ -13,6 +16,8 @@ import { DepartmentsDataTable, type Department } from '@/components/departments-
 
 export default function DepartmentsPage() {
   const t = useTranslations('departments')
+  const { data: session } = useSession()
+  const canManageAccessTemplates = isPrivilegedRole(session?.user?.role ?? '')
   const [departments, setDepartments] = useState<Department[]>([])
   const [companies, setCompanies] = useState<Array<{ id: string; name: string }>>([])
   const [loading, setLoading] = useState(true)
@@ -21,6 +26,9 @@ export default function DepartmentsPage() {
   const [modalState, setModalState] = useState<{ isOpen: boolean; mode: 'view' | 'edit' | 'create'; department?: Department }>({
     isOpen: false,
     mode: 'create'
+  })
+  const [accessModalState, setAccessModalState] = useState<{ isOpen: boolean; department?: Department }>({
+    isOpen: false
   })
 
   useEffect(() => {
@@ -216,6 +224,7 @@ export default function DepartmentsPage() {
               data={departments}
               onEdit={handleEditClick}
               onDelete={handleDeleteClick}
+              onManageAccess={(department) => setAccessModalState({ isOpen: true, department })}
               onAdd={() => setModalState({ isOpen: true, mode: 'create' })}
             />
           )}
@@ -229,6 +238,13 @@ export default function DepartmentsPage() {
         mode={modalState.mode}
         onSave={handleSaveDepartment}
         companies={companies}
+      />
+
+      <DepartmentAccessTemplatesModal
+        isOpen={accessModalState.isOpen}
+        onClose={() => setAccessModalState({ isOpen: false })}
+        department={accessModalState.department}
+        canManage={canManageAccessTemplates}
       />
     </div>
   )

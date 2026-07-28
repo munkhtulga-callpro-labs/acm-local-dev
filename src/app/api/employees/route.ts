@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { createEmployeeSchema, paginationSchema } from '@/lib/validations'
 import { AuditService } from '@/services/audit-service'
+import { DepartmentAccessService } from '@/services/department-access-service'
 
 export async function GET(request: NextRequest) {
   try {
@@ -116,13 +117,13 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    const currentUser = session.user?.email ? await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: { employee: true }
+    }) : null
+
     // Log the action
     try {
-      const currentUser = session.user?.email ? await prisma.user.findUnique({
-        where: { email: session.user.email },
-        include: { employee: true }
-      }) : null
-
       if (currentUser) {
         await prisma.auditLog.create({
           data: {
@@ -147,6 +148,16 @@ export async function POST(request: NextRequest) {
       }
     } catch (auditError) {
       console.error('❌ Failed to create audit log:', auditError)
+    }
+
+    // Provision default department access (non-blocking — must never fail employee creation)
+    try {
+      await DepartmentAccessService.provisionDefaultAccess({
+        employee,
+        requestedByUserId: currentUser?.id,
+      })
+    } catch (provisioningError) {
+      console.error('❌ Failed to provision default department access:', provisioningError)
     }
 
     return NextResponse.json(employee, { status: 201 })

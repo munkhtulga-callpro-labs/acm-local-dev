@@ -106,6 +106,7 @@ const getStatusBadge = (isActive: boolean, t: TFunc) => {
 const createColumns = (
   onEdit: (department: Department) => void,
   onDelete: (id: string, name: string) => void,
+  onManageAccess: (department: Department) => void,
   t: TFunc
 ): ColumnDef<Department>[] => [
   {
@@ -239,9 +240,12 @@ const createColumns = (
             <span className="sr-only">{t('openMenu')}</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-32">
+        <DropdownMenuContent align="end" className="w-44">
           <DropdownMenuItem onClick={() => onEdit(row.original)}>
             {t('edit')}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => onManageAccess(row.original)}>
+            {t('accessTemplates')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -260,11 +264,13 @@ export function DepartmentsDataTable({
   data: initialData,
   onEdit,
   onDelete,
+  onManageAccess,
   onAdd,
 }: {
   data: Department[]
   onEdit: (department: Department) => void
   onDelete: (id: string, name: string) => void
+  onManageAccess: (department: Department) => void
   onAdd?: () => void
 }) {
   const t = useTranslations('departments.table')
@@ -293,8 +299,8 @@ export function DepartmentsDataTable({
   }, [initialData])
 
   const columns = React.useMemo(
-    () => createColumns(onEdit, onDelete, t),
-    [onEdit, onDelete, t]
+    () => createColumns(onEdit, onDelete, onManageAccess, t),
+    [onEdit, onDelete, onManageAccess, t]
   )
 
   const table = useReactTable({
